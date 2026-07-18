@@ -4913,6 +4913,9 @@ function openVsiModal(id) {
     if (r) vsiLoadRecord(r.id);
   } else {
     clearVsi('vsi',63,true);
+    // Clear edit IDs for new inspection
+    const evid = document.getElementById('vsi-edit-id'); if(evid) evid.value='';
+    const evspid = document.getElementById('vsi-edit-spid'); if(evspid) evspid.value='';
     const d=document.getElementById('vsi-date'); if(d) d.value=today();
     const odo=document.getElementById('vsi-odo'); if(odo) odo.value='';
     ['vsi-rego','vsi-nextdue','vsi-nextodo','vsi-inspector','vsi-sig'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -5023,13 +5026,34 @@ async function saveVsi(pageId) {
   const no  = Object.values(rec.items).filter(x=>x.val==='no').length;
   rec.summary = `${yes} pass, ${no} fail`;
 
+  // Check if editing existing record
+  const editId = document.getElementById('vsi-edit-id')?.value;
+  const editSpId = document.getElementById('vsi-edit-spid')?.value;
+  const existing = editId ? vsiHistory.find(x => x.id === editId || x.spId === editSpId) : null;
+
+  if (existing) {
+    // Update existing record
+    rec.id = existing.id;
+    rec.spId = existing.spId;
+  }
+
   try {
     if (connected) {
       const f = vsiToSp(rec);
-      const c = await createItem(CFG.L_VSI, f);
-      rec.spId = String(c.id);
+      if (existing && existing.spId) {
+        await updateItem(CFG.L_VSI, existing.spId, f);
+      } else {
+        const c = await createItem(CFG.L_VSI, f);
+        rec.spId = String(c.id);
+        rec.id = String(c.id);
+      }
     }
-    vsiHistory.unshift(rec);
+    if (existing) {
+      const i = vsiHistory.findIndex(x => x.id === rec.id);
+      if (i >= 0) vsiHistory[i] = rec;
+    } else {
+      vsiHistory.unshift(rec);
+    }
     // Auto-update fleet service due date from VSI next due
     if (rec.nextDue || rec.nextOdo) await autoUpdateServiceDate(rec.vehicleId, rec.nextDue, rec.nextOdo);
     const msg = document.getElementById('vsi-savedmsg');
@@ -5096,6 +5120,11 @@ function viewVsiHistory() {
 function vsiLoadRecord(id) {
   const r = vsiHistory.find(x=>x.id===id||x.spId===id);
   if (!r) return;
+  // Store the record ID so saveVsi can update instead of create
+  const editId = document.getElementById('vsi-edit-id');
+  const editSpId = document.getElementById('vsi-edit-spid');
+  if (editId) editId.value = r.id || '';
+  if (editSpId) editSpId.value = r.spId || '';
   // set vehicle
   const sel = document.getElementById('vsi-veh');
   if (sel) { sel.value = r.vehicleId; }
@@ -8087,7 +8116,8 @@ init();
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px;background:#f8fafb;border-bottom:1px solid var(--grey-b);">
         <div style="display:flex;flex-direction:column;gap:3px;">
           <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Vehicle</label>
-          <select id="vsi-veh" onchange="vsiLoadVehicle()" style="border:1px solid var(--grey-b);border-radius:4px;padding:5px 8px;font-size:13px;font-family:inherit;"></select>
+          <input type="hidden" id="vsi-edit-id"><input type="hidden" id="vsi-edit-spid">
+      <select id="vsi-veh" onchange="vsiLoadVehicle()" style="border:1px solid var(--grey-b);border-radius:4px;padding:5px 8px;font-size:13px;font-family:inherit;"></select>
         </div>
         <div style="display:flex;flex-direction:column;gap:3px;">
           <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Registration</label>
