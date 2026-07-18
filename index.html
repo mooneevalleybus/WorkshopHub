@@ -6029,22 +6029,30 @@ async function autoUpdateOdo(vehicleId, newOdo, newOdoDate) {
 
 // ─── PRE-TRIP SP SAVE ─────────────────────────────────────────────────────────
 async function savePretripToSP(record) {
-  if (!connected) return;
-  try {
-    await createItem(CFG.L_PRETRIP, {
-      Title: record.refNum,
-      VehicleId: record.vehicleId,
-      FleetNum: record.fleetNum || '',
-      Rego: record.rego || '',
-      Driver: record.driver || '',
-      InspDate: record.date || null,
-      Odo: record.odo ? String(record.odo) : '',
-      Result: record.failed === 0 ? 'Pass' : 'Fail',
-      FailCount: String(record.failed || 0),
-      DefectsRaised: String(record.defectsRaised || 0),
-      Items: JSON.stringify(record.items || {}),
-    });
-  } catch(e) { console.warn('Pre-trip SP save failed:', e.message); }
+  if (!connected) { console.warn('savePretripToSP: not connected'); return; }
+  // Items column is Single line of text (255 char limit)
+  // Store pass/fail summary instead of full JSON
+  const itemsJson = JSON.stringify(record.items || {});
+  const itemsSummary = itemsJson.length > 250
+    ? `${record.failed||0} failed, ${record.passed||0} passed (${Object.keys(record.items||{}).length} items)`
+    : itemsJson;
+  const payload = {
+    Title: record.refNum || ('PT-'+Date.now()),
+    VehicleId: record.vehicleId || '',
+    FleetNum: record.fleetNum || '',
+    Rego: record.rego || '',
+    Driver: record.driver || '',
+    InspDate: record.date || null,
+    Odo: record.odo ? String(record.odo) : '',
+    Result: record.failed === 0 ? 'Pass' : 'Fail',
+    FailCount: String(record.failed || 0),
+    DefectsRaised: String(record.defectsRaised || 0),
+    Items: itemsSummary,
+  };
+  console.log('Saving pre-trip to SP:', payload.Title, 'List:', CFG.L_PRETRIP);
+  const result = await createItem(CFG.L_PRETRIP, payload);
+  console.log('Pre-trip saved to SP, id:', result?.id);
+  return result;
 }
 
 // ─── SERVICE HISTORY TIMELINE ─────────────────────────────────────────────────
@@ -7769,7 +7777,8 @@ async function submitPreTrip(){
     defectsRaised:failedItems.length,
     items:ptState,
   };
-  savePretripToSP(ptRec);
+  console.log('submitPreTrip: connected=',connected,'token=',!!token);
+  try { await savePretripToSP(ptRec); } catch(e) { console.error('Pre-trip SP save failed:', e); }
   updSaved();renderPtHistory();
   if(failedItems.length>0){setTimeout(()=>{if(confirm(failedItems.length+' defect'+(failedItems.length>1?'s have':' has')+' been raised. Go to Defects page now?')){showPage('defects',document.querySelector('.nt[onclick*=\'defects\']'));}},400);}
 }
