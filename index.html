@@ -6023,7 +6023,14 @@ async function autoUpdateOdo(vehicleId, newOdo, newOdoDate) {
     try {
       await updateItem(CFG.L_FLEET, v.spId, vToSp(v));
       console.log('Odo updated on fleet record:', v.fleet, incoming);
-    } catch(e) { console.warn('Odo update failed:', e.message); }
+    } catch(e) {
+      if (e.message && e.message.includes('409')) {
+        // Conflict - another update beat us, just update local state
+        console.log('Odo update conflict ignored - local state updated');
+      } else {
+        console.warn('Odo update failed:', e.message);
+      }
+    }
   }
 }
 
@@ -7753,7 +7760,7 @@ async function submitPreTrip(){
       desc:'Pre-trip fail: '+item.label+(noteText?' — '+noteText:''),
       reportedBy:driver,dateReported:dt?dt.slice(0,10):today(),odo,status:'Open',
       clearedBy:'',dateCleared:'',rectification:'',
-      notes:'Auto-raised from pre-trip inspection on '+(dt?fmtDate(dt.slice(0,10)):today())+' by '+driver+'.'};
+      notes:'Auto-raised from pre-trip inspection on '+(dt?fd(dt.slice(0,10)):today())+' by '+driver+'.'};
     defects.push(d);defectsRaised.push(d);
     if(connected){try{const c=await createItem(CFG.L_DEFECTS,defToSp(d));d.spId=String(c.id);d.id=String(c.id);}catch(e){console.error(e);}}
   }
@@ -7788,7 +7795,7 @@ function renderPtHistory(){
   tbody.innerHTML=ptHistory.slice(0,30).map(r=>{
     const fail=r.failCount||0,pass=r.passCount||0;
     const badge=fail===0?'<span class="badge bg">All passed</span>':`<span class="badge br">${fail} failed</span>`;
-    return`<tr><td>${fmtDate(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><td class="tdf">${r.vFleet||'?'}${r.vRego?' — '+r.vRego:''}</td><td>${r.driver||'—'}</td><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><td>${badge} <span style="font-size:11px;color:var(--grey-dark)">${pass}/${pass+fail}</span></td><td style="font-size:12px;">${r.defectRefs?.length?r.defectRefs.join(', '):'—'}</td><td><button class="btn sm bs" onclick="deletePtRecord('${r.id}')">Delete</button></td></tr>`;
+    return`<tr><td>${fd(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><td class="tdf">${r.vFleet||'?'}${r.vRego?' — '+r.vRego:''}</td><td>${r.driver||'—'}</td><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><td>${badge} <span style="font-size:11px;color:var(--grey-dark)">${pass}/${pass+fail}</span></td><td style="font-size:12px;">${r.defectRefs?.length?r.defectRefs.join(', '):'—'}</td><td><button class="btn sm bs" onclick="deletePtRecord('${r.id}')">Delete</button></td></tr>`;
   }).join('');
 }
 function deletePtRecord(id){
