@@ -2549,10 +2549,16 @@ async function loadAll(){
           source: 'sharepoint',
         };
       }).sort((a,b)=>(b.dt||'').localeCompare(a.dt||''));
-      // Merge SP records with local-only records
-      const spIds = new Set(spPt.map(x=>x.id));
-      const localOnly = ptHistory.filter(x => !spIds.has(String(x.id)));
+      // Deduplicate: match local records to SP records by datetime+vehicle
+      // SP records are authoritative - only keep local records with no SP match
+      const spKeys = new Set(spPt.map(x => `${x.dt?.slice(0,16)}_${x.vehicleId}`));
+      const localOnly = ptHistory.filter(x => {
+        const key = `${(x.dt||'').slice(0,16)}_${x.vId||x.vehicleId||''}`;
+        return !spKeys.has(key);
+      });
       ptHistory = [...spPt, ...localOnly].sort((a,b)=>(b.dt||'').localeCompare(a.dt||''));
+      // Update localStorage to SP-sourced data
+      localStorage.setItem('mvbl_pretrip', JSON.stringify(ptHistory.slice(0,50)));
       console.log('Pre-trip history after merge:', ptHistory.length);
     };
 
@@ -7585,6 +7591,111 @@ async function submitQuickDefect() {
 const _origShowPage = showPage;
 // Note: showPage is called before this code runs, so we patch after load
 
+// ─── PASS ALL SECTION ─────────────────────────────────────────────────────────
+function passAllSection(secId, items) {
+  items.forEach(item => {
+    setPT(item.id, 'pass');
+  });
+}
+
+// ─── VSI PASS ALL SECTION ─────────────────────────────────────────────────────
+function vsiPassSection(startItem, endItem) {
+  for (let i = startItem; i <= endItem; i++) {
+    const yesBtn = document.querySelector(`input[name="vsi-${i}"][value="yes"]`);
+    if (yesBtn) {
+      yesBtn.checked = true;
+      vsiMark('vsi-'+i, 'yes');
+    }
+  }
+  vsiUpdateSummary();
+}
+
+function vsiPassAll() {
+  for (let i = 0; i <= 62; i++) {
+    const yesBtn = document.querySelector(`input[name="vsi-${i}"][value="yes"]`);
+    if (yesBtn) {
+      yesBtn.checked = true;
+      vsiMark('vsi-'+i, 'yes');
+    }
+  }
+  vsiUpdateSummary();
+}
+
+// ─── VIEW PRE-TRIP RECORD ─────────────────────────────────────────────────────
+function viewPtRecord(id) {
+  const r = ptHistory.find(x => String(x.id) === String(id));
+  if (!r) return;
+  const v = fleet.find(x => x.id === (r.vehicleId||r.vId)) || {};
+
+  // Build checklist results
+  const sections = [
+    { label: '💧 Fluids', items: PT_SECTIONS.fluids },
+    { label: '👁️ Visual', items: PT_SECTIONS.visual },
+    { label: '🔑 Running', items: PT_SECTIONS.running },
+  ];
+
+  const itemsHtml = sections.map(sec => {
+    const rows = sec.items.map(item => {
+      const result = r.items?.[item.id];
+      if (!result) return '';
+      const color = result.val==='pass'||result==='pass' ? 'var(--green)' : result.val==='fail'||result==='fail' ? 'var(--red)' : 'var(--grey-dark)';
+      const label = result.val==='pass'||result==='pass' ? '✓ Pass' : result.val==='fail'||result==='fail' ? '✗ Fail' : 'N/A';
+      const note = result.note || '';
+      return `<tr>
+        <td style="font-size:13px;padding:6px 8px;">${item.label}</td>
+        <td style="font-size:12px;font-weight:700;color:${color};padding:6px 8px;white-space:nowrap;">${label}</td>
+        ${note ? `<td style="font-size:12px;color:var(--grey-dark);padding:6px 8px;">${note}</td>` : '<td></td>'}
+      </tr>`;
+    }).filter(Boolean).join('');
+    if (!rows) return '';
+    return `<div style="margin-bottom:12px;">
+      <div style="font-weight:700;font-size:12px;color:var(--navy);background:var(--grey);padding:6px 10px;border-radius:4px;margin-bottom:4px;">${sec.label}</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  const fail = r.failCount||0, pass = r.passCount||0;
+  const resultColor = fail===0 ? 'var(--green)' : 'var(--red)';
+  const resultText = fail===0 ? '✅ All passed' : `⚠️ ${fail} failed`;
+
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Pre-Trip ${fd(r.dt?.slice(0,10))}</title>
+  <style>
+    *{box-sizing:border-box;}
+    body{font-family:Arial,sans-serif;padding:20px;font-size:13px;color:#1a2744;margin:0;}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1a7f7a;padding-bottom:12px;margin-bottom:16px;}
+    .logo{font-size:18px;font-weight:800;color:#1a2744;}
+    .logo-sub{font-size:11px;color:#666;}
+    table{width:100%;border-collapse:collapse;margin-bottom:12px;}
+    td,th{border:1px solid #e2e4e9;padding:6px 8px;font-size:12px;}
+    th{background:#f4f5f7;font-weight:700;color:#1a2744;}
+    .result{font-size:20px;font-weight:800;color:${resultColor};text-align:right;}
+    .sec-title{font-weight:700;font-size:12px;color:#1a2744;background:#f4f5f7;padding:6px 10px;border-radius:4px;margin:12px 0 4px;}
+    tr:nth-child(even){background:#fafafa;}
+    @media print{button{display:none;}}
+  </style></head><body>
+  <div class="header">
+    <div><div class="logo">Moonee Valley Bus Lines</div><div class="logo-sub">Pre-Trip Inspection Report</div></div>
+    <div class="result">${resultText}</div>
+  </div>
+  <table>
+    <tr><th>Date &amp; time</th><td>${fd(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><th>Driver</th><td>${r.driver||'—'}</td></tr>
+    <tr><th>Fleet #</th><td>${r.vFleet||v.fleet||'—'}</td><th>Rego</th><td>${r.vRego||v.rego||'—'}</td></tr>
+    <tr><th>Odometer</th><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><th>Result</th><td style="font-weight:700;color:${resultColor};">${resultText}</td></tr>
+    <tr><th>Items passed</th><td>${pass}</td><th>Items failed</th><td style="color:${fail>0?'var(--red)':'inherit'};font-weight:${fail>0?'700':'400'};">${fail}</td></tr>
+    ${r.defectRefs?.length ? `<tr><th>Defects raised</th><td colspan="3">${r.defectRefs.join(', ')}</td></tr>` : ''}
+  </table>
+  ${itemsHtml || '<p style="color:#666;font-size:12px;">Detailed checklist not available for this record.</p>'}
+  <div style="margin-top:20px;font-size:10px;color:#999;border-top:1px solid #eee;padding-top:8px;">
+    Moonee Valley Bus Lines — Printed ${new Date().toLocaleDateString('en-AU')}
+  </div>
+  <button onclick="window.print()" style="margin-top:12px;padding:8px 20px;background:#1a2744;color:white;border:none;border-radius:6px;cursor:pointer;">🖨 Print / Save PDF</button>
+  </body></html>`);
+  w.document.close(); w.focus();
+}
+
 async function init(){
   companies=[{id:'mvbl',spId:null,name:'MVBL',isDefault:true}];
   restoreSbState();
@@ -7714,7 +7825,13 @@ function renderPreTrip(){
 }
 function renderPtSection(secId,items){
   const el=document.getElementById('pt-section-'+secId);if(!el)return;
-  el.innerHTML=items.map(item=>`
+  const passAllBtn=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+    <button type="button" onclick="passAllSection('${secId}',PT_SECTIONS['${secId}'])"
+      style="background:var(--green);color:white;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
+      ✓ Pass all
+    </button>
+  </div>`;
+  el.innerHTML=passAllBtn+items.map(item=>`
     <div class="pt-item" id="pti-${item.id}">
       <span class="pt-label">${item.label}</span>
       <div class="pt-btns">
@@ -7795,7 +7912,8 @@ function renderPtHistory(){
   tbody.innerHTML=ptHistory.slice(0,30).map(r=>{
     const fail=r.failCount||0,pass=r.passCount||0;
     const badge=fail===0?'<span class="badge bg">All passed</span>':`<span class="badge br">${fail} failed</span>`;
-    return`<tr><td>${fd(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><td class="tdf">${r.vFleet||'?'}${r.vRego?' — '+r.vRego:''}</td><td>${r.driver||'—'}</td><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><td>${badge} <span style="font-size:11px;color:var(--grey-dark)">${pass}/${pass+fail}</span></td><td style="font-size:12px;">${r.defectRefs?.length?r.defectRefs.join(', '):'—'}</td><td><button class="btn sm bs" onclick="deletePtRecord('${r.id}')">Delete</button></td></tr>`;
+    const vv=fleet.find(x=>x.id===(r.vehicleId||r.vId))||{};const vFleet=r.vFleet||vv.fleet||'?';const vRego=r.vRego||vv.rego||'';
+    return`<tr><td>${fd(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><td class="tdf">${vFleet}${vRego?' — '+vRego:''}</td><td>${r.driver||'—'}</td><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><td>${badge} <span style="font-size:11px;color:var(--grey-dark)">${pass}/${pass+fail}</span></td><td style="font-size:12px;">${r.defectRefs?.length?r.defectRefs.join(', '):'—'}</td><td class="tda"><button class="btn sm bs" onclick="viewPtRecord('${r.id}')">View</button> <button class="btn sm bd" onclick="deletePtRecord('${r.id}')">Del</button></td></tr>`;
   }).join('');
 }
 function deletePtRecord(id){
@@ -8010,7 +8128,7 @@ init();
             </tr>
           </thead>
           <tbody id="vsi-tbody">
-          <tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">TYRES & WHEELS</td></tr>
+          <tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">TYRES & WHEELS<button type="button" onclick="vsiPassSection(0,5)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-0">
   <td style="width:42%;">Wheel Nuts (Visual)</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-0" value="yes" onchange="vsiMark('vsi-0','yes')"> Yes</label></div></td>
@@ -8059,7 +8177,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-5-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-5-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BRAKES</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">BRAKES<button type="button" onclick="vsiPassSection(6,14)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-6">
   <td style="width:42%;">Brake Lines & Hoses for Condition</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-6" value="yes" onchange="vsiMark('vsi-6','yes')"> Yes</label></div></td>
@@ -8132,7 +8250,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-14-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-14-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">CONTROLS</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">CONTROLS<button type="button" onclick="vsiPassSection(15,19)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-15">
   <td style="width:42%;">Gear & Clutch Controls for Correct Operation</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-15" value="yes" onchange="vsiMark('vsi-15','yes')"> Yes</label></div></td>
@@ -8173,7 +8291,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-19-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-19-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">LIGHTING</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">LIGHTING<button type="button" onclick="vsiPassSection(20,22)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-20">
   <td style="width:42%;">Headlamps for Operation & Damage</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-20" value="yes" onchange="vsiMark('vsi-20','yes')"> Yes</label></div></td>
@@ -8198,7 +8316,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-22-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-22-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BATTERY</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">BATTERY<button type="button" onclick="vsiPassSection(23,24)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-23">
   <td style="width:42%;">Battery Terminals & Cables for Condition</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-23" value="yes" onchange="vsiMark('vsi-23','yes')"> Yes</label></div></td>
@@ -8215,7 +8333,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-24-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-24-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">GENERAL</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">GENERAL<button type="button" onclick="vsiPassSection(25,32)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-25">
   <td style="width:42%;">Power Steering System for Leaks</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-25" value="yes" onchange="vsiMark('vsi-25','yes')"> Yes</label></div></td>
@@ -8280,7 +8398,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-32-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-32-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BODY</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">BODY<button type="button" onclick="vsiPassSection(33,40)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-33">
   <td style="width:42%;">Glazing for Condition</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-33" value="yes" onchange="vsiMark('vsi-33','yes')"> Yes</label></div></td>
@@ -8348,7 +8466,7 @@ init();
 <tr><td colspan="6" style="background:#0d1a2e;color:white;padding:10px 14px;font-size:12px;font-weight:700;letter-spacing:.05em;border-top:3px solid var(--teal);">
   ── PART 2 (MMS 2.4.2.3) ──────────────────────────────────────────────────
 </td></tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">SUSPENSION</td></tr><tr id="row-vsi-41">
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">SUSPENSION<button type="button" onclick="vsiPassSection(41,46)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr><tr id="row-vsi-41">
   <td style="width:42%;">Radius Rods for Condition of Joints</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-41" value="yes" onchange="vsiMark('vsi-41','yes')"> Yes</label></div></td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-41" value="no" onchange="vsiMark('vsi-41','no')"> No</label></div></td>
@@ -8396,7 +8514,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-46-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-46-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BRAKES (PART 2)</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">BRAKES (PART 2)<button type="button" onclick="vsiPassSection(47,49)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-47">
   <td style="width:42%;">Vacuum System Air Filter for Security & Cleanliness</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-47" value="yes" onchange="vsiMark('vsi-47','yes')"> Yes</label></div></td>
@@ -8421,7 +8539,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-49-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-49-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">STEERING</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">STEERING<button type="button" onclick="vsiPassSection(50,52)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-50">
   <td style="width:42%;">Steering Box for Security & Operation</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-50" value="yes" onchange="vsiMark('vsi-50','yes')"> Yes</label></div></td>
@@ -8446,7 +8564,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-52-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-52-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">GENERAL (PART 2)</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">GENERAL (PART 2)<button type="button" onclick="vsiPassSection(53,58)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-53">
   <td style="width:42%;">Engine Insulating Material for Contamination</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-53" value="yes" onchange="vsiMark('vsi-53','yes')"> Yes</label></div></td>
@@ -8495,7 +8613,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-58-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-58-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BODY (PART 2)</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">BODY (PART 2)<button type="button" onclick="vsiPassSection(59,60)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-59">
   <td style="width:42%;">Body Mounting Attachments for Security & Condition</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-59" value="yes" onchange="vsiMark('vsi-59','yes')"> Yes</label></div></td>
@@ -8512,7 +8630,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-60-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-60-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">SIGNS</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">SIGNS<button type="button" onclick="vsiPassSection(61,61)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-61">
   <td style="width:42%;">Check Quality and Condition of Legal Signs</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-61" value="yes" onchange="vsiMark('vsi-61','yes')"> Yes</label></div></td>
@@ -8521,7 +8639,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-61-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-61-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">ROAD TEST</td></tr>
+<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;"><div style="display:flex;justify-content:space-between;align-items:center;">ROAD TEST<button type="button" onclick="vsiPassSection(62,62)" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;font-weight:700;">✓ Pass all</button></div></td></tr>
 <tr id="row-vsi-62">
   <td style="width:42%;">Road Test</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-62" value="yes" onchange="vsiMark('vsi-62','yes')"> Yes</label></div></td>
