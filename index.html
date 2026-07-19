@@ -433,10 +433,13 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   position: fixed; bottom: 0; left: 0; right: 0;
   height: calc(60px + env(safe-area-inset-bottom, 0px));
   background: var(--navy);
-  display: flex; align-items: flex-start; justify-content: space-around;
+  display: none; align-items: flex-start; justify-content: space-around;
   padding: 6px 0 env(safe-area-inset-bottom, 0px);
   z-index: 300; border-top: 1px solid rgba(255,255,255,.1);
   box-shadow: 0 -2px 12px rgba(0,0,0,.2);
+}
+@media (max-width: 900px) {
+  #bottom-nav { display: flex !important; }
 }
 .bnav-btn {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -590,7 +593,6 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   #bottom-nav #bn-menu { display: flex !important; }
 
   
-  #bottom-nav { display: none !important; }
 }
 
 
@@ -9485,7 +9487,7 @@ init();
   </div>
 </div>
 <!-- MOBILE BOTTOM NAV -->
-<nav id="bottom-nav" style="display:none;">
+<nav id="bottom-nav">
   <button class="bnav-btn" onclick="mobNav('dashboard')" id="bn-dashboard">
     <span class="bnav-icon">📊</span>
     <span class="bnav-label">Home</span>
