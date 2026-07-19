@@ -640,6 +640,21 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 }
 .mob-card:active { transform: scale(.99); box-shadow: 0 1px 4px rgba(0,0,0,.05); }
 
+
+@media (max-width: 900px) {
+  .mob-new-btn {
+    width: 100%; padding: 14px; background: var(--teal); color: white;
+    border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+    margin-bottom: 14px; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  /* Hide desktop filter/search bars on mobile card pages */
+  #page-service .card, #page-parts .card, #page-mainthistory .card,
+  #page-vsi .card, #page-accident .card, #page-accquotes .card { display: none !important; }
+  /* Show calendar desktop grid hidden */
+  #page-calendar > .card { display: none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -856,7 +871,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- PARTS -->
-<div class="page" id="page-parts">
+<div class="page" id="page-parts"><div id="mob-parts-cards"><button class="mob-new-btn" onclick="openPartModal()">+ New entry</button></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Parts &amp; orders</span>
@@ -904,7 +919,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- ACCIDENT -->
-<div class="page" id="page-accident">
+<div class="page" id="page-accident"><div id="mob-acc-cards"><button class="mob-new-btn" onclick="openAccidentModal()">+ New entry</button></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Accident reports</span>
@@ -941,7 +956,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- SERVICE DUE -->
-<div class="page" id="page-service">
+<div class="page" id="page-service"><div id="mob-service-cards"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Service schedule</span>
@@ -1138,7 +1153,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- VSI COMBINED -->
-<div class="page" id="page-vsi">
+<div class="page" id="page-vsi"><div id="mob-vsi-cards"><button class="mob-new-btn" onclick="openVsiModal()">+ New entry</button></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Safety Inspection (MMS 2.4.2.2 / 2.4.2.3)</span>
@@ -1218,7 +1233,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   </div>
 </div>
 <!-- MAINTENANCE HISTORY -->
-<div class="page" id="page-mainthistory">
+<div class="page" id="page-mainthistory"><div id="mob-maint-cards"><button class="mob-new-btn" onclick="openMaintModal()">+ New entry</button></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Vehicle Safety Maintenance History Record (MMS 2.4.2.5)</span>
@@ -1371,7 +1386,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   </div>
 </div>
 <!-- ACCIDENT QUOTES -->
-<div class="page" id="page-accquotes">
+<div class="page" id="page-accquotes"><div id="mob-aq-cards"><button class="mob-new-btn" onclick="openAqModal()">+ New entry</button></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Repair Quotes &amp; Invoices</span>
@@ -1520,6 +1535,13 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 
 <!-- CALENDAR -->
 <div class="page" id="page-calendar">
+  <div id="mob-cal-wrap" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:17px;font-weight:700;color:var(--navy);">📅 Upcoming events</div>
+      <button class="btn bp" onclick="openCalModal()" style="padding:8px 16px;">+ Add</button>
+    </div>
+    <div id="mob-cal-list"></div>
+  </div>
   <div class="card" style="margin-bottom:14px;width:100%;box-sizing:border-box;">
     <!-- Header -->
     <div class="ch" style="flex-wrap:wrap;gap:8px;">
@@ -3059,6 +3081,11 @@ async function saveTask(){
 // PARTS
 // ══════════════════════════════════════════════════════════════════════════════
 function renderParts(){
+  if (isMobile()) {
+    const visible = parts.filter(p => canSeeVehicle(p.vehicleId));
+    renderMobCards('mob-parts-cards', visible, mobPartCard, 'No parts orders found');
+    return;
+  }
   const cf=document.getElementById('parts-co')?.value||'';vFilter('parts-veh',cf);
   const vf=document.getElementById('parts-veh')?.value||'',sf=document.getElementById('parts-st')?.value||'';
   const rows=parts.filter(p=>{if(!canSeeVehicle(p.vehicleId))return false;const v=fleet.find(x=>x.id===p.vehicleId);return(!cf||(v&&v.owner===cf))&&(!vf||p.vehicleId===vf)&&(!sf||p.status===sf);}).sort((a,b)=>new Date(b.orderDate)-new Date(a.orderDate));
@@ -3359,6 +3386,11 @@ async function saveDefect(){
 // ══════════════════════════════════════════════════════════════════════════════
 let accPhotos=[],accPhotoSlot=0;
 function renderAccidents(){
+  if (isMobile()) {
+    const visible = accidents.filter(a => canSeeVehicle(a.vehicleId));
+    renderMobCards('mob-acc-cards', visible, mobAccidentCard, 'No accidents found');
+    return;
+  }
   const cf=document.getElementById('acc-co')?.value||'';vFilter('acc-veh',cf);
   const vf=document.getElementById('acc-fveh')?.value||'';
   const rows=accidents.filter(a=>{if(!canSeeVehicle(a.vehicleId))return false;const v=fleet.find(x=>x.id===a.vehicleId);return(!cf||(v&&v.owner===cf))&&(!vf||a.vehicleId===vf);}).sort((a,b)=>new Date(b.dateTime)-new Date(a.dateTime));
@@ -3577,6 +3609,12 @@ function _old_fc(){
 // SERVICE DUE
 // ══════════════════════════════════════════════════════════════════════════════
 function renderService(){
+  if (isMobile()) {
+    const today_ = new Date().toISOString().slice(0,10);
+    const svcFleet = fleet.filter(v => canSeeVehicleObj(v) && v.svcDate).sort((a,b)=>(a.svcDate||'').localeCompare(b.svcDate||''));
+    renderMobCards('mob-service-cards', svcFleet, mobServiceCard, 'No service records');
+    return;
+  }
   const cf=currentCompanyFilter||(document.getElementById('svc-co')?.value||'');
   const f=document.getElementById('svc-filter')?.value||'all';
   let rows=fleet.filter(v=>canSeeVehicleObj(v)&&(!cf||v.owner===cf)).sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet));
@@ -5073,6 +5111,10 @@ function vsiPopulateVehicles() {
 }
 
 function renderVsi() {
+  if (isMobile()) {
+    renderMobCards('mob-vsi-cards', vsiHistory.filter(r=>canSeeVehicle(r.vehicleId)), mobVsiCard, 'No inspections found');
+    return;
+  }
   // Populate vehicle filter
   const vf = document.getElementById('vsi-hist-veh');
   if (vf) {
@@ -5455,6 +5497,11 @@ function spToMh(x){const f=x.fields||{};
     by:f.CarriedOutBy||'',nsDate:(f.NsDate||'').slice(0,10),nsKm:f.NsKm||''}};
 
 function renderMaintHistory(){
+  if (isMobile()) {
+    const visible = maintHistory.filter(m => canSeeVehicle(m.vehicleId));
+    renderMobCards('mob-maint-cards', visible, mobMaintCard, 'No maintenance history');
+    return;
+  }
   const vf=document.getElementById('mh-fveh');
   if(vf){
     const cur=vf.value;
@@ -6861,6 +6908,11 @@ function spToAq(x) {
 }
 
 function renderAccQuotes() {
+  if (isMobile()) {
+    const visible = accQuotes.filter(q => canSeeVehicle(q.vehicleId));
+    renderMobCards('mob-aq-cards', visible, mobAqCard, 'No repair quotes found');
+    return;
+  }
   const vf = document.getElementById('aq-fveh');
   if (vf && vf.options.length <= 1) {
     fleet.slice().sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet)).forEach(v=>{
@@ -7432,6 +7484,38 @@ function allCalEvents() {
 }
 
 function renderCalendar() {
+  if (isMobile()) {
+    // On mobile show upcoming events list only, not full grid
+    const el = document.getElementById('mob-cal-list');
+    const wrap = document.getElementById('mob-cal-wrap');
+    const grid = document.getElementById('page-calendar > .card');
+    if (wrap) wrap.style.display = 'block';
+    if (el) {
+      const nowStr = new Date().toISOString().slice(0,10);
+      const events = allCalEvents()
+        .filter(e => e.date >= nowStr)
+        .sort((a,b) => a.date.localeCompare(b.date))
+        .slice(0, 30);
+      el.innerHTML = events.length
+        ? events.map(e => {
+            const v = fleet.find(x=>x.id===e.vehicleId)||{};
+            return `<div class="mob-card" onclick="${e.source==='manual'?`openCalModal('${e.id}')`:`calEventClick('${e.id}')`}">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:14px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.title}</div>
+                  ${v.fleet?`<div style="font-size:12px;color:var(--grey-dark);margin-top:2px;">Fleet ${v.fleet}</div>`:''}
+                </div>
+                <div style="text-align:right;flex-shrink:0;">
+                  <div style="font-size:12px;font-weight:700;color:var(--navy);">${fd(e.date)}</div>
+                  <span style="background:${e.colour||'#2980b9'};color:white;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;">${e.type}</span>
+                </div>
+              </div>
+            </div>`;
+          }).join('')
+        : '<div style="padding:30px;text-align:center;color:var(--grey-dark);">No upcoming events</div>';
+      return;
+    }
+  }
   const monthLabel = new Date(calViewYear, calViewMonth, 1)
     .toLocaleDateString('en-AU', {month:'long', year:'numeric'});
   const el = document.getElementById('cal-month-label');
@@ -8451,6 +8535,134 @@ function mobTaskCard(t) {
       ${t.priority?`<span style="background:${priColor}18;color:${priColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;">${t.priority}</span>`:''}
       ${t.dateDue?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 Due ${fd(t.dateDue)}</span>`:''}
       ${t.tech?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">👤 ${t.tech}</span>`:''}
+    </div>
+  </div>`;
+}
+
+// ─── MORE MOBILE CARD VIEWS ───────────────────────────────────────────────────
+
+function mobServiceCard(v) {
+  const co = companies.find(x => x.id === v.owner) || {};
+  const d = du(v.svcDate);
+  const color = d===null?'var(--grey-dark)':d<0?'var(--red)':d<=30?'#e07b00':'var(--green)';
+  const bg = d===null?'var(--grey)':d<0?'#fdecea':d<=30?'#fff4e5':'#e8f7ee';
+  const txt = d===null?'No date':d<0?`Overdue ${Math.abs(d)} days`:d===0?'Due today':`Due in ${d} days`;
+  return `<div class="mob-card" onclick="editVehicle('${v.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">Fleet ${v.fleet||'?'} — ${v.rego||'—'}</div>
+        <div style="font-size:13px;color:var(--grey-dark);margin-top:2px;">${v.make||'—'} · ${co.name||'—'}</div>
+      </div>
+      <span style="background:${bg};color:${color};font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;flex-shrink:0;">${txt}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      ${v.svcDate?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 ${fd(v.svcDate)}</span>`:''}
+      ${v.odo?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📏 ${Number(v.odo).toLocaleString()} km</span>`:''}
+      ${v.svcKm?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">🔧 Service @ ${Number(v.svcKm).toLocaleString()} km</span>`:''}
+    </div>
+  </div>`;
+}
+
+function mobPartCard(p) {
+  const v = fleet.find(x => x.id === p.vehicleId) || {};
+  const stBg = p.status==='On order'?'#fff4e5':p.status==='Received'?'#e8f7ee':'var(--grey)';
+  const stCol = p.status==='On order'?'#e07b00':p.status==='Received'?'var(--green)':'var(--grey-dark)';
+  return `<div class="mob-card" onclick="openPartModal('${p.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">${p.invoice||p.id?.slice(-6)||'—'}</div>
+        <div style="font-size:13px;color:var(--grey-dark);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.desc||'—'}</div>
+      </div>
+      <span style="background:${stBg};color:${stCol};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;">${p.status||'—'}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      ${v.fleet?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">🚌 Fleet ${v.fleet}</span>`:''}
+      ${p.supplier?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">🏢 ${p.supplier}</span>`:''}
+      ${p.cost?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">💲 $${parseFloat(p.cost).toFixed(2)}</span>`:''}
+      ${p.orderDate?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 ${fd(p.orderDate)}</span>`:''}
+    </div>
+  </div>`;
+}
+
+function mobMaintCard(m) {
+  const v = fleet.find(x => x.id === m.vehicleId) || {};
+  return `<div class="mob-card" onclick="editMaint('${m.id}')">
+    <div>
+      <div style="font-size:15px;font-weight:700;color:var(--navy);">Fleet ${v.fleet||'?'} — ${v.rego||'—'}</div>
+      <div style="font-size:13px;color:var(--grey-dark);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.desc||'—'}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 ${fd(m.date)||'—'}</span>
+      ${m.odo?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📏 ${Number(m.odo).toLocaleString()} km</span>`:''}
+      ${m.by?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">👤 ${m.by}</span>`:''}
+    </div>
+  </div>`;
+}
+
+function mobVsiCard(r) {
+  const v = fleet.find(x => x.id === r.vehicleId) || {};
+  const items = r.items || {};
+  const total = Object.keys(items).length;
+  const failed = Object.values(items).filter(x => (x.val||x)==='no'||x==='fail').length;
+  const stBg = failed===0?'#e8f7ee':'#fdecea';
+  const stCol = failed===0?'var(--green)':'var(--red)';
+  const stTxt = failed===0?'✅ Pass':`⚠️ ${failed} failed`;
+  return `<div class="mob-card" onclick="openVsiModal('${r.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">Fleet ${v.fleet||r.fleetNum||'?'} — ${v.rego||r.rego||'—'}</div>
+        <div style="font-size:13px;color:var(--grey-dark);margin-top:2px;">${r.inspector||'—'}</div>
+      </div>
+      <span style="background:${stBg};color:${stCol};font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;flex-shrink:0;">${stTxt}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 ${fd(r.date)||'—'}</span>
+      ${r.nextDue?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">🔜 Next: ${fd(r.nextDue)}</span>`:''}
+      ${r.odo?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📏 ${Number(r.odo).toLocaleString()} km</span>`:''}
+    </div>
+  </div>`;
+}
+
+function mobAccidentCard(a) {
+  const v = fleet.find(x => x.id === a.vehicleId) || {};
+  return `<div class="mob-card" onclick="editAccident('${a.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">${a.refNum||'—'} — Fleet ${v.fleet||'?'} ${v.rego||''}</div>
+        <div style="font-size:13px;color:var(--grey-dark);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.location||a.desc||'—'}</div>
+      </div>
+      <span style="background:${a.atFault==='Yes'?'#fdecea':'#e8f7ee'};color:${a.atFault==='Yes'?'var(--red)':'var(--green)'};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;">${a.atFault==='Yes'?'At fault':'Not at fault'}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 ${fd((a.dateTime||'').slice(0,10))||'—'}</span>
+      ${a.driver?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">👤 ${a.driver}</span>`:''}
+      ${a.claimNum?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📋 ${a.claimNum}</span>`:''}
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn sm bt" onclick="event.stopPropagation();accidentToQuote('${a.id}')" style="width:100%;">→ Repair Quote</button>
+    </div>
+  </div>`;
+}
+
+function mobAqCard(q) {
+  const v = fleet.find(x => x.id === q.vehicleId) || {};
+  const stBg = q.status==='Paid'?'#e8f7ee':q.status==='Invoice received'?'#e8f5f4':'#fff4e5';
+  const stCol = q.status==='Paid'?'var(--green)':q.status==='Invoice received'?'var(--teal)':'#e07b00';
+  const total = ((q.rrRows||[]).reduce((s,r)=>s+(parseFloat(r[2])||0)*(parseFloat(r[3])||0),0)
+    +(q.repairRows||[]).reduce((s,r)=>s+(parseFloat(r[2])||0)*(parseFloat(r[3])||0),0)
+    +(q.paintRows||[]).reduce((s,r)=>s+(parseFloat(r[1])||0),0)
+    +(q.otherRows||[]).reduce((s,r)=>s+(parseFloat(r[1])||0),0));
+  return `<div class="mob-card" onclick="openAqModal('${q.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">${q.refNum||'—'} — Fleet ${v.fleet||'?'} ${v.rego||''}</div>
+        <div style="font-size:13px;color:var(--grey-dark);margin-top:2px;">${q.repairer||'—'}</div>
+      </div>
+      <span style="background:${stBg};color:${stCol};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;">${q.status||'—'}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      ${q.qDate?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 ${fd(q.qDate)}</span>`:''}
+      ${total>0?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">💲 $${total.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`:''}
     </div>
   </div>`;
 }
