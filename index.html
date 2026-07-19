@@ -596,6 +596,24 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   #bottom-nav { display: none !important; }
 }
 
+
+@media (max-width: 900px) {
+  .header { padding: 0 12px !important; height: 48px !important; }
+  .hbrand { gap: 8px !important; }
+  .hlogo { width: 32px !important; height: 32px !important; font-size: 13px !important; flex-shrink: 0; }
+  .hbrand > div > div:first-child { font-size: 13px !important; }
+  .hbrand > div > div:last-child { display: none !important; }
+  #role-badge { display: none !important; }
+  #role-preview-wrap { display: none !important; }
+  #todo-sync-btn { display: none !important; }
+  #company-filter-badge { display: none !important; }
+  #header-right { gap: 8px !important; }
+  #auth-dot { width: 8px !important; height: 8px !important; }
+  #auth-btn { font-size: 11px !important; padding: 4px 10px !important; }
+  .sb-toggle { display: none !important; }
+  .shell { margin-top: 48px !important; }
+}
+
 </style>
 </head>
 <body>
@@ -624,7 +642,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
       <div style="font-size:11px;opacity:.55;margin-top:1px;">Moonee Valley Bus Lines</div>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px;">
+  <div style="display:flex;align-items:center;gap:6px;" id="header-right">
     <span id="role-badge" style="display:none;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;"></span>
     <span id="role-preview-wrap" style="display:none;align-items:center;gap:6px;">
       <span style="font-size:11px;color:rgba(255,255,255,.5);">Preview as:</span>
@@ -2817,6 +2835,13 @@ function populateAllFilters(){
 function activePage(){const a=document.querySelector('.page.active');return a?a.id.replace('page-',''):'dashboard';}
 function showPage(name,tab){
   updateBottomNav(name);
+  // On mobile, ensure dashboard shows mob version
+  if (isMobile() && name === 'dashboard') {
+    const mob = document.getElementById('mob-dashboard');
+    const desk = document.getElementById('desk-dashboard');
+    if (mob) mob.style.display = 'block';
+    if (desk) desk.style.display = 'none';
+  }
   if(connected && !canAccess(name)){showSt('warn','You do not have permission to access that page.');return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
@@ -7657,12 +7682,14 @@ function vehDetails(vehicleId) {
 
 // ─── MOBILE BOTTOM NAV & QUICK CAPTURE ────────────────────────────────────────
 function updateBottomNav(pageName) {
-  // Highlight active bottom nav button
-  const map = { dashboard:'bn-dashboard', fleet:'bn-fleet', jobcards:'bn-jobcards' };
+  const map = {
+    dashboard:'bn-dashboard', fleet:'bn-fleet',
+    jobcards:'bn-jobcards', defects:'bn-jobcards'
+  };
   document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-  const active = map[pageName];
-  if (active) {
-    const el = document.getElementById(active);
+  const activeId = map[pageName];
+  if (activeId) {
+    const el = document.getElementById(activeId);
     if (el) el.classList.add('active');
   }
 }
@@ -8092,8 +8119,7 @@ function closeMobMenu() {
 }
 function mobNav(page) {
   closeMobMenu();
-  const navEl = document.querySelector(`.nt[onclick*="'${page}'"]`);
-  showPage(page, navEl);
+  showPage(page, null);
 }
 
 // Render mobile dashboard
@@ -9456,11 +9482,11 @@ init();
 </div>
 <!-- MOBILE BOTTOM NAV -->
 <nav id="bottom-nav" style="display:none;">
-  <button class="bnav-btn" onclick="showPage('dashboard',document.querySelector('.nt[onclick*=\'dashboard\']'))" id="bn-dashboard">
+  <button class="bnav-btn" onclick="mobNav('dashboard')" id="bn-dashboard">
     <span class="bnav-icon">📊</span>
     <span class="bnav-label">Home</span>
   </button>
-  <button class="bnav-btn" onclick="showPage('fleet',document.querySelector('.nt[onclick*=\'fleet\']'))" id="bn-fleet">
+  <button class="bnav-btn" onclick="mobNav('fleet')" id="bn-fleet">
     <span class="bnav-icon">🚌</span>
     <span class="bnav-label">Fleet</span>
   </button>
@@ -9468,7 +9494,7 @@ init();
     <span class="bnav-icon" style="font-size:26px;">⚡</span>
     <span class="bnav-label">Quick</span>
   </button>
-  <button class="bnav-btn" onclick="showPage('jobcards',document.querySelector('.nt[onclick*=\'jobcards\']'))" id="bn-jobcards">
+  <button class="bnav-btn" onclick="mobNav('jobcards')" id="bn-jobcards">
     <span class="bnav-icon">🔧</span>
     <span class="bnav-label">Jobs</span>
   </button>
