@@ -588,6 +588,15 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   #sb-overlay { display: none !important; }
   .sb-toggle { display: none !important; }
   #bottom-nav #bn-menu { display: flex !important; }
+
+  /* Hide desktop table card on pages that have mobile card views */
+  #page-defects > .card,
+  #page-jobcards > .card,
+  #page-fleet > .card { display: none !important; }
+  /* But keep add/filter bar visible */
+  #page-defects > .card:first-of-type,
+  #page-jobcards > .card:first-of-type,
+  #page-fleet > .card:first-of-type { display: block !important; }
 }
 
 @media (min-width: 901px) {
@@ -612,6 +621,17 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   #auth-btn { font-size: 11px !important; padding: 4px 10px !important; }
   .sb-toggle { display: none !important; }
   .shell { margin-top: 48px !important; }
+}
+
+
+/* Mobile card list - hidden on desktop, shown on mobile */
+.mob-card-list { display: none; }
+@media (max-width: 900px) {
+  .mob-card-list { display: block; }
+  /* Hide desktop table views on mobile for card pages */
+  #page-defects .card:not(:first-child),
+  #page-jobcards .card:not(:first-child),
+  #page-fleet .card:not(:first-child) { display: block; }
 }
 
 </style>
@@ -845,7 +865,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- JOB CARDS -->
-<div class="page" id="page-jobcards"><div id="mob-jc-cards" class="mob-card-list" style="display:none;padding:0;"></div>
+<div class="page" id="page-jobcards"><div id="mob-jc-cards" class="mob-card-list" style="padding:0;"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Job cards</span>
@@ -861,7 +881,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- DEFECTS -->
-<div class="page" id="page-defects"><div id="mob-defect-cards" class="mob-card-list" style="display:none;padding:0;"></div>
+<div class="page" id="page-defects"><div id="mob-defect-cards" class="mob-card-list" style="padding:0;"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Defect notices</span>
@@ -8236,12 +8256,7 @@ function renderMobDefectCards() {
   if (!isMobile()) return;
   const container = document.getElementById('mob-defect-cards');
   if (!container) return;
-  container.style.display = 'block';
-  // Hide table on mobile
-  const tw = document.querySelector('#page-defects .tw');
-  if (tw) tw.style.display = 'none';
-  const ch = document.querySelector('#page-defects .card > .ch');
-  if (ch) ch.style.display = 'none';
+
   const visible = defects.filter(d => canSeeVehicle(d.vehicleId)).slice(0, 20);
   container.innerHTML = visible.map(d => {
     const v = fleet.find(x => x.id === d.vehicleId) || {};
@@ -8269,7 +8284,6 @@ function renderMobJobCards() {
   if (!isMobile()) return;
   const container = document.getElementById('mob-jc-cards');
   if (!container) return;
-  container.style.display = 'block';
   const visible = jobCards.filter(j => canSeeVehicle(j.vehicleId)).slice(0, 20);
   container.innerHTML = visible.map(j => {
     const v = fleet.find(x => x.id === j.vehicleId) || {};
@@ -8296,7 +8310,6 @@ function renderMobFleetCards() {
   if (!isMobile()) return;
   const container = document.getElementById('mob-fleet-cards');
   if (!container) return;
-  container.style.display = 'block';
   const visible = fleet.filter(v => canSeeVehicleObj(v));
   container.innerHTML = visible.map(v => {
     const co = companies.find(x => x.id === v.owner) || {};
