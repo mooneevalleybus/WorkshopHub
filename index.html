@@ -627,6 +627,19 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   .mob-card-list { display: none !important; }
 }
 
+
+/* Mobile cards */
+.mob-card {
+  background: white;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+  cursor: pointer;
+  transition: transform .1s, box-shadow .1s;
+}
+.mob-card:active { transform: scale(.99); box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+
 </style>
 </head>
 <body>
@@ -809,7 +822,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div><!-- /desk-dashboard -->
 
 <!-- FLEET -->
-<div class="page" id="page-fleet"><div id="mob-fleet-cards" class="mob-card-list" style="display:none;padding:0;"></div>
+<div class="page" id="page-fleet"><div id="mob-fleet-cards"></div><div id="mob-fleet-cards" class="mob-card-list" style="display:none;padding:0;"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Fleet register</span>
@@ -827,7 +840,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- TASKS -->
-<div class="page" id="page-tasks">
+<div class="page" id="page-tasks"><div id="mob-task-cards"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Task log</span>
@@ -859,7 +872,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- JOB CARDS -->
-<div class="page" id="page-jobcards"><div id="mob-jc-cards" class="mob-card-list" style="padding:0;"></div>
+<div class="page" id="page-jobcards"><div id="mob-jc-cards"></div><div id="mob-jc-cards" class="mob-card-list" style="padding:0;"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Job cards</span>
@@ -875,7 +888,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- DEFECTS -->
-<div class="page" id="page-defects"><div id="mob-defect-cards" class="mob-card-list" style="padding:0;"></div>
+<div class="page" id="page-defects"><div id="mob-defect-cards"></div><div id="mob-defect-cards" class="mob-card-list" style="padding:0;"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Defect notices</span>
@@ -2950,6 +2963,11 @@ function renderDash(){
 }
 
 function renderFleet(){
+  if (isMobile()) {
+    const visible = fleet.filter(v => canSeeVehicleObj(v));
+    renderMobCards('mob-fleet-cards', visible, mobFleetCard, 'No vehicles found');
+    return;
+  }
   const s=(document.getElementById('fleet-search')?.value||'').toLowerCase();
   const cf=document.getElementById('fleet-co')?.value||'';
   const rows=fleet.filter(v=>canSeeVehicleObj(v)&&(!cf||v.owner===cf)&&(!s||(v.fleet||'').includes(s)||(v.rego||'').toLowerCase().includes(s)||(v.make||'').toLowerCase().includes(s))).sort((a,b)=>{const na=parseInt(a.fleet),nb=parseInt(b.fleet);const va=isNaN(na)?Infinity:na,vb=isNaN(nb)?Infinity:nb;if(va!==vb)return va-vb;return(a.fleet||'').localeCompare(b.fleet||'');});
@@ -2995,6 +3013,11 @@ function populateOwner(selId,sel){const el=document.getElementById(selId);if(!el
 // TASKS
 // ══════════════════════════════════════════════════════════════════════════════
 function renderTasks(){
+  if (isMobile()) {
+    const visible = tasks.filter(t => canSeeVehicle(t.vehicleId));
+    renderMobCards('mob-task-cards', visible, mobTaskCard, 'No tasks found');
+    return;
+  }
   const cf=document.getElementById('task-co')?.value||'';
   vFilter('task-veh',cf);
   const vf=document.getElementById('task-veh')?.value||'';
@@ -3073,6 +3096,11 @@ async function savePart(){
 // JOB CARDS
 // ══════════════════════════════════════════════════════════════════════════════
 function renderJobCards(){
+  if (isMobile()) {
+    const visible = jobCards.filter(j => canSeeVehicle(j.vehicleId));
+    renderMobCards('mob-jc-cards', visible, mobJobCard, 'No job cards found');
+    return;
+  }
   const cf=document.getElementById('jc-co')?.value||'';vFilter('jc-veh',cf);
   const vf=document.getElementById('jc-fveh')?.value||'',sf=document.getElementById('jc-st')?.value||'';
   const rows=jobCards.filter(j=>{if(!canSeeVehicle(j.vehicleId))return false;const v=fleet.find(x=>x.id===j.vehicleId);return(!cf||(v&&v.owner===cf))&&(!vf||j.vehicleId===vf)&&(!sf||j.status===sf);}).sort((a,b)=>new Date(b.dateIn)-new Date(a.dateIn));
@@ -3284,6 +3312,11 @@ async function printJobCardId(id){
 // DEFECTS
 // ══════════════════════════════════════════════════════════════════════════════
 function renderDefects(){
+  if (isMobile()) {
+    const visible = defects.filter(d => canSeeVehicle(d.vehicleId));
+    renderMobCards('mob-defect-cards', visible, mobDefectCard, 'No defects found');
+    return;
+  }
   const cf=document.getElementById('def-co')?.value||'';vFilter('def-veh',cf);
   const vf=document.getElementById('def-fveh')?.value||'',sf=document.getElementById('def-st')?.value||'';
   const rows=defects.filter(d=>{if(!canSeeVehicle(d.vehicleId))return false;const v=fleet.find(x=>x.id===d.vehicleId);return(!cf||(v&&v.owner===cf))&&(!vf||d.vehicleId===vf)&&(!sf||d.status===sf);}).sort((a,b)=>new Date(b.dateReported)-new Date(a.dateReported));
@@ -8322,6 +8355,104 @@ function renderMobFleetCards() {
       </div>
     </div>`;
   }).join('') || '<div style="padding:20px;text-align:center;color:var(--grey-dark);">No vehicles found</div>';
+}
+
+// ─── MOBILE CARD VIEWS ────────────────────────────────────────────────────────
+
+function renderMobCards(containerId, items, renderFn, emptyMsg) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = items.length
+    ? items.map(renderFn).join('')
+    : `<div style="padding:30px;text-align:center;color:var(--grey-dark);font-size:14px;">${emptyMsg}</div>`;
+}
+
+function mobDefectCard(d) {
+  const v = fleet.find(x => x.id === d.vehicleId) || {};
+  const sevColor = d.severity==='Safety critical'?'#c0392b':d.severity==='Major'?'#e07b00':'#1e8a50';
+  const stBg = d.status==='Cleared'?'#e8f7ee':'#fdecea';
+  const stCol = d.status==='Cleared'?'var(--green)':'var(--red)';
+  return `<div class="mob-card" onclick="editDefect('${d.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">${d.refNum||'—'} — Fleet ${v.fleet||'?'} ${v.rego||''}</div>
+        <div style="font-size:13px;color:var(--grey-dark);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.desc||'—'}</div>
+      </div>
+      <span style="background:${stBg};color:${stCol};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;">${d.status}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <span style="background:${sevColor}18;color:${sevColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;">${d.severity||'Minor'}</span>
+      <span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 ${fd(d.dateReported)||'—'}</span>
+      ${d.reportedBy?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">👤 ${d.reportedBy}</span>`:''}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="btn sm bt" onclick="event.stopPropagation();defectToJobCard('${d.id}')" style="flex:1;">→ Job Card</button>
+      <button class="btn sm bprint" onclick="event.stopPropagation();printDefectId('${d.id}')" style="flex:1;">Print</button>
+    </div>
+  </div>`;
+}
+
+function mobJobCard(j) {
+  const v = fleet.find(x => x.id === j.vehicleId) || {};
+  const stBg = j.status==='Complete'?'#e8f7ee':j.status==='In progress'?'#e8f5f4':'var(--grey)';
+  const stCol = j.status==='Complete'?'var(--green)':j.status==='In progress'?'var(--teal)':'var(--grey-dark)';
+  return `<div class="mob-card" onclick="openJobCardModal('${j.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">${j.jobNum||'—'} — Fleet ${v.fleet||'?'} ${v.rego||''}</div>
+        <div style="font-size:13px;color:var(--grey-dark);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${j.desc||'—'}</div>
+      </div>
+      <span style="background:${stBg};color:${stCol};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;">${j.status}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      ${j.tech?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">🔧 ${j.tech}</span>`:''}
+      <span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 ${fd(j.dateIn)||'—'}</span>
+      ${j.odo?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📏 ${Number(j.odo).toLocaleString()} km</span>`:''}
+    </div>
+  </div>`;
+}
+
+function mobFleetCard(v) {
+  const co = companies.find(x => x.id === v.owner) || {};
+  const d = du(v.svcDate);
+  const svcColor = d===null?'var(--grey-dark)':d<0?'var(--red)':d<=30?'#e07b00':'var(--green)';
+  const svcText = d===null?'No date':d<0?`Overdue ${Math.abs(d)}d`:d===0?'Due today':`Due ${d}d`;
+  const svcBg = d===null?'var(--grey)':d<0?'#fdecea':d<=30?'#fff4e5':'#e8f7ee';
+  return `<div class="mob-card" onclick="editVehicle('${v.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--navy);">Fleet ${v.fleet||'?'} — ${v.rego||'—'}</div>
+        <div style="font-size:13px;color:var(--grey-dark);margin-top:2px;">${v.make||'—'} · ${co.name||'—'}</div>
+      </div>
+      <span style="background:${svcBg};color:${svcColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;text-align:right;">${svcText}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      ${v.odo?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📏 ${Number(v.odo).toLocaleString()} km</span>`:''}
+      ${v.year?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📆 ${v.year}</span>`:''}
+      ${v.svcDate?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">🔧 ${fd(v.svcDate)}</span>`:''}
+    </div>
+  </div>`;
+}
+
+function mobTaskCard(t) {
+  const v = fleet.find(x => x.id === t.vehicleId) || {};
+  const priColor = t.priority==='Urgent'?'#c0392b':t.priority==='High'?'#e07b00':'var(--teal)';
+  const stBg = t.status==='Done'?'#e8f7ee':t.status==='In progress'?'#e8f5f4':'var(--grey)';
+  const stCol = t.status==='Done'?'var(--green)':t.status==='In progress'?'var(--teal)':'var(--grey-dark)';
+  return `<div class="mob-card" onclick="editTask('${t.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.desc||'—'}</div>
+        <div style="font-size:12px;color:var(--grey-dark);margin-top:2px;">Fleet ${v.fleet||'?'} ${v.rego||''}</div>
+      </div>
+      <span style="background:${stBg};color:${stCol};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0;">${t.status}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      ${t.priority?`<span style="background:${priColor}18;color:${priColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;">${t.priority}</span>`:''}
+      ${t.dateDue?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">📅 Due ${fd(t.dateDue)}</span>`:''}
+      ${t.tech?`<span style="background:var(--grey);color:var(--navy);font-size:11px;padding:3px 8px;border-radius:8px;">👤 ${t.tech}</span>`:''}
+    </div>
+  </div>`;
 }
 
 async function init(){
