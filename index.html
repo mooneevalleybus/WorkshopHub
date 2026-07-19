@@ -491,6 +491,111 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   table.mc td, table.mc th { font-size: 12px !important; padding: 6px 4px !important; }
 }
 
+
+/* ── MOBILE APP LAYOUT ───────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+
+  /* Mobile dashboard */
+  .mob-dash { display: block !important; }
+  .desk-dash { display: none !important; }
+
+  /* Action buttons grid */
+  .mob-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .mob-action-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; background: white; border: none; border-radius: 16px;
+    padding: 20px 12px; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    transition: transform .1s, box-shadow .1s;
+    text-decoration: none; color: var(--navy);
+  }
+  .mob-action-btn:active { transform: scale(.97); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .mob-action-icon { font-size: 32px; line-height: 1; }
+  .mob-action-label { font-size: 13px; font-weight: 700; color: var(--navy); text-align: center; }
+  .mob-action-btn.accent { background: var(--teal); }
+  .mob-action-btn.accent .mob-action-label { color: white; }
+
+  /* Alert strip */
+  .mob-alerts {
+    border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
+    font-size: 13px; font-weight: 600;
+  }
+  .mob-alert-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.06);
+    cursor: pointer;
+  }
+  .mob-alert-item:last-child { border-bottom: none; }
+
+  /* Recent activity feed */
+  .mob-feed { background: white; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.08); margin-bottom: 14px; }
+  .mob-feed-header { padding: 14px 16px 10px; font-weight: 700; font-size: 14px;
+    color: var(--navy); border-bottom: 1px solid var(--grey-b); }
+  .mob-feed-item { padding: 12px 16px; border-bottom: 1px solid var(--grey-b);
+    cursor: pointer; display: flex; align-items: center; gap: 12px; }
+  .mob-feed-item:last-child { border-bottom: none; }
+  .mob-feed-item:active { background: var(--grey); }
+  .mob-feed-icon { font-size: 20px; flex-shrink: 0; }
+  .mob-feed-text { flex: 1; min-width: 0; }
+  .mob-feed-title { font-size: 13px; font-weight: 600; color: var(--navy);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mob-feed-sub { font-size: 11px; color: var(--grey-dark); margin-top: 2px; }
+  .mob-feed-badge { flex-shrink: 0; }
+
+  /* Card views for lists */
+  .mob-card-list { display: block !important; }
+  .mob-hide-table .tw { display: none !important; }
+  .mob-card { background: white; border-radius: 14px; padding: 14px 16px;
+    margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    cursor: pointer; transition: transform .1s; }
+  .mob-card:active { transform: scale(.99); }
+  .mob-card-header { display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; }
+  .mob-card-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .mob-card-sub { font-size: 12px; color: var(--grey-dark); margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mob-card-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .mob-card-pill { font-size: 11px; padding: 3px 8px; border-radius: 10px;
+    background: var(--grey); color: var(--navy); font-weight: 600; }
+
+  /* Full screen menu overlay */
+  #mob-menu-overlay {
+    display: none; position: fixed; inset: 0; background: var(--navy);
+    z-index: 400; overflow-y: auto; padding: 0 0 80px;
+  }
+  #mob-menu-overlay.show { display: block; }
+  .mob-menu-header { display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .mob-menu-title { color: white; font-size: 17px; font-weight: 700; }
+  .mob-menu-close { background: rgba(255,255,255,.1); border: none; color: white;
+    font-size: 20px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
+  .mob-menu-section { padding: 16px 20px 4px; font-size: 11px; font-weight: 700;
+    color: rgba(255,255,255,.4); letter-spacing: .08em; text-transform: uppercase; }
+  .mob-menu-item { display: flex; align-items: center; gap: 14px; padding: 14px 20px;
+    color: white; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .mob-menu-item:active { background: rgba(255,255,255,.08); }
+  .mob-menu-item-icon { font-size: 20px; width: 28px; text-align: center; }
+  .mob-menu-item-label { font-size: 15px; font-weight: 500; }
+
+  /* Hide desktop elements on mobile */
+  .sidebar { display: none !important; }
+  #sb-overlay { display: none !important; }
+  .sb-toggle { display: none !important; }
+  #bottom-nav #bn-menu { display: flex !important; }
+}
+
+@media (min-width: 901px) {
+  .mob-dash { display: none !important; }
+  #mob-menu-overlay { display: none !important; }
+  #bottom-nav { display: none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -536,7 +641,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
     <span id="company-filter-badge" style="display:none;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;background:var(--amber);color:white;"></span>
     <span id="last-saved" style="font-size:11px;color:rgba(255,255,255,.45);"></span>
     <span id="auth-dot" style="width:8px;height:8px;border-radius:50%;background:#6b7280;" title="Not connected"></span>
-    <button class="btn sm" id="auth-btn" style="background:rgba(255,255,255,.15);color:white;font-size:12px;" onclick="toggleAuth()">Sign in</button>
+    <button class="btn sm" id="todo-sync-btn" onclick="pushAllToTodo()" title="Sync with Microsoft To Do" style="background:rgba(255,255,255,.1);color:white;font-size:12px;display:none;">📋 Sync</button> <button class="btn sm" id="auth-btn" style="background:rgba(255,255,255,.15);color:white;font-size:12px;" onclick="toggleAuth()">Sign in</button>
   </div>
 </div><div class="shell">
 <div id="preview-banner" style="display:none;background:var(--amber);color:white;text-align:center;padding:7px 16px;font-size:12px;font-weight:600;position:sticky;top:52px;z-index:40;">
@@ -629,6 +734,37 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
     <button class="btn bw" onclick="runMigration()">Migrate to SharePoint</button>
     <button class="btn sm bs" onclick="getElementById('mig-banner').style.display='none'">Dismiss</button>
   </div>
+  <!-- MOBILE DASHBOARD -->
+  <div class="mob-dash" id="mob-dashboard" style="display:none;">
+    <!-- Action buttons -->
+    <div class="mob-actions">
+      <button class="mob-action-btn accent" onclick="showPage('pretrip',null)">
+        <span class="mob-action-icon">🚦</span>
+        <span class="mob-action-label">Pre-Trip</span>
+      </button>
+      <button class="mob-action-btn" onclick="openDefectModal()">
+        <span class="mob-action-icon">⚠️</span>
+        <span class="mob-action-label">Report Defect</span>
+      </button>
+      <button class="mob-action-btn" onclick="openJobCardModal()">
+        <span class="mob-action-icon">🔧</span>
+        <span class="mob-action-label">Job Card</span>
+      </button>
+      <button class="mob-action-btn" onclick="openAccidentModal()">
+        <span class="mob-action-icon">🚨</span>
+        <span class="mob-action-label">Accident</span>
+      </button>
+    </div>
+    <!-- Alert strip -->
+    <div id="mob-alerts" class="mob-alerts" style="background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);"></div>
+    <!-- Recent activity feed -->
+    <div class="mob-feed">
+      <div class="mob-feed-header">Recent activity</div>
+      <div id="mob-feed-list"></div>
+    </div>
+  </div>
+
+  <div class="desk-dash" id="desk-dashboard">
   <div class="tiles" id="dash-tiles"></div>
   <div id="dash-quick"></div>
   <div id="dash-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
@@ -641,7 +777,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- FLEET -->
-<div class="page" id="page-fleet">
+<div class="page" id="page-fleet"><div id="mob-fleet-cards" class="mob-card-list" style="display:none;padding:0;"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Fleet register</span>
@@ -691,7 +827,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- JOB CARDS -->
-<div class="page" id="page-jobcards">
+<div class="page" id="page-jobcards"><div id="mob-jc-cards" class="mob-card-list" style="display:none;padding:0;"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Job cards</span>
@@ -707,7 +843,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 </div>
 
 <!-- DEFECTS -->
-<div class="page" id="page-defects">
+<div class="page" id="page-defects"><div id="mob-defect-cards" class="mob-card-list" style="display:none;padding:0;"></div>
   <div class="card">
     <div class="ch">
       <span class="ct">Defect notices</span>
@@ -1336,6 +1472,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
       <button class="btn bp" style="margin-left:auto;" onclick="saveAccQuote()">💾 Save</button>
     </div>
   </div>
+</div><!-- /desk-dashboard -->
 </div>
 
 <!-- CALENDAR -->
@@ -2458,6 +2595,7 @@ function updateAuthUI(on){
   document.getElementById('auth-dot').style.background=on?'#1e8a50':'#6b7280';
   document.getElementById('auth-dot').title=on?'Connected to SharePoint':'Not connected';
   document.getElementById('auth-btn').textContent=on?'Sign out':'Sign in';
+  const tsb=document.getElementById('todo-sync-btn');if(tsb)tsb.style.display=on?'inline-block':'none';
   const ls=document.getElementById('login-screen');
   const vis=on?'visible':'hidden';
   if(ls)ls.style.display=on?'none':'flex';
@@ -2566,6 +2704,8 @@ async function loadAll(){
     await loadUserRole();
     renderPage(activePage());
     checkMigration();
+    // Sync with Microsoft To Do in background (don't block UI)
+    setTimeout(() => pushAllToTodo(), 2000);
   }catch(e){showSt('err','Load failed: '+e.message);console.error(e);}
 }
 
@@ -2686,7 +2826,7 @@ function showPage(name,tab){
 }
 function renderPage(name){
   populateAllFilters();
-  if(name==='dashboard')renderDash();
+  if(name==='dashboard'){renderDash();if(isMobile())renderMobDash();}
   else if(name==='fleet')renderFleet();
   else if(name==='tasks')renderTasks();
   else if(name==='parts')renderParts();
@@ -2772,7 +2912,7 @@ function renderDash(){
   }
 }
 
-function renderFleet(){
+function renderFleet(){if(isMobile()){renderMobFleetCards();}
   const s=(document.getElementById('fleet-search')?.value||'').toLowerCase();
   const cf=document.getElementById('fleet-co')?.value||'';
   const rows=fleet.filter(v=>canSeeVehicleObj(v)&&(!cf||v.owner===cf)&&(!s||(v.fleet||'').includes(s)||(v.rego||'').toLowerCase().includes(s)||(v.make||'').toLowerCase().includes(s))).sort((a,b)=>{const na=parseInt(a.fleet),nb=parseInt(b.fleet);const va=isNaN(na)?Infinity:na,vb=isNaN(nb)?Infinity:nb;if(va!==vb)return va-vb;return(a.fleet||'').localeCompare(b.fleet||'');});
@@ -2851,7 +2991,7 @@ async function saveTask(){
     catch(e){console.error('Photo upload skipped:',e.message);taskPhotos=taskPhotosRaw;}
   }
   const t={id,spId,vehicleId:g('t-veh'),desc:g('t-desc'),priority:g('t-pri'),status:g('t-st'),dateLogged:g('t-dlog'),dateDone:g('t-ddone'),tech:g('t-tech'),odo:g('t-odo'),notes:g('t-notes'),photos:taskPhotos,docsUploaded:getDocs('t-docs-uploaded')};
-  try{if(connected){const f=tToSp(t);if(spId){await updateItem(CFG.L_TASKS,spId,f);}else{const c=await createItem(CFG.L_TASKS,f);t.spId=String(c.id);t.id=String(c.id);}}const i=tasks.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)tasks[i]=t;else tasks.push(t);updSaved();closeModal('m-task');renderTasks();}catch(e){showSt('err','Save failed: '+e.message);}
+  try{if(connected){const f=tToSp(t);if(spId){await updateItem(CFG.L_TASKS,spId,f);}else{const c=await createItem(CFG.L_TASKS,f);t.spId=String(c.id);t.id=String(c.id);}}const i=tasks.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)tasks[i]=t;else tasks.push(t);updSaved();closeModal('m-task');renderTasks();syncTaskToTodo(t).catch(e=>console.warn('To Do sync:',e.message));}catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save task';
 }
 
@@ -2895,7 +3035,7 @@ async function savePart(){
 // ══════════════════════════════════════════════════════════════════════════════
 // JOB CARDS
 // ══════════════════════════════════════════════════════════════════════════════
-function renderJobCards(){
+function renderJobCards(){if(isMobile()){renderMobJobCards();}
   const cf=document.getElementById('jc-co')?.value||'';vFilter('jc-veh',cf);
   const vf=document.getElementById('jc-fveh')?.value||'',sf=document.getElementById('jc-st')?.value||'';
   const rows=jobCards.filter(j=>{if(!canSeeVehicle(j.vehicleId))return false;const v=fleet.find(x=>x.id===j.vehicleId);return(!cf||(v&&v.owner===cf))&&(!vf||j.vehicleId===vf)&&(!sf||j.status===sf);}).sort((a,b)=>new Date(b.dateIn)-new Date(a.dateIn));
@@ -3106,7 +3246,7 @@ async function printJobCardId(id){
 // ══════════════════════════════════════════════════════════════════════════════
 // DEFECTS
 // ══════════════════════════════════════════════════════════════════════════════
-function renderDefects(){
+function renderDefects(){if(isMobile()){renderMobDefectCards();}
   const cf=document.getElementById('def-co')?.value||'';vFilter('def-veh',cf);
   const vf=document.getElementById('def-fveh')?.value||'',sf=document.getElementById('def-st')?.value||'';
   const rows=defects.filter(d=>{if(!canSeeVehicle(d.vehicleId))return false;const v=fleet.find(x=>x.id===d.vehicleId);return(!cf||(v&&v.owner===cf))&&(!vf||d.vehicleId===vf)&&(!sf||d.status===sf);}).sort((a,b)=>new Date(b.dateReported)-new Date(a.dateReported));
@@ -3140,7 +3280,7 @@ async function saveDefect(){
     catch(e){console.error('Photo upload skipped:',e.message);photos=rawPhotos;}
   }
   const d={id,spId,refNum,vehicleId:g('def-veh'),severity:g('def-sev'),desc:g('def-desc'),reportedBy:g('def-rep'),dateReported:g('def-drep'),odo:g('def-odo'),status:g('def-st'),clearedBy:g('def-clear'),dateCleared:g('def-dclear'),rectification:g('def-rect'),notes:g('def-notes'),photos,docsUploaded:!!(id&&defects.find(x=>x.id===id)?.docsUploaded)};
-  try{if(connected){const f=defToSp(d);if(spId){await updateItem(CFG.L_DEFECTS,spId,f);}else{const c=await createItem(CFG.L_DEFECTS,f);d.spId=String(c.id);d.id=String(c.id);}}const i=defects.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)defects[i]=d;else defects.push(d);rememberDriver(d.reportedBy);if(d.odo&&d.vehicleId)syncOdoFromForm(d.vehicleId,d.odo,d.dateReported);updSaved();closeModal('m-defect');renderDefects();}catch(e){showSt('err','Save failed: '+e.message);}
+  try{if(connected){const f=defToSp(d);if(spId){await updateItem(CFG.L_DEFECTS,spId,f);}else{const c=await createItem(CFG.L_DEFECTS,f);d.spId=String(c.id);d.id=String(c.id);}}const i=defects.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)defects[i]=d;else defects.push(d);rememberDriver(d.reportedBy);if(d.odo&&d.vehicleId)syncOdoFromForm(d.vehicleId,d.odo,d.dateReported);updSaved();closeModal('m-defect');renderDefects();syncDefectToTodo(d).catch(e=>console.warn('To Do sync:',e.message));}catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save defect';
 }
 
@@ -6011,6 +6151,7 @@ function applyRoleUI() {
   if (rpWrap) rpWrap.style.display = (currentRole==='admin'||_realRole==='admin') ? 'flex' : 'none';
   // Always re-render dashboard so tiles/sections reflect the real role
   if (!activePg || activePg === 'dashboard') renderDash();
+  if (isMobile() && (!activePg || activePg === 'dashboard')) renderMobDash();
 }
 
 function canAccess(page) {
@@ -7725,6 +7866,433 @@ function viewPtRecord(id) {
   w.document.close(); w.focus();
 }
 
+// ─── MICROSOFT TO DO SYNC ─────────────────────────────────────────────────────
+// Uses Microsoft Graph /me/todo/lists and /tasks endpoints
+// Separate lists: "MVBL Defects" and "MVBL Workshop Tasks"
+
+const TODO_LIST_NAMES = {
+  defects: 'MVBL Defects',
+  tasks:   'MVBL Workshop Tasks',
+};
+
+// Cached To Do list IDs
+let todoListIds = { defects: null, tasks: null };
+
+// Track which hub records have been synced to To Do (stored in localStorage)
+// Format: { 'def-id': 'todo-task-id', 'task-id': 'todo-task-id' }
+let todoSyncMap = {};
+try { todoSyncMap = JSON.parse(localStorage.getItem('mvbl_todo_map') || '{}'); } catch(e) {}
+
+function saveTodoSyncMap() {
+  try { localStorage.setItem('mvbl_todo_map', JSON.stringify(todoSyncMap)); } catch(e) {}
+}
+
+// Get or create a To Do list by name, return its ID
+async function getTodoListId(listKey) {
+  if (todoListIds[listKey]) return todoListIds[listKey];
+
+  const listName = TODO_LIST_NAMES[listKey];
+  const r = await gGet('https://graph.microsoft.com/v1.0/me/todo/lists');
+  const existing = (r.value || []).find(l => l.displayName === listName);
+
+  if (existing) {
+    todoListIds[listKey] = existing.id;
+    return existing.id;
+  }
+
+  // Create the list
+  const created = await gPost('https://graph.microsoft.com/v1.0/me/todo/lists', {
+    displayName: listName,
+  });
+  todoListIds[listKey] = created.id;
+  console.log('Created To Do list:', listName);
+  return created.id;
+}
+
+// Convert a defect to a To Do task body
+function defectToTodoBody(d) {
+  const v = fleet.find(x => x.id === d.vehicleId) || {};
+  const sev = d.severity === 'Safety critical' ? '🚨' : d.severity === 'Major' ? '⚠️' : 'ℹ️';
+  return {
+    title: `${sev} ${d.refNum} — Fleet ${v.fleet || '?'} ${v.rego || ''} — ${d.desc || ''}`.slice(0, 255),
+    body: { contentType: 'text', content: `Severity: ${d.severity}\nVehicle: Fleet ${v.fleet || '?'} ${v.rego || ''}\nReported by: ${d.reportedBy || '—'}\nDate: ${d.dateReported || '—'}\nDescription: ${d.desc || '—'}` },
+    dueDateTime: d.dateReported ? { dateTime: d.dateReported + 'T00:00:00', timeZone: 'Australia/Melbourne' } : undefined,
+    importance: d.severity === 'Safety critical' ? 'high' : d.severity === 'Major' ? 'normal' : 'low',
+    status: d.status === 'Cleared' ? 'completed' : 'notStarted',
+  };
+}
+
+// Convert a workshop task to a To Do task body
+function taskToTodoBody(t) {
+  const v = fleet.find(x => x.id === t.vehicleId) || {};
+  const pri = t.priority === 'Urgent' ? '🔴' : t.priority === 'High' ? '🟠' : 'ℹ️';
+  return {
+    title: `${pri} Fleet ${v.fleet || '?'} — ${t.desc || ''}`.slice(0, 255),
+    body: { contentType: 'text', content: `Priority: ${t.priority}\nVehicle: Fleet ${v.fleet || '?'} ${v.rego || ''}\nTechnician: ${t.tech || '—'}\nNotes: ${t.notes || '—'}` },
+    dueDateTime: t.dateDone ? { dateTime: t.dateDone + 'T00:00:00', timeZone: 'Australia/Melbourne' } : undefined,
+    importance: t.priority === 'Urgent' ? 'high' : t.priority === 'High' ? 'normal' : 'low',
+    status: t.status === 'Done' ? 'completed' : 'notStarted',
+  };
+}
+
+// Sync a single defect to To Do
+async function syncDefectToTodo(d) {
+  if (!connected || !token) return;
+  try {
+    const listId = await getTodoListId('defects');
+    const body = defectToTodoBody(d);
+    const existingTodoId = todoSyncMap['def-' + d.id];
+
+    if (existingTodoId) {
+      // Update existing
+      await gPatch(`https://graph.microsoft.com/v1.0/me/todo/lists/${listId}/tasks/${existingTodoId}`, body);
+    } else {
+      // Create new
+      const created = await gPost(`https://graph.microsoft.com/v1.0/me/todo/lists/${listId}/tasks`, body);
+      todoSyncMap['def-' + d.id] = created.id;
+      saveTodoSyncMap();
+    }
+  } catch(e) {
+    console.warn('Defect To Do sync failed:', e.message);
+  }
+}
+
+// Sync a single task to To Do
+async function syncTaskToTodo(t) {
+  if (!connected || !token) return;
+  try {
+    const listId = await getTodoListId('tasks');
+    const body = taskToTodoBody(t);
+    const existingTodoId = todoSyncMap['task-' + t.id];
+
+    if (existingTodoId) {
+      await gPatch(`https://graph.microsoft.com/v1.0/me/todo/lists/${listId}/tasks/${existingTodoId}`, body);
+    } else {
+      const created = await gPost(`https://graph.microsoft.com/v1.0/me/todo/lists/${listId}/tasks`, body);
+      todoSyncMap['task-' + t.id] = created.id;
+      saveTodoSyncMap();
+    }
+  } catch(e) {
+    console.warn('Task To Do sync failed:', e.message);
+  }
+}
+
+// Pull changes from To Do → hub (two-way sync)
+async function syncFromTodo() {
+  if (!connected || !token) return;
+  let changed = false;
+  try {
+    // Sync defects
+    const defListId = await getTodoListId('defects');
+    const defTasks = await gGet(`https://graph.microsoft.com/v1.0/me/todo/lists/${defListId}/tasks?$top=200`);
+    for (const tt of (defTasks.value || [])) {
+      // Find the matching hub defect
+      const mapEntry = Object.entries(todoSyncMap).find(([k, v]) => k.startsWith('def-') && v === tt.id);
+      if (!mapEntry) continue;
+      const hubId = mapEntry[0].replace('def-', '');
+      const d = defects.find(x => x.id === hubId);
+      if (!d) continue;
+      // If completed in To Do but open in hub — clear the defect
+      if (tt.status === 'completed' && d.status === 'Open') {
+        d.status = 'Cleared';
+        d.clearedBy = 'Microsoft To Do';
+        d.dateCleared = today();
+        if (connected && d.spId) {
+          try { await updateItem(CFG.L_DEFECTS, d.spId, defToSp(d)); } catch(e) {}
+        }
+        changed = true;
+        console.log('Defect cleared via To Do:', d.refNum);
+      }
+      // If reopened in To Do but cleared in hub — reopen
+      if (tt.status === 'notStarted' && d.status === 'Cleared') {
+        d.status = 'Open';
+        d.dateCleared = '';
+        d.clearedBy = '';
+        if (connected && d.spId) {
+          try { await updateItem(CFG.L_DEFECTS, d.spId, defToSp(d)); } catch(e) {}
+        }
+        changed = true;
+      }
+    }
+
+    // Sync tasks
+    const taskListId = await getTodoListId('tasks');
+    const todoTasks = await gGet(`https://graph.microsoft.com/v1.0/me/todo/lists/${taskListId}/tasks?$top=200`);
+    for (const tt of (todoTasks.value || [])) {
+      const mapEntry = Object.entries(todoSyncMap).find(([k, v]) => k.startsWith('task-') && v === tt.id);
+      if (!mapEntry) continue;
+      const hubId = mapEntry[0].replace('task-', '');
+      const t = tasks.find(x => x.id === hubId);
+      if (!t) continue;
+      // If completed in To Do — mark done in hub
+      if (tt.status === 'completed' && t.status !== 'Done') {
+        t.status = 'Done';
+        if (connected && t.spId) {
+          try { await updateItem(CFG.L_TASKS, t.spId, tToSp(t)); } catch(e) {}
+        }
+        changed = true;
+        console.log('Task marked done via To Do:', t.desc);
+      }
+      // If reopened in To Do — reopen in hub
+      if (tt.status === 'notStarted' && t.status === 'Done') {
+        t.status = 'Open';
+        if (connected && t.spId) {
+          try { await updateItem(CFG.L_TASKS, t.spId, tToSp(t)); } catch(e) {}
+        }
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      renderDefects();
+      renderTasks();
+      renderDash();
+      console.log('To Do sync complete — hub updated');
+    }
+  } catch(e) {
+    console.warn('To Do pull sync failed:', e.message);
+  }
+}
+
+// Push all open defects and tasks to To Do on startup
+async function pushAllToTodo() {
+  if (!connected || !token) return;
+  try {
+    showSt('info', 'Syncing with Microsoft To Do…');
+    // Push open defects
+    const openDefects = defects.filter(d => d.status === 'Open');
+    for (const d of openDefects) {
+      await syncDefectToTodo(d);
+    }
+    // Push incomplete tasks
+    const openTasks = tasks.filter(t => t.status !== 'Done' && t.desc);
+    for (const t of openTasks) {
+      await syncTaskToTodo(t);
+    }
+    // Pull changes back
+    await syncFromTodo();
+    clearSt();
+    console.log(`To Do sync complete: ${openDefects.length} defects, ${openTasks.length} tasks`);
+  } catch(e) {
+    console.warn('To Do push sync failed:', e.message);
+    clearSt();
+  }
+}
+
+// ─── MOBILE APP UI ────────────────────────────────────────────────────────────
+function isMobile() { return window.innerWidth <= 900; }
+
+function openMobMenu() {
+  const el = document.getElementById('mob-menu-overlay');
+  if (el) { el.classList.add('show'); document.body.style.overflow = 'hidden'; }
+}
+function closeMobMenu() {
+  const el = document.getElementById('mob-menu-overlay');
+  if (el) { el.classList.remove('show'); document.body.style.overflow = ''; }
+}
+function mobNav(page) {
+  closeMobMenu();
+  const navEl = document.querySelector(`.nt[onclick*="'${page}'"]`);
+  showPage(page, navEl);
+}
+
+// Render mobile dashboard
+function renderMobDash() {
+  if (!isMobile()) return;
+
+  const mobDash = document.getElementById('mob-dashboard');
+  const deskDash = document.getElementById('desk-dashboard');
+  if (mobDash) mobDash.style.display = 'block';
+  if (deskDash) deskDash.style.display = 'none';
+
+  // ── Alert strip ──────────────────────────────────────────────────────────
+  const today_ = new Date(); today_.setHours(0,0,0,0);
+  const ov = fleet.filter(v => {
+    if (!canSeeVehicleObj(v)) return false;
+    const d = du(v.svcDate);
+    return d !== null && d < 0;
+  });
+  const ds = fleet.filter(v => {
+    if (!canSeeVehicleObj(v)) return false;
+    const d = du(v.svcDate);
+    return d !== null && d >= 0 && d <= 30 && !ov.includes(v);
+  });
+  const openDefs = defects.filter(d => d.status === 'Open' && canSeeVehicle(d.vehicleId));
+  const openTasks = tasks.filter(t => t.status !== 'Done' && canSeeVehicle(t.vehicleId));
+
+  const alerts = [];
+  if (ov.length) alerts.push({ icon: '🔴', text: `${ov.length} overdue service${ov.length>1?'s':''}`, page: 'service', urgent: true });
+  if (openDefs.length) alerts.push({ icon: '⚠️', text: `${openDefs.length} open defect${openDefs.length>1?'s':''}`, page: 'defects', urgent: openDefs.some(d=>d.severity==='Safety critical') });
+  if (ds.length) alerts.push({ icon: '🟡', text: `${ds.length} service${ds.length>1?'s':''} due within 30 days`, page: 'service', urgent: false });
+  if (openTasks.length) alerts.push({ icon: '🔧', text: `${openTasks.length} open task${openTasks.length>1?'s':''}`, page: 'tasks', urgent: false });
+
+  const alertsEl = document.getElementById('mob-alerts');
+  if (alertsEl) {
+    if (alerts.length === 0) {
+      alertsEl.style.display = 'none';
+    } else {
+      alertsEl.style.display = 'block';
+      alertsEl.innerHTML = alerts.map(a =>
+        `<div class="mob-alert-item" onclick="mobNav('${a.page}')">
+          <span style="font-size:18px;">${a.icon}</span>
+          <span style="flex:1;font-size:13px;font-weight:${a.urgent?'700':'600'};color:${a.urgent?'var(--red)':'var(--navy)'};">${a.text}</span>
+          <span style="color:var(--grey-dark);font-size:16px;">›</span>
+        </div>`
+      ).join('');
+    }
+  }
+
+  // ── Recent activity feed ──────────────────────────────────────────────────
+  const feedItems = [];
+
+  // Recent defects
+  defects.filter(d => canSeeVehicle(d.vehicleId)).slice(0, 3).forEach(d => {
+    const v = fleet.find(x => x.id === d.vehicleId) || {};
+    feedItems.push({
+      time: d.dateReported || '',
+      icon: d.status === 'Cleared' ? '✅' : '⚠️',
+      title: `${d.refNum || 'Defect'} — Fleet ${v.fleet || '?'}`,
+      sub: d.desc || '',
+      badge: d.status,
+      badgeColor: d.status === 'Cleared' ? 'var(--green)' : 'var(--red)',
+      onclick: `openDefectModal('${d.id}')`,
+    });
+  });
+
+  // Recent job cards
+  jobCards.filter(j => canSeeVehicle(j.vehicleId)).slice(0, 3).forEach(j => {
+    const v = fleet.find(x => x.id === j.vehicleId) || {};
+    feedItems.push({
+      time: j.dateIn || '',
+      icon: '🔧',
+      title: `${j.jobNum || 'JC'} — Fleet ${v.fleet || '?'}`,
+      sub: j.desc || '',
+      badge: j.status,
+      badgeColor: j.status === 'Complete' ? 'var(--green)' : 'var(--teal)',
+      onclick: `openJobCardModal('${j.id}')`,
+    });
+  });
+
+  // Recent pre-trips
+  ptHistory.slice(0, 2).forEach(r => {
+    const v = fleet.find(x => x.id === (r.vehicleId||r.vId)) || {};
+    feedItems.push({
+      time: r.dt?.slice(0, 10) || '',
+      icon: r.failCount > 0 ? '🟠' : '🚦',
+      title: `Pre-trip — Fleet ${r.vFleet || v.fleet || '?'}`,
+      sub: `Driver: ${r.driver || '—'} · ${r.failCount > 0 ? r.failCount + ' failed' : 'All passed'}`,
+      badge: r.failCount > 0 ? 'Failed items' : 'Passed',
+      badgeColor: r.failCount > 0 ? 'var(--amber)' : 'var(--green)',
+      onclick: `viewPtRecord('${r.id}')`,
+    });
+  });
+
+  // Sort by time desc
+  feedItems.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+
+  const feedEl = document.getElementById('mob-feed-list');
+  if (feedEl) {
+    feedEl.innerHTML = feedItems.slice(0, 8).map(f =>
+      `<div class="mob-feed-item" onclick="${f.onclick}">
+        <span class="mob-feed-icon">${f.icon}</span>
+        <div class="mob-feed-text">
+          <div class="mob-feed-title">${f.title}</div>
+          <div class="mob-feed-sub">${f.sub}</div>
+        </div>
+        <span class="mob-feed-badge"><span class="badge" style="background:${f.badgeColor};color:white;font-size:10px;">${f.badge}</span></span>
+      </div>`
+    ).join('') || '<div style="padding:16px;text-align:center;color:var(--grey-dark);font-size:13px;">No recent activity</div>';
+  }
+}
+
+// Render mobile card list for defects
+function renderMobDefectCards() {
+  if (!isMobile()) return;
+  const container = document.getElementById('mob-defect-cards');
+  if (!container) return;
+  container.style.display = 'block';
+  // Hide table on mobile
+  const tw = document.querySelector('#page-defects .tw');
+  if (tw) tw.style.display = 'none';
+  const ch = document.querySelector('#page-defects .card > .ch');
+  if (ch) ch.style.display = 'none';
+  const visible = defects.filter(d => canSeeVehicle(d.vehicleId)).slice(0, 20);
+  container.innerHTML = visible.map(d => {
+    const v = fleet.find(x => x.id === d.vehicleId) || {};
+    const sevColor = d.severity === 'Safety critical' ? 'var(--red)' : d.severity === 'Major' ? 'var(--amber)' : 'var(--green)';
+    const stColor = d.status === 'Cleared' ? 'var(--green)' : 'var(--red)';
+    return `<div class="mob-card" onclick="editDefect('${d.id}')">
+      <div class="mob-card-header">
+        <div>
+          <div class="mob-card-title">${d.refNum || '—'} — Fleet ${v.fleet || '?'} ${v.rego || ''}</div>
+          <div class="mob-card-sub">${d.desc || '—'}</div>
+        </div>
+        <span class="badge" style="background:${stColor};color:white;font-size:10px;flex-shrink:0;">${d.status}</span>
+      </div>
+      <div class="mob-card-row">
+        <span class="mob-card-pill" style="background:${sevColor}20;color:${sevColor};">${d.severity || 'Minor'}</span>
+        <span class="mob-card-pill">📅 ${fd(d.dateReported)}</span>
+        ${d.reportedBy ? `<span class="mob-card-pill">👤 ${d.reportedBy}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--grey-dark);">No defects found</div>';
+}
+
+// Render mobile card list for job cards
+function renderMobJobCards() {
+  if (!isMobile()) return;
+  const container = document.getElementById('mob-jc-cards');
+  if (!container) return;
+  container.style.display = 'block';
+  const visible = jobCards.filter(j => canSeeVehicle(j.vehicleId)).slice(0, 20);
+  container.innerHTML = visible.map(j => {
+    const v = fleet.find(x => x.id === j.vehicleId) || {};
+    const stColor = j.status === 'Complete' ? 'var(--green)' : j.status === 'In progress' ? 'var(--teal)' : 'var(--grey-dark)';
+    return `<div class="mob-card" onclick="openJobCardModal('${j.id}')">
+      <div class="mob-card-header">
+        <div>
+          <div class="mob-card-title">${j.jobNum || '—'} — Fleet ${v.fleet || '?'} ${v.rego || ''}</div>
+          <div class="mob-card-sub">${j.desc || '—'}</div>
+        </div>
+        <span class="badge" style="background:${stColor};color:white;font-size:10px;flex-shrink:0;">${j.status}</span>
+      </div>
+      <div class="mob-card-row">
+        ${j.tech ? `<span class="mob-card-pill">🔧 ${j.tech}</span>` : ''}
+        <span class="mob-card-pill">📅 ${fd(j.dateIn)}</span>
+        ${j.odo ? `<span class="mob-card-pill">📏 ${Number(j.odo).toLocaleString()} km</span>` : ''}
+      </div>
+    </div>`;
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--grey-dark);">No job cards found</div>';
+}
+
+// Render mobile fleet cards
+function renderMobFleetCards() {
+  if (!isMobile()) return;
+  const container = document.getElementById('mob-fleet-cards');
+  if (!container) return;
+  container.style.display = 'block';
+  const visible = fleet.filter(v => canSeeVehicleObj(v));
+  container.innerHTML = visible.map(v => {
+    const co = companies.find(x => x.id === v.owner) || {};
+    const d = du(v.svcDate);
+    const svcColor = d === null ? 'var(--grey-dark)' : d < 0 ? 'var(--red)' : d <= 30 ? 'var(--amber)' : 'var(--green)';
+    const svcText = d === null ? 'No service date' : d < 0 ? `Overdue ${Math.abs(d)}d` : d === 0 ? 'Due today' : `Due in ${d}d`;
+    return `<div class="mob-card" onclick="editVehicle('${v.id}')">
+      <div class="mob-card-header">
+        <div>
+          <div class="mob-card-title">Fleet ${v.fleet || '?'} — ${v.rego || '—'}</div>
+          <div class="mob-card-sub">${v.make || '—'} · ${co.name || '—'}</div>
+        </div>
+        <span class="mob-card-pill" style="background:${svcColor}20;color:${svcColor};font-weight:700;">${svcText}</span>
+      </div>
+      <div class="mob-card-row">
+        ${v.odo ? `<span class="mob-card-pill">📏 ${Number(v.odo).toLocaleString()} km</span>` : ''}
+        ${v.year ? `<span class="mob-card-pill">📆 ${v.year}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--grey-dark);">No vehicles found</div>';
+}
+
 async function init(){
   companies=[{id:'mvbl',spId:null,name:'MVBL',isDefault:true}];
   restoreSbState();
@@ -8904,7 +9472,7 @@ init();
     <span class="bnav-icon">🔧</span>
     <span class="bnav-label">Jobs</span>
   </button>
-  <button class="bnav-btn" onclick="toggleSidebar()" id="bn-menu">
+  <button class="bnav-btn" onclick="openMobMenu()" id="bn-menu">
     <span class="bnav-icon">☰</span>
     <span class="bnav-label">Menu</span>
   </button>
@@ -8959,6 +9527,39 @@ init();
       <div id="qc-result" style="display:none;margin-top:10px;padding:10px;background:#e8f7ee;color:var(--green);border-radius:8px;font-size:14px;text-align:center;font-weight:600;"></div>
     </div>
   </div>
+</div>
+<!-- MOBILE FULL SCREEN MENU -->
+<div id="mob-menu-overlay">
+  <div class="mob-menu-header">
+    <div class="mob-menu-title">MV Service Desk</div>
+    <button class="mob-menu-close" onclick="closeMobMenu()">✕</button>
+  </div>
+
+  <div class="mob-menu-section">Fleet</div>
+  <div class="mob-menu-item" onclick="mobNav('fleet')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">Fleet Register</span></div>
+  <div class="mob-menu-item" onclick="mobNav('service')"><span class="mob-menu-item-icon">📅</span><span class="mob-menu-item-label">Service Due</span></div>
+  <div class="mob-menu-item" onclick="mobNav('pretrip')"><span class="mob-menu-item-icon">🚦</span><span class="mob-menu-item-label">Pre-Trip Inspection</span></div>
+  <div class="mob-menu-item" onclick="mobNav('defects')"><span class="mob-menu-item-icon">⚠️</span><span class="mob-menu-item-label">Defects</span></div>
+
+  <div class="mob-menu-section">Workshop</div>
+  <div class="mob-menu-item" onclick="mobNav('jobcards')"><span class="mob-menu-item-icon">🔧</span><span class="mob-menu-item-label">Job Cards</span></div>
+  <div class="mob-menu-item" onclick="mobNav('tasks')"><span class="mob-menu-item-icon">✅</span><span class="mob-menu-item-label">Tasks</span></div>
+  <div class="mob-menu-item" onclick="mobNav('parts')"><span class="mob-menu-item-icon">📦</span><span class="mob-menu-item-label">Parts & Orders</span></div>
+  <div class="mob-menu-item" onclick="mobNav('mainthistory')"><span class="mob-menu-item-icon">📋</span><span class="mob-menu-item-label">Maintenance History</span></div>
+  <div class="mob-menu-item" onclick="mobNav('vsi')"><span class="mob-menu-item-icon">🔍</span><span class="mob-menu-item-label">Safety Inspection</span></div>
+
+  <div class="mob-menu-section">Accidents</div>
+  <div class="mob-menu-item" onclick="mobNav('accident')"><span class="mob-menu-item-icon">🚨</span><span class="mob-menu-item-label">Accidents</span></div>
+  <div class="mob-menu-item" onclick="mobNav('accquotes')"><span class="mob-menu-item-icon">💲</span><span class="mob-menu-item-label">Repair Quotes</span></div>
+
+  <div class="mob-menu-section">Other</div>
+  <div class="mob-menu-item" onclick="mobNav('calendar')"><span class="mob-menu-item-icon">📅</span><span class="mob-menu-item-label">Calendar</span></div>
+  <div class="mob-menu-item" onclick="mobNav('notes')"><span class="mob-menu-item-icon">📝</span><span class="mob-menu-item-label">Notes</span></div>
+  <div class="mob-menu-item" onclick="mobNav('faultcodes')"><span class="mob-menu-item-icon">🔌</span><span class="mob-menu-item-label">Fault Codes</span></div>
+  <div class="mob-menu-item" onclick="pushAllToTodo()"><span class="mob-menu-item-icon">📋</span><span class="mob-menu-item-label">Sync Microsoft To Do</span></div>
+
+  <div class="mob-menu-section">Account</div>
+  <div class="mob-menu-item" onclick="toggleAuth()"><span class="mob-menu-item-icon">🔓</span><span class="mob-menu-item-label">Sign out</span></div>
 </div>
 </body>
 </html>
