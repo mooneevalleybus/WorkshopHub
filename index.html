@@ -589,19 +589,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   .sb-toggle { display: none !important; }
   #bottom-nav #bn-menu { display: flex !important; }
 
-  /* Hide desktop table card on pages that have mobile card views */
-  #page-defects > .card,
-  #page-jobcards > .card,
-  #page-fleet > .card { display: none !important; }
-  /* But keep add/filter bar visible */
-  #page-defects > .card:first-of-type,
-  #page-jobcards > .card:first-of-type,
-  #page-fleet > .card:first-of-type { display: block !important; }
-}
-
-@media (min-width: 901px) {
-  .mob-dash { display: none !important; }
-  #mob-menu-overlay { display: none !important; }
+  
   #bottom-nav { display: none !important; }
 }
 
@@ -624,14 +612,17 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 }
 
 
-/* Mobile card list - hidden on desktop, shown on mobile */
-.mob-card-list { display: none; }
-@media (max-width: 900px) {
-  .mob-card-list { display: block; }
+
   /* Hide desktop table views on mobile for card pages */
-  #page-defects .card:not(:first-child),
-  #page-jobcards .card:not(:first-child),
-  #page-fleet .card:not(:first-child) { display: block; }
+
+}
+
+
+/* Mobile tables - scroll horizontally */
+@media (max-width: 600px) {
+  .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tw table { min-width: 500px; }
+  .mob-card-list { display: none !important; }
 }
 
 </style>
@@ -2957,7 +2948,7 @@ function renderDash(){
   }
 }
 
-function renderFleet(){if(isMobile()){renderMobFleetCards();}
+function renderFleet(){
   const s=(document.getElementById('fleet-search')?.value||'').toLowerCase();
   const cf=document.getElementById('fleet-co')?.value||'';
   const rows=fleet.filter(v=>canSeeVehicleObj(v)&&(!cf||v.owner===cf)&&(!s||(v.fleet||'').includes(s)||(v.rego||'').toLowerCase().includes(s)||(v.make||'').toLowerCase().includes(s))).sort((a,b)=>{const na=parseInt(a.fleet),nb=parseInt(b.fleet);const va=isNaN(na)?Infinity:na,vb=isNaN(nb)?Infinity:nb;if(va!==vb)return va-vb;return(a.fleet||'').localeCompare(b.fleet||'');});
@@ -3080,7 +3071,7 @@ async function savePart(){
 // ══════════════════════════════════════════════════════════════════════════════
 // JOB CARDS
 // ══════════════════════════════════════════════════════════════════════════════
-function renderJobCards(){if(isMobile()){renderMobJobCards();}
+function renderJobCards(){
   const cf=document.getElementById('jc-co')?.value||'';vFilter('jc-veh',cf);
   const vf=document.getElementById('jc-fveh')?.value||'',sf=document.getElementById('jc-st')?.value||'';
   const rows=jobCards.filter(j=>{if(!canSeeVehicle(j.vehicleId))return false;const v=fleet.find(x=>x.id===j.vehicleId);return(!cf||(v&&v.owner===cf))&&(!vf||j.vehicleId===vf)&&(!sf||j.status===sf);}).sort((a,b)=>new Date(b.dateIn)-new Date(a.dateIn));
@@ -3291,7 +3282,7 @@ async function printJobCardId(id){
 // ══════════════════════════════════════════════════════════════════════════════
 // DEFECTS
 // ══════════════════════════════════════════════════════════════════════════════
-function renderDefects(){if(isMobile()){renderMobDefectCards();}
+function renderDefects(){
   const cf=document.getElementById('def-co')?.value||'';vFilter('def-veh',cf);
   const vf=document.getElementById('def-fveh')?.value||'',sf=document.getElementById('def-st')?.value||'';
   const rows=defects.filter(d=>{if(!canSeeVehicle(d.vehicleId))return false;const v=fleet.find(x=>x.id===d.vehicleId);return(!cf||(v&&v.owner===cf))&&(!vf||d.vehicleId===vf)&&(!sf||d.status===sf);}).sort((a,b)=>new Date(b.dateReported)-new Date(a.dateReported));
