@@ -6266,6 +6266,13 @@ function applyRoleUI() {
   // Show role preview selector for admin only
   const rpWrap = document.getElementById('role-preview-wrap');
   if (rpWrap) rpWrap.style.display = (currentRole==='admin'||_realRole==='admin') ? 'flex' : 'none';
+  // Mobile menu role selector
+  const mobRpWrap = document.getElementById('mob-role-preview-wrap');
+  if (mobRpWrap) mobRpWrap.style.display = (currentRole==='admin'||_realRole==='admin') ? 'flex' : 'none';
+  // Keep mobile select in sync with desktop select
+  const mobRpSel = document.getElementById('mob-role-select');
+  const deskRpSel = document.getElementById('role-preview-select');
+  if (mobRpSel && deskRpSel) mobRpSel.value = deskRpSel.value;
   // Always re-render dashboard so tiles/sections reflect the real role
   if (!activePg || activePg === 'dashboard') renderDash();
   if (isMobile() && (!activePg || activePg === 'dashboard')) renderMobDash();
@@ -9933,6 +9940,20 @@ init();
   <div class="mob-menu-item" onclick="pushAllToTodo()"><span class="mob-menu-item-icon">📋</span><span class="mob-menu-item-label">Sync Microsoft To Do</span></div>
 
   <div class="mob-menu-section">Account</div>
+  <div class="mob-menu-item" id="mob-role-preview-wrap" style="display:none;flex-direction:column;align-items:flex-start;gap:8px;padding:14px 20px;">
+    <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">Preview as role</div>
+    <select id="mob-role-select" onchange="previewRole(this.value)"
+      style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);
+             background:rgba(255,255,255,.1);color:white;font-size:15px;font-family:inherit;cursor:pointer;">
+      <option value="">— my role —</option>
+      <option value="admin">Admin</option>
+      <option value="manager">Manager</option>
+      <option value="tech">Tech</option>
+      <option value="office">Office</option>
+      <option value="driver">Driver</option>
+    </select>
+  </div>
+  <div class="mob-menu-item" onclick="pushAllToTodo()"><span class="mob-menu-item-icon">📋</span><span class="mob-menu-item-label">Sync Microsoft To Do</span></div>
   <div class="mob-menu-item" onclick="toggleAuth()"><span class="mob-menu-item-icon">🔓</span><span class="mob-menu-item-label">Sign out</span></div>
 </div>
 </body>
