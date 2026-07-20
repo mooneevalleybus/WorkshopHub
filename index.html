@@ -646,8 +646,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   /* Hide desktop filter/search bars on mobile card pages */
   #page-service .card, #page-parts .card, #page-mainthistory .card,
   #page-vsi .card, #page-accident .card, #page-accquotes .card { display: none !important; }
-  /* Show calendar desktop grid hidden */
-  #page-calendar > .card { display: none !important; }
+
 }
 
 
@@ -2608,7 +2607,7 @@ const CFG = {
   L_CAT:       '4e03ab20-4668-4641-bce5-227704b6d97d',
   L_ACCQUOTES: '3649f660-a3f0-4c83-821b-57c08864c488',
   L_CAL:       'f01885c4-b570-413c-962e-521e62f2843b',
-  SCOPES:    ['https://graph.microsoft.com/Sites.ReadWrite.All','offline_access','openid','profile'],
+  SCOPES:    ['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/Tasks.ReadWrite','offline_access','openid','profile'],
   get REDIR(){ return window.location.href.split('?')[0]; }
 };
 
