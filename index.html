@@ -7591,6 +7591,7 @@ function renderCalendar() {
     // Don't render rows entirely outside current month
     if (cursor > lastOfMonth && row >= 4) break;
   }
+  console.log('gridHtml length:', gridHtml.length, 'first 100:', gridHtml.slice(0,100));
   grid.innerHTML = gridHtml;
 
   // Upcoming list
