@@ -410,7 +410,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 .bt:hover{background:var(--teal);color:white;}
 
 /* ── CALENDAR ──────────────────────────────────────────────────────────────── */
-.cal-day{min-height:95px;border-right:1px solid var(--grey-b);border-bottom:1px solid var(--grey-b);padding:5px 4px;position:relative;cursor:pointer;transition:background .1s;box-sizing:border-box;overflow:hidden;}
+.cal-day{min-height:100px;border-right:1px solid var(--grey-b);border-bottom:1px solid var(--grey-b);padding:5px 4px;position:relative;cursor:pointer;transition:background .1s;box-sizing:border-box;overflow:hidden;background:white;}
 .cal-day:last-child,.cal-day:nth-child(7n){border-right:none;}
 .cal-day:hover{background:#f0f9f8;}
 .cal-day.other-month{background:#f8f9fa;}
@@ -658,6 +658,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 }
 #mob-menu-overlay.show { display: block; }
 
+#cal-grid{border-left:1px solid var(--grey-b);border-top:1px solid var(--grey-b);}
 </style>
 </head>
 <body>
@@ -1545,7 +1546,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
     </div>
     <div id="mob-cal-list"></div>
   </div>
-  <div class="card" style="margin-bottom:14px;width:100%;box-sizing:border-box;">
+  <div class="card" style="margin-bottom:14px;width:100%;box-sizing:border-box;overflow:visible;">
     <!-- Header -->
     <div class="ch" style="flex-wrap:wrap;gap:8px;">
       <span class="ct">📅 Workshop Calendar</span>
@@ -1577,7 +1578,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
       <div style="padding:7px 4px;text-align:center;font-weight:700;font-size:12px;color:rgba(255,255,255,.7);">Sun</div>
     </div>
     <!-- Calendar grid - full width, no padding -->
-    <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;overflow:hidden;"></div>
+    <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;"></div>
   </div>
 
   <!-- This month list -->
@@ -7533,11 +7534,9 @@ function renderCalendar() {
     }).join('');
     return;
   }
-  console.log('renderCalendar desktop: year=',calViewYear,'month=',calViewMonth);
   const monthLabel = new Date(calViewYear, calViewMonth, 1)
     .toLocaleDateString('en-AU', {month:'long', year:'numeric'});
   const el = document.getElementById('cal-month-label');
-  console.log('cal-month-label el:', el);
   if (el) el.textContent = monthLabel;
 
   vOpts('cal-veh', '');
@@ -7557,7 +7556,6 @@ function renderCalendar() {
 
   // Build grid
   const grid = document.getElementById('cal-grid');
-  console.log('cal-grid el:', grid, 'page active:', document.getElementById('page-calendar')?.classList.contains('active'));
   if (!grid) return;
 
   let gridHtml = '';
@@ -7591,7 +7589,6 @@ function renderCalendar() {
     // Don't render rows entirely outside current month
     if (cursor > lastOfMonth && row >= 4) break;
   }
-  console.log('gridHtml length:', gridHtml.length, 'first 100:', gridHtml.slice(0,100));
   grid.innerHTML = gridHtml;
 
   // Upcoming list
