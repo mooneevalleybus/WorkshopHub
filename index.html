@@ -7495,36 +7495,42 @@ function allCalEvents() {
 
 function renderCalendar() {
   if (isMobile()) {
-    // On mobile show upcoming events list only, not full grid
-    const el = document.getElementById('mob-cal-list');
+    // Show wrap, hide desktop cards
     const wrap = document.getElementById('mob-cal-wrap');
-    const grid = document.getElementById('page-calendar > .card');
     if (wrap) wrap.style.display = 'block';
-    if (el) {
-      const nowStr = new Date().toISOString().slice(0,10);
-      const events = allCalEvents()
-        .filter(e => e.date >= nowStr)
-        .sort((a,b) => a.date.localeCompare(b.date))
-        .slice(0, 30);
-      el.innerHTML = events.length
-        ? events.map(e => {
-            const v = fleet.find(x=>x.id===e.vehicleId)||{};
-            return `<div class="mob-card" onclick="${e.source==='manual'?`openCalModal('${e.id}')`:`calEventClick('${e.id}')`}">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                <div style="flex:1;min-width:0;">
-                  <div style="font-size:14px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.title}</div>
-                  ${v.fleet?`<div style="font-size:12px;color:var(--grey-dark);margin-top:2px;">Fleet ${v.fleet}</div>`:''}
-                </div>
-                <div style="text-align:right;flex-shrink:0;">
-                  <div style="font-size:12px;font-weight:700;color:var(--navy);">${fd(e.date)}</div>
-                  <span style="background:${e.colour||'#2980b9'};color:white;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;">${e.type}</span>
-                </div>
-              </div>
-            </div>`;
-          }).join('')
-        : '<div style="padding:30px;text-align:center;color:var(--grey-dark);">No upcoming events</div>';
+    document.querySelectorAll('#page-calendar > .card').forEach(c => c.style.display = 'none');
+
+    const el = document.getElementById('mob-cal-list');
+    if (!el) return;
+
+    const nowStr = new Date().toISOString().slice(0,10);
+    const events = allCalEvents()
+      .filter(e => e.date >= nowStr)
+      .sort((a,b) => a.date.localeCompare(b.date))
+      .slice(0, 30);
+
+    if (!events.length) {
+      el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--grey-dark);font-size:14px;">No upcoming events.<br><br><button class=\"btn bp\" onclick=\"openCalModal()\">+ Add event</button></div>';
       return;
     }
+
+    el.innerHTML = events.map(e => {
+      const v = fleet.find(x => x.id === e.vehicleId) || {};
+      const onclick = e.source === 'manual' ? "openCalModal('" + e.id + "')" : "calEventClick('" + e.id + "')";
+      return '<div class="mob-card" onclick="' + onclick + '">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:14px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + e.title + '</div>' +
+            (v.fleet ? '<div style="font-size:12px;color:var(--grey-dark);margin-top:2px;">Fleet ' + v.fleet + '</div>' : '') +
+          '</div>' +
+          '<div style="text-align:right;flex-shrink:0;">' +
+            '<div style="font-size:13px;font-weight:700;color:var(--navy);">' + fd(e.date) + '</div>' +
+            '<span style="background:' + (e.colour||'#2980b9') + ';color:white;font-size:10px;padding:2px 6px;border-radius:6px;font-weight:600;">' + e.type + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    return;
   }
   const monthLabel = new Date(calViewYear, calViewMonth, 1)
     .toLocaleDateString('en-AU', {month:'long', year:'numeric'});
