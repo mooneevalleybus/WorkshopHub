@@ -1591,6 +1591,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
     </div>
   </div>
 </div>
+</div>
 </div><!-- /main -->
 </div><!-- /shell -->
 <!-- VEHICLE MODAL -->
@@ -7532,9 +7533,11 @@ function renderCalendar() {
     }).join('');
     return;
   }
+  console.log('renderCalendar desktop: year=',calViewYear,'month=',calViewMonth);
   const monthLabel = new Date(calViewYear, calViewMonth, 1)
     .toLocaleDateString('en-AU', {month:'long', year:'numeric'});
   const el = document.getElementById('cal-month-label');
+  console.log('cal-month-label el:', el);
   if (el) el.textContent = monthLabel;
 
   vOpts('cal-veh', '');
@@ -7554,6 +7557,7 @@ function renderCalendar() {
 
   // Build grid
   const grid = document.getElementById('cal-grid');
+  console.log('cal-grid el:', grid, 'page active:', document.getElementById('page-calendar')?.classList.contains('active'));
   if (!grid) return;
 
   let gridHtml = '';
@@ -9684,286 +9688,5 @@ init();
   </div>
 </div>
 <!-- PARTS CATALOGUE -->
-<div class="page" id="page-catalogue">
-  <div class="card">
-    <div class="ch">
-      <span class="ct">Parts Catalogue</span>
-      <div class="tb">
-        <input class="si" id="cat-search" placeholder="Search part no. or description…" oninput="renderCatalogue()" style="width:200px;">
-        <select id="cat-filter-cat" onchange="renderCatalogue()" style="width:160px;">
-          <option value="">All categories</option>
-<option>Engine</option>
-<option>Transmission</option>
-<option>Brakes</option>
-<option>Suspension</option>
-<option>Steering</option>
-<option>Electrical</option>
-<option>Tyres & Wheels</option>
-<option>Body & Glass</option>
-<option>Exhaust</option>
-<option>Cooling</option>
-<option>Fuel System</option>
-<option>Oils & Fluids</option>
-<option>Filters</option>
-<option>Belts & Hoses</option>
-<option>Interior</option>
-<option>Safety</option>
-<option>Workshop Supplies</option>
-<option>Other</option>
-        </select>
-        <button class="btn bp" onclick="openCatModal()">+ Add part</button>
-      </div>
-    </div>
-    <div class="cb tw">
-      <table class="mc"><thead><tr><th>Part no.</th><th>Description</th><th>Category</th><th>Unit</th><th class="r">Unit price</th><th>Supplier</th></tr></thead>
-        <tbody id="cat-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- PARTS CATALOGUE MODAL -->
-<div class="mbg" id="m-cat">
-  <div class="modal">
-    <div class="mh"><span class="mt" id="mcat-title">Add part</span><button class="mx" onclick="closeModal('m-cat')">&#215;</button></div>
-    <div class="mb">
-      <input type="hidden" id="cat-id"><input type="hidden" id="cat-spid">
-      <div class="fr c2">
-        <div><label>Part number</label><input id="cat-partno" placeholder="e.g. OIL-5W30-1L"></div>
-        <div><label>Category</label>
-          <select id="cat-cat">
-            <option>Engine</option>
-<option>Transmission</option>
-<option>Brakes</option>
-<option>Suspension</option>
-<option>Steering</option>
-<option>Electrical</option>
-<option>Tyres & Wheels</option>
-<option>Body & Glass</option>
-<option>Exhaust</option>
-<option>Cooling</option>
-<option>Fuel System</option>
-<option>Oils & Fluids</option>
-<option>Filters</option>
-<option>Belts & Hoses</option>
-<option>Interior</option>
-<option>Safety</option>
-<option>Workshop Supplies</option>
-<option>Other</option>
-          </select>
-        </div>
-      </div>
-      <div class="fr">
-        <div><label>Description</label><input id="cat-desc" placeholder="e.g. Engine oil 5W-30 per litre"></div>
-      </div>
-      <div class="fr c3">
-        <div><label>Unit</label><input id="cat-unit" placeholder="e.g. litre, each, kg"></div>
-        <div><label>Unit price (ex GST)</label><input id="cat-price" type="number" step="0.01" placeholder="0.00"></div>
-        <div><label>Supplier</label><input id="cat-supplier" placeholder="Supplier name"></div>
-      </div>
-      <div class="fr">
-        <div><label>Notes</label><textarea id="cat-notes" rows="2" placeholder="Storage location, notes, alternatives…"></textarea></div>
-      </div>
-    </div>
-    <div class="mf">
-      <button class="btn bs" onclick="closeModal('m-cat')">Cancel</button>
-      <button class="btn bp" onclick="saveCat()">Save part</button>
-    </div>
-  </div>
-</div>
-
-<!-- PARTS CATALOGUE PICKER (used from job cards) -->
-<div class="mbg" id="m-cat-pick">
-  <div class="modal wide">
-    <div class="mh"><span class="mt">Select part from catalogue</span><button class="mx" onclick="closeModal('m-cat-pick')">&#215;</button></div>
-    <div class="mb">
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input class="si" id="pick-search" placeholder="Search…" oninput="renderCatPicker()" style="flex:1;">
-        <select id="pick-cat" onchange="renderCatPicker()" style="width:160px;">
-          <option value="">All categories</option>
-<option>Engine</option>
-<option>Transmission</option>
-<option>Brakes</option>
-<option>Suspension</option>
-<option>Steering</option>
-<option>Electrical</option>
-<option>Tyres & Wheels</option>
-<option>Body & Glass</option>
-<option>Exhaust</option>
-<option>Cooling</option>
-<option>Fuel System</option>
-<option>Oils & Fluids</option>
-<option>Filters</option>
-<option>Belts & Hoses</option>
-<option>Interior</option>
-<option>Safety</option>
-<option>Workshop Supplies</option>
-<option>Other</option>
-        </select>
-      </div>
-      <div class="tw"><table>
-        <thead><tr><th>Part no.</th><th>Description</th><th>Category</th><th>Unit</th><th class="r">Unit price</th><th>Supplier</th><th></th></tr></thead>
-        <tbody id="pick-tbody"></tbody>
-      </table></div>
-    </div>
-    <div class="mf"><button class="btn bs" onclick="closeModal('m-cat-pick')">Cancel</button></div>
-  </div>
-</div>
-<!-- CALENDAR EVENT MODAL -->
-<div class="mbg" id="m-cal">
-  <div class="modal">
-    <div class="mh"><span class="mt" id="mcal-title">Add event</span><button class="mx" onclick="closeModal('m-cal')">&#215;</button></div>
-    <div class="mb">
-      <input type="hidden" id="cal-id"><input type="hidden" id="cal-spid">
-      <div class="fr">
-        <div><label>Event name *</label><input id="cal-title" placeholder="e.g. Aircon Service, RWC, Tyre check"></div>
-      </div>
-      <div class="fr c2">
-        <div><label>Date *</label><input id="cal-date" type="date"></div>
-        <div><label>End date (optional)</label><input id="cal-end" type="date"></div>
-      </div>
-      <div class="fr c2">
-        <div><label>Vehicle (optional)</label><select id="cal-veh"><option value="">No specific vehicle</option></select></div>
-        <div><label>Event type</label>
-          <select id="cal-type">
-            <option value="Custom">Custom event</option>
-            <option value="Service">Service</option>
-            <option value="Inspection">Inspection / RWC</option>
-            <option value="Task">Task</option>
-          </select>
-        </div>
-      </div>
-      <div class="fr">
-        <div><label>Notes</label><textarea id="cal-notes" rows="2" placeholder="Additional details…"></textarea></div>
-      </div>
-    </div>
-    <div class="mf">
-      <button class="btn bs" onclick="closeModal('m-cal')">Cancel</button>
-      <button class="btn bd" id="cal-del-btn" style="display:none;" onclick="deleteCalEvent()">Delete</button>
-      <button class="btn bp" onclick="saveCalEvent()">Save event</button>
-    </div>
-  </div>
-</div>
-<!-- MOBILE BOTTOM NAV -->
-<nav id="bottom-nav">
-  <button class="bnav-btn" onclick="mobNav('dashboard')" id="bn-dashboard">
-    <span class="bnav-icon">📊</span>
-    <span class="bnav-label">Home</span>
-  </button>
-  <button class="bnav-btn" onclick="mobNav('fleet')" id="bn-fleet">
-    <span class="bnav-icon">🚌</span>
-    <span class="bnav-label">Fleet</span>
-  </button>
-  <button class="bnav-btn bnav-center" onclick="openQuickCapture()" id="bn-quick">
-    <span class="bnav-icon" style="font-size:26px;">⚡</span>
-    <span class="bnav-label">Quick</span>
-  </button>
-  <button class="bnav-btn" onclick="mobNav('jobcards')" id="bn-jobcards">
-    <span class="bnav-icon">🔧</span>
-    <span class="bnav-label">Jobs</span>
-  </button>
-  <button class="bnav-btn" onclick="openMobMenu()" id="bn-menu">
-    <span class="bnav-icon">☰</span>
-    <span class="bnav-label">Menu</span>
-  </button>
-</nav>
-
-<!-- QUICK CAPTURE SHEET -->
-<div id="quick-capture-overlay" onclick="closeQuickCapture()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;"></div>
-<div id="quick-capture" style="display:none;position:fixed;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;z-index:501;padding:0 0 env(safe-area-inset-bottom,0) 0;max-height:90vh;overflow-y:auto;">
-  <div style="width:40px;height:4px;background:var(--grey-b);border-radius:2px;margin:12px auto 16px;"></div>
-  <div style="padding:0 20px 20px;">
-    <div style="font-weight:700;font-size:17px;color:var(--navy);margin-bottom:16px;">⚡ Quick actions</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
-      <button class="qc-btn" onclick="closeQuickCapture();openDefectModal()">
-        <span style="font-size:28px;">⚠️</span>
-        <span>Report Defect</span>
-      </button>
-      <button class="qc-btn" onclick="closeQuickCapture();showPage('pretrip',document.querySelector('.nt[onclick*=\'pretrip\']'))">
-        <span style="font-size:28px;">🚦</span>
-        <span>Pre-Trip</span>
-      </button>
-      <button class="qc-btn" onclick="closeQuickCapture();openAccidentModal()">
-        <span style="font-size:28px;">🚨</span>
-        <span>Accident</span>
-      </button>
-      <button class="qc-btn" onclick="closeQuickCapture();openJobCardModal()">
-        <span style="font-size:28px;">🔧</span>
-        <span>Job Card</span>
-      </button>
-      <button class="qc-btn" onclick="closeQuickCapture();showPage('calendar',document.querySelector('.nt[onclick*=\'calendar\']'))">
-        <span style="font-size:28px;">📅</span>
-        <span>Calendar</span>
-      </button>
-      <button class="qc-btn" onclick="closeQuickCapture();openPartModal()">
-        <span style="font-size:28px;">📦</span>
-        <span>Parts Order</span>
-      </button>
-    </div>
-    <div style="font-weight:700;font-size:14px;color:var(--navy);margin-bottom:10px;">⚡ Quick defect report</div>
-    <div style="background:var(--grey);border-radius:12px;padding:14px;">
-      <select id="qc-veh" style="width:100%;padding:12px;border:1px solid var(--grey-b);border-radius:8px;font-size:16px;font-family:inherit;margin-bottom:10px;background:white;">
-        <option value="">Select vehicle…</option>
-      </select>
-      <select id="qc-sev" style="width:100%;padding:12px;border:1px solid var(--grey-b);border-radius:8px;font-size:16px;font-family:inherit;margin-bottom:10px;background:white;">
-        <option value="Minor">Minor — can continue in service</option>
-        <option value="Major">Major — inspect soon</option>
-        <option value="Safety critical">🚨 Safety critical — do not operate</option>
-      </select>
-      <textarea id="qc-desc" placeholder="Describe the defect…" rows="3" style="width:100%;padding:12px;border:1px solid var(--grey-b);border-radius:8px;font-size:16px;font-family:inherit;margin-bottom:10px;resize:none;box-sizing:border-box;"></textarea>
-      <button onclick="submitQuickDefect()" style="width:100%;padding:14px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">
-        ⚠️ Submit Defect Report
-      </button>
-      <div id="qc-result" style="display:none;margin-top:10px;padding:10px;background:#e8f7ee;color:var(--green);border-radius:8px;font-size:14px;text-align:center;font-weight:600;"></div>
-    </div>
-  </div>
-</div>
-<!-- MOBILE FULL SCREEN MENU -->
-<div id="mob-menu-overlay">
-  <div class="mob-menu-header">
-    <div class="mob-menu-title">MV Service Desk</div>
-    <button class="mob-menu-close" onclick="closeMobMenu()">✕</button>
-  </div>
-
-  <div class="mob-menu-section">Fleet</div>
-  <div class="mob-menu-item" onclick="mobNav('fleet')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">Fleet Register</span></div>
-  <div class="mob-menu-item" onclick="mobNav('service')"><span class="mob-menu-item-icon">📅</span><span class="mob-menu-item-label">Service Due</span></div>
-  <div class="mob-menu-item" onclick="mobNav('pretrip')"><span class="mob-menu-item-icon">🚦</span><span class="mob-menu-item-label">Pre-Trip Inspection</span></div>
-  <div class="mob-menu-item" onclick="mobNav('defects')"><span class="mob-menu-item-icon">⚠️</span><span class="mob-menu-item-label">Defects</span></div>
-
-  <div class="mob-menu-section">Workshop</div>
-  <div class="mob-menu-item" onclick="mobNav('jobcards')"><span class="mob-menu-item-icon">🔧</span><span class="mob-menu-item-label">Job Cards</span></div>
-  <div class="mob-menu-item" onclick="mobNav('tasks')"><span class="mob-menu-item-icon">✅</span><span class="mob-menu-item-label">Tasks</span></div>
-  <div class="mob-menu-item" onclick="mobNav('parts')"><span class="mob-menu-item-icon">📦</span><span class="mob-menu-item-label">Parts & Orders</span></div>
-  <div class="mob-menu-item" onclick="mobNav('mainthistory')"><span class="mob-menu-item-icon">📋</span><span class="mob-menu-item-label">Maintenance History</span></div>
-  <div class="mob-menu-item" onclick="mobNav('vsi')"><span class="mob-menu-item-icon">🔍</span><span class="mob-menu-item-label">Safety Inspection</span></div>
-
-  <div class="mob-menu-section">Accidents</div>
-  <div class="mob-menu-item" onclick="mobNav('accident')"><span class="mob-menu-item-icon">🚨</span><span class="mob-menu-item-label">Accidents</span></div>
-  <div class="mob-menu-item" onclick="mobNav('accquotes')"><span class="mob-menu-item-icon">💲</span><span class="mob-menu-item-label">Repair Quotes</span></div>
-
-  <div class="mob-menu-section">Other</div>
-  <div class="mob-menu-item" onclick="mobNav('calendar')"><span class="mob-menu-item-icon">📅</span><span class="mob-menu-item-label">Calendar</span></div>
-  <div class="mob-menu-item" onclick="mobNav('notes')"><span class="mob-menu-item-icon">📝</span><span class="mob-menu-item-label">Notes</span></div>
-  <div class="mob-menu-item" onclick="mobNav('faultcodes')"><span class="mob-menu-item-icon">🔌</span><span class="mob-menu-item-label">Fault Codes</span></div>
-  <div class="mob-menu-item" onclick="pushAllToTodo()"><span class="mob-menu-item-icon">📋</span><span class="mob-menu-item-label">Sync Microsoft To Do</span></div>
-
-  <div class="mob-menu-section">Account</div>
-  <div class="mob-menu-item" id="mob-role-preview-wrap" style="display:none;flex-direction:column;align-items:flex-start;gap:8px;padding:14px 20px;">
-    <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">Preview as role</div>
-    <select id="mob-role-select" onchange="previewRole(this.value)"
-      style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);
-             background:rgba(255,255,255,.1);color:white;font-size:15px;font-family:inherit;cursor:pointer;">
-      <option value="">— my role —</option>
-      <option value="admin">Admin</option>
-      <option value="manager">Manager</option>
-      <option value="tech">Tech</option>
-      <option value="office">Office</option>
-      <option value="driver">Driver</option>
-    </select>
-  </div>
-  <div class="mob-menu-item" onclick="pushAllToTodo()"><span class="mob-menu-item-icon">📋</span><span class="mob-menu-item-label">Sync Microsoft To Do</span></div>
-  <div class="mob-menu-item" onclick="toggleAuth()"><span class="mob-menu-item-icon">🔓</span><span class="mob-menu-item-label">Sign out</span></div>
-</div>
 </body>
 </html>
