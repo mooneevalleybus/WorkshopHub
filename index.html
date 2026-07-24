@@ -6680,14 +6680,11 @@ function addAqRow(sec, data) {
 }
 
 function aqGetRows(sec) {
-  const tbody = document.getElementById(`aq-${sec}-tbody`);
+  const tbody = document.getElementById('aq-'+sec+'-tbody');
   if (!tbody) return [];
-  const hasHours = sec==='rr'||sec==='rp';
   return [...tbody.querySelectorAll('tr')].map(tr=>{
-    const inputs = tr.querySelectorAll('input[type!="button"]');
-    return hasHours
-      ? [inputs[0]?.value||'', inputs[1]?.value||'']
-      : [inputs[0]?.value||'', inputs[1]?.value||''];
+    const inputs = [...tr.querySelectorAll('input')].filter(i=>i.type!=='button'&&i.type!=='submit');
+    return [inputs[0]?.value||'', inputs[1]?.value||''];
   }).filter(r=>r[0]||r[1]);
 }
 
