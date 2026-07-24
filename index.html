@@ -6528,6 +6528,7 @@ function aqToSp(q) {
     Notes: q.notes || '',
     Attachment_x002f_s: JSON.stringify(q.attachments || []),
     GrandTotal: q.grandTotal ? String(q.grandTotal) : '0',
+    Excess: q.excess ? String(q.excess) : '0',
   };
 }
 
@@ -6561,6 +6562,7 @@ function spToAq(x) {
     notes: f.Notes || '',
     attachments,
     grandTotal: parseFloat(f.GrandTotal || '0'),
+    excess: parseFloat(f.Excess || '0'),
   };
 }
 
@@ -6635,6 +6637,7 @@ function openAqModal(id) {
   document.getElementById('aq-qdate').value = q?.qDate||today();
   document.getElementById('aq-invdate').value = q?.invDate||'';
   document.getElementById('aq-status').value = q?.status||'Quote received';
+  const aqExEl=document.getElementById('aq-excess');if(aqExEl)aqExEl.value=q?.excess||'';
   document.getElementById('aq-rr-rate').value = q?.rrRate||'125';
   document.getElementById('aq-rp-rate').value = q?.rpRate||'125';
   // Build rows
@@ -6733,8 +6736,9 @@ function aqRecalc() {
     if(subEl)subEl.textContent='$'+sub.toFixed(2);
   });
 
+  const excess=parseFloat(document.getElementById('aq-excess')?.value)||0;
   const gst=total*0.10;
-  const grand=total+gst;
+  const grand=total+gst-excess;
   const fmt=n=>'$'+n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
   const exEl=document.getElementById('aq-total-ex');if(exEl)exEl.textContent=fmt(total);
   const gstEl=document.getElementById('aq-gst');if(gstEl)gstEl.textContent=fmt(gst);
@@ -6779,13 +6783,15 @@ async function saveAccQuote() {
   const id = document.getElementById('aq-id').value || uid();
   const spId = document.getElementById('aq-spid').value || null;
   const vid = document.getElementById('aq-veh').value;
+  if(!vid){alert('Please select a vehicle.');return;}
   const v = fleet.find(x=>x.id===vid)||{};
 
   // Collect totals
   const rrRate=parseFloat(document.getElementById('aq-rr-rate')?.value)||125;
   const rpRate=parseFloat(document.getElementById('aq-rp-rate')?.value)||125;
   const totalEx = parseFloat(document.getElementById('aq-total-ex')?.textContent?.replace(/[$,]/g,'')||'0');
-  const grandTotal = totalEx * 1.10;
+  const excess = parseFloat(document.getElementById('aq-excess')?.value)||0;
+  const grandTotal = totalEx * 1.10 - excess;
 
   // Upload attachments
   let attachments = aqGetAttachments();
@@ -6825,6 +6831,7 @@ async function saveAccQuote() {
     pt: aqGetRows('pt'),
     ot: aqGetRows('ot'),
     notes: g('aq-notes'),
+    excess: parseFloat(document.getElementById('aq-excess')?.value)||0,
     attachments,
     grandTotal,
   };
@@ -6887,8 +6894,9 @@ function printAccQuote() {
   };
 
   const totalEx=parseFloat(document.getElementById('aq-total-ex')?.textContent?.replace(/[$,]/g,'')||'0');
+  const excess=parseFloat(document.getElementById('aq-excess')?.value)||0;
   const gst=totalEx*0.10;
-  const grand=totalEx+gst;
+  const grand=totalEx+gst-excess;
   const fmt=n=>'$'+n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
 
   const w=window.open('','_blank');
@@ -6930,6 +6938,7 @@ function printAccQuote() {
   <table class="totals">
     <tr><td>Total (ex GST)</td><td style="text-align:right;font-weight:600;">${fmt(totalEx)}</td></tr>
     <tr><td>GST (10%)</td><td style="text-align:right;">${fmt(gst)}</td></tr>
+    ${excess>0?`<tr><td>Less excess</td><td style="text-align:right;color:#c0392b;">-${fmt(excess)}</td></tr>`:''}
     <tr class="grand"><td>Grand Total (inc GST)</td><td style="text-align:right;">${fmt(grand)}</td></tr>
   </table>
   ${g('aq-notes')?`<p style="margin-top:12px;font-size:11px;"><strong>Notes:</strong> ${g('aq-notes')}</p>`:''}
