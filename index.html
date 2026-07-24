@@ -1335,6 +1335,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
         <table style="font-size:13px;min-width:260px;">
           <tr><td style="padding:3px 12px;">Total (ex GST)</td><td style="text-align:right;font-weight:600;" id="aq-total-ex">$0.00</td></tr>
           <tr><td style="padding:3px 12px;">GST (10%)</td><td style="text-align:right;" id="aq-gst">$0.00</td></tr>
+          <tr><td style="padding:3px 12px;color:var(--grey-dark);">Less excess (optional)</td><td style="text-align:right;padding:3px 6px;"><input id="aq-excess" type="number" min="0" step="0.01" placeholder="0.00" oninput="updateAqTotals()" style="width:100px;text-align:right;border:1px solid var(--grey-b);border-radius:4px;padding:3px 6px;font-size:13px;font-family:inherit;"></td></tr>
           <tr style="background:var(--navy);color:white;"><td style="padding:5px 12px;font-weight:700;">Grand Total (inc GST)</td><td style="text-align:right;font-weight:700;padding:5px 12px;" id="aq-grand">$0.00</td></tr>
         </table>
       </div>
@@ -6524,11 +6525,10 @@ function aqToSp(q) {
     AccidentRef: q.accRef || '',
     RRRate: q.rrRate || '125',
     RPRate: q.rpRate || '125',
-    Rows: JSON.stringify({rr:q.rr||[],rp:q.rp||[],pt:q.pt||[],ot:q.ot||[]}),
+    Rows: JSON.stringify({rr:q.rr||[],rp:q.rp||[],pt:q.pt||[],ot:q.ot||[],excess:q.excess||0}),
     Notes: q.notes || '',
     Attachment_x002f_s: JSON.stringify(q.attachments || []),
     GrandTotal: q.grandTotal ? String(q.grandTotal) : '0',
-    Excess: q.excess ? String(q.excess) : '0',
   };
 }
 
@@ -6562,7 +6562,7 @@ function spToAq(x) {
     notes: f.Notes || '',
     attachments,
     grandTotal: parseFloat(f.GrandTotal || '0'),
-    excess: parseFloat(f.Excess || '0'),
+    excess: parseFloat(rows.excess || 0),
   };
 }
 
