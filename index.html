@@ -3,7 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Moonee Valley Bus Lines Service Desk</title>
+<title>MVBL Service Desk</title>
+<!-- PWA Manifest & Icons -->
+<link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIk1WQkwgU2VydmljZSBEZXNrIiwKICAic2hvcnRfbmFtZSI6ICJTZXJ2aWNlIERlc2siLAogICJkZXNjcmlwdGlvbiI6ICJNb29uZWUgVmFsbGV5IEJ1cyBMaW5lcyBXb3Jrc2hvcCAmIEZsZWV0IE1hbmFnZW1lbnQiLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYTI3NDQiLAogICJ0aGVtZV9jb2xvciI6ICIjMWEyNzQ0IiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQtcHJpbWFyeSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0ExTVRJZ05URXlJajRLSUNBOElTMHRJRUpoWTJ0bmNtOTFibVFnTFMwK0NpQWdQSEpsWTNRZ2QybGtkR2c5SWpVeE1pSWdhR1ZwWjJoMFBTSTFNVElpSUhKNFBTSTVOaUlnWm1sc2JEMGlJekZoTWpjME5DSXZQZ29nSUR3aExTMGdRblZ6SUdKdlpIa2dMUzArQ2lBZ1BISmxZM1FnZUQwaU5qQWlJSGs5SWpFMk1DSWdkMmxrZEdnOUlqTTVNaUlnYUdWcFoyaDBQU0l5TVRBaUlISjRQU0l5TWlJZ1ptbHNiRDBpSXpGaE4yWTNZU0l2UGdvZ0lEd2hMUzBnUW5WeklISnZiMllnTFMwK0NpQWdQSEpsWTNRZ2VEMGlPREFpSUhrOUlqRTBNQ0lnZDJsa2RHZzlJak0xTWlJZ2FHVnBaMmgwUFNJME1DSWdjbmc5SWpFMElpQm1hV3hzUFNJak1XRTNaamRoSWk4K0NpQWdQQ0V0TFNCWGFXNWtiM2R6SUhKdmR5QXRMVDRLSUNBOGNtVmpkQ0I0UFNJNU5TSWdlVDBpTVRjMUlpQjNhV1IwYUQwaU56QWlJR2hsYVdkb2REMGlOVFVpSUhKNFBTSTRJaUJtYVd4c1BTSWpaVGhtTldZMElpQnZjR0ZqYVhSNVBTSXdMamtpTHo0S0lDQThjbVZqZENCNFBTSXhPRFVpSUhrOUlqRTNOU0lnZDJsa2RHZzlJamN3SWlCb1pXbG5hSFE5SWpVMUlpQnllRDBpT0NJZ1ptbHNiRDBpSTJVNFpqVm1OQ0lnYjNCaFkybDBlVDBpTUM0NUlpOCtDaUFnUEhKbFkzUWdlRDBpTWpjMUlpQjVQU0l4TnpVaUlIZHBaSFJvUFNJM01DSWdhR1ZwWjJoMFBTSTFOU0lnY25nOUlqZ2lJR1pwYkd3OUlpTmxPR1kxWmpRaUlHOXdZV05wZEhrOUlqQXVPU0l2UGdvZ0lEeHlaV04wSUhnOUlqTTJOU0lnZVQwaU1UYzFJaUIzYVdSMGFEMGlOekFpSUdobGFXZG9kRDBpTlRVaUlISjRQU0k0SWlCbWFXeHNQU0lqWlRobU5XWTBJaUJ2Y0dGamFYUjVQU0l3TGpraUx6NEtJQ0E4SVMwdElFSjFjeUJtY205dWRDQnpkSEpwY0dVZ0xTMCtDaUFnUEhKbFkzUWdlRDBpTmpBaUlIazlJakkxTlNJZ2QybGtkR2c5SWpNNU1pSWdhR1ZwWjJoMFBTSTRJaUJtYVd4c1BTSnlaMkpoS0RJMU5Td3lOVFVzTWpVMUxEQXVNVFVwSWk4K0NpQWdQQ0V0TFNCWGFHVmxiSE1nTFMwK0NpQWdQR05wY21Oc1pTQmplRDBpTVRRNElpQmplVDBpTXpjMUlpQnlQU0l6T0NJZ1ptbHNiRDBpSXpCa01XRXpNeUl2UGdvZ0lEeGphWEpqYkdVZ1kzZzlJakUwT0NJZ1kzazlJak0zTlNJZ2NqMGlNaklpSUdacGJHdzlJaU15WVROa05XVWlMejRLSUNBOFkybHlZMnhsSUdONFBTSXhORGdpSUdONVBTSXpOelVpSUhJOUlqRXdJaUJtYVd4c1BTSWpNV0UzWmpkaElpOCtDaUFnUEdOcGNtTnNaU0JqZUQwaU16WTBJaUJqZVQwaU16YzFJaUJ5UFNJek9DSWdabWxzYkQwaUl6QmtNV0V6TXlJdlBnb2dJRHhqYVhKamJHVWdZM2c5SWpNMk5DSWdZM2s5SWpNM05TSWdjajBpTWpJaUlHWnBiR3c5SWlNeVlUTmtOV1VpTHo0S0lDQThZMmx5WTJ4bElHTjRQU0l6TmpRaUlHTjVQU0l6TnpVaUlISTlJakV3SWlCbWFXeHNQU0lqTVdFM1pqZGhJaTgrQ2lBZ1BDRXRMU0JYYUdWbGJDQmhjbU5vWlhNZ0xTMCtDaUFnUEhCaGRHZ2daRDBpVFRFd05TQXpOekFnVVRFME9DQXpNakFnTVRreElETTNNQ0lnWm1sc2JEMGlJekZoTWpjME5DSWdiM0JoWTJsMGVUMGlNQzQxSWk4K0NpQWdQSEJoZEdnZ1pEMGlUVE15TVNBek56QWdVVE0yTkNBek1qQWdOREEzSURNM01DSWdabWxzYkQwaUl6RmhNamMwTkNJZ2IzQmhZMmwwZVQwaU1DNDFJaTgrQ2lBZ1BDRXRMU0JOVmtKTUlIUmxlSFFnYjI0Z1luVnpJQzB0UGdvZ0lEeDBaWGgwSUhnOUlqSTFOaUlnZVQwaU16UXdJaUIwWlhoMExXRnVZMmh2Y2owaWJXbGtaR3hsSWlCbWIyNTBMV1poYldsc2VUMGlRWEpwWVd3Z1FteGhZMnNzYzJGdWN5MXpaWEpwWmlJZ1ptOXVkQzF6YVhwbFBTSXpPQ0lnWm05dWRDMTNaV2xuYUhROUlqa3dNQ0lnWm1sc2JEMGlkMmhwZEdVaUlHOXdZV05wZEhrOUlqQXVPU0krVFZaQ1REd3ZkR1Y0ZEQ0S0lDQThJUzB0SUZOd1lXNXVaWEl2ZDNKbGJtTm9JR2xqYjI0Z0tITmxjblpwWTJVZ1pHVnpheUJwYm1ScFkyRjBiM0lwSUhSdmNDQnlhV2RvZENBdExUNEtJQ0E4WTJseVkyeGxJR040UFNJME1EQWlJR041UFNJeE1USWlJSEk5SWpVeUlpQm1hV3hzUFNJak1XRTNaamRoSWk4K0NpQWdQR05wY21Oc1pTQmplRDBpTkRBd0lpQmplVDBpTVRFeUlpQnlQU0kwTkNJZ1ptbHNiRDBpSXpGaE1qYzBOQ0l2UGdvZ0lEd2hMUzBnVjNKbGJtTm9JSE5vWVhCbElDMHRQZ29nSUR4bklIUnlZVzV6Wm05eWJUMGlkSEpoYm5Oc1lYUmxLRFF3TUN3eE1USXBJSEp2ZEdGMFpTZzBOU2tpUGdvZ0lDQWdQSEpsWTNRZ2VEMGlMVFlpSUhrOUlpMHpNQ0lnZDJsa2RHZzlJakV5SWlCb1pXbG5hSFE5SWpZd0lpQnllRDBpTkNJZ1ptbHNiRDBpZDJocGRHVWlMejRLSUNBZ0lEeGphWEpqYkdVZ1kzZzlJakFpSUdONVBTSXRNekFpSUhJOUlqRTBJaUJtYVd4c1BTSjNhR2wwWlNJdlBnb2dJQ0FnUEdOcGNtTnNaU0JqZUQwaU1DSWdZM2s5SWkwek1DSWdjajBpT0NJZ1ptbHNiRDBpSXpGaE1qYzBOQ0l2UGdvZ0lDQWdQR05wY21Oc1pTQmplRDBpTUNJZ1kzazlJak13SWlCeVBTSXhOQ0lnWm1sc2JEMGlkMmhwZEdVaUx6NEtJQ0FnSUR4amFYSmpiR1VnWTNnOUlqQWlJR041UFNJek1DSWdjajBpT0NJZ1ptbHNiRDBpSXpGaE1qYzBOQ0l2UGdvZ0lEd3ZaejRLUEM5emRtYysiLAogICAgICAic2l6ZXMiOiAiYW55IiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0KICBdLAogICJjYXRlZ29yaWVzIjogWwogICAgInByb2R1Y3Rpdml0eSIsCiAgICAidXRpbGl0aWVzIgogIF0sCiAgImxhbmciOiAiZW4tQVUiCn0=">
+<meta name="theme-color" content="#1a2744">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Service Desk">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8IS0tIEJhY2tncm91bmQgLS0+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0iIzFhMjc0NCIvPgogIDwhLS0gQnVzIGJvZHkgLS0+CiAgPHJlY3QgeD0iNjAiIHk9IjE2MCIgd2lkdGg9IjM5MiIgaGVpZ2h0PSIyMTAiIHJ4PSIyMiIgZmlsbD0iIzFhN2Y3YSIvPgogIDwhLS0gQnVzIHJvb2YgLS0+CiAgPHJlY3QgeD0iODAiIHk9IjE0MCIgd2lkdGg9IjM1MiIgaGVpZ2h0PSI0MCIgcng9IjE0IiBmaWxsPSIjMWE3ZjdhIi8+CiAgPCEtLSBXaW5kb3dzIHJvdyAtLT4KICA8cmVjdCB4PSI5NSIgeT0iMTc1IiB3aWR0aD0iNzAiIGhlaWdodD0iNTUiIHJ4PSI4IiBmaWxsPSIjZThmNWY0IiBvcGFjaXR5PSIwLjkiLz4KICA8cmVjdCB4PSIxODUiIHk9IjE3NSIgd2lkdGg9IjcwIiBoZWlnaHQ9IjU1IiByeD0iOCIgZmlsbD0iI2U4ZjVmNCIgb3BhY2l0eT0iMC45Ii8+CiAgPHJlY3QgeD0iMjc1IiB5PSIxNzUiIHdpZHRoPSI3MCIgaGVpZ2h0PSI1NSIgcng9IjgiIGZpbGw9IiNlOGY1ZjQiIG9wYWNpdHk9IjAuOSIvPgogIDxyZWN0IHg9IjM2NSIgeT0iMTc1IiB3aWR0aD0iNzAiIGhlaWdodD0iNTUiIHJ4PSI4IiBmaWxsPSIjZThmNWY0IiBvcGFjaXR5PSIwLjkiLz4KICA8IS0tIEJ1cyBmcm9udCBzdHJpcGUgLS0+CiAgPHJlY3QgeD0iNjAiIHk9IjI1NSIgd2lkdGg9IjM5MiIgaGVpZ2h0PSI4IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTUpIi8+CiAgPCEtLSBXaGVlbHMgLS0+CiAgPGNpcmNsZSBjeD0iMTQ4IiBjeT0iMzc1IiByPSIzOCIgZmlsbD0iIzBkMWEzMyIvPgogIDxjaXJjbGUgY3g9IjE0OCIgY3k9IjM3NSIgcj0iMjIiIGZpbGw9IiMyYTNkNWUiLz4KICA8Y2lyY2xlIGN4PSIxNDgiIGN5PSIzNzUiIHI9IjEwIiBmaWxsPSIjMWE3ZjdhIi8+CiAgPGNpcmNsZSBjeD0iMzY0IiBjeT0iMzc1IiByPSIzOCIgZmlsbD0iIzBkMWEzMyIvPgogIDxjaXJjbGUgY3g9IjM2NCIgY3k9IjM3NSIgcj0iMjIiIGZpbGw9IiMyYTNkNWUiLz4KICA8Y2lyY2xlIGN4PSIzNjQiIGN5PSIzNzUiIHI9IjEwIiBmaWxsPSIjMWE3ZjdhIi8+CiAgPCEtLSBXaGVlbCBhcmNoZXMgLS0+CiAgPHBhdGggZD0iTTEwNSAzNzAgUTE0OCAzMjAgMTkxIDM3MCIgZmlsbD0iIzFhMjc0NCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTMyMSAzNzAgUTM2NCAzMjAgNDA3IDM3MCIgZmlsbD0iIzFhMjc0NCIgb3BhY2l0eT0iMC41Ii8+CiAgPCEtLSBNVkJMIHRleHQgb24gYnVzIC0tPgogIDx0ZXh0IHg9IjI1NiIgeT0iMzQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOSI+TVZCTDwvdGV4dD4KICA8IS0tIFNwYW5uZXIvd3JlbmNoIGljb24gKHNlcnZpY2UgZGVzayBpbmRpY2F0b3IpIHRvcCByaWdodCAtLT4KICA8Y2lyY2xlIGN4PSI0MDAiIGN5PSIxMTIiIHI9IjUyIiBmaWxsPSIjMWE3ZjdhIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTEyIiByPSI0NCIgZmlsbD0iIzFhMjc0NCIvPgogIDwhLS0gV3JlbmNoIHNoYXBlIC0tPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQwMCwxMTIpIHJvdGF0ZSg0NSkiPgogICAgPHJlY3QgeD0iLTYiIHk9Ii0zMCIgd2lkdGg9IjEyIiBoZWlnaHQ9IjYwIiByeD0iNCIgZmlsbD0id2hpdGUiLz4KICAgIDxjaXJjbGUgY3g9IjAiIGN5PSItMzAiIHI9IjE0IiBmaWxsPSJ3aGl0ZSIvPgogICAgPGNpcmNsZSBjeD0iMCIgY3k9Ii0zMCIgcj0iOCIgZmlsbD0iIzFhMjc0NCIvPgogICAgPGNpcmNsZSBjeD0iMCIgY3k9IjMwIiByPSIxNCIgZmlsbD0id2hpdGUiLz4KICAgIDxjaXJjbGUgY3g9IjAiIGN5PSIzMCIgcj0iOCIgZmlsbD0iIzFhMjc0NCIvPgogIDwvZz4KPC9zdmc+">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8IS0tIEJhY2tncm91bmQgLS0+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0iIzFhMjc0NCIvPgogIDwhLS0gQnVzIGJvZHkgLS0+CiAgPHJlY3QgeD0iNjAiIHk9IjE2MCIgd2lkdGg9IjM5MiIgaGVpZ2h0PSIyMTAiIHJ4PSIyMiIgZmlsbD0iIzFhN2Y3YSIvPgogIDwhLS0gQnVzIHJvb2YgLS0+CiAgPHJlY3QgeD0iODAiIHk9IjE0MCIgd2lkdGg9IjM1MiIgaGVpZ2h0PSI0MCIgcng9IjE0IiBmaWxsPSIjMWE3ZjdhIi8+CiAgPCEtLSBXaW5kb3dzIHJvdyAtLT4KICA8cmVjdCB4PSI5NSIgeT0iMTc1IiB3aWR0aD0iNzAiIGhlaWdodD0iNTUiIHJ4PSI4IiBmaWxsPSIjZThmNWY0IiBvcGFjaXR5PSIwLjkiLz4KICA8cmVjdCB4PSIxODUiIHk9IjE3NSIgd2lkdGg9IjcwIiBoZWlnaHQ9IjU1IiByeD0iOCIgZmlsbD0iI2U4ZjVmNCIgb3BhY2l0eT0iMC45Ii8+CiAgPHJlY3QgeD0iMjc1IiB5PSIxNzUiIHdpZHRoPSI3MCIgaGVpZ2h0PSI1NSIgcng9IjgiIGZpbGw9IiNlOGY1ZjQiIG9wYWNpdHk9IjAuOSIvPgogIDxyZWN0IHg9IjM2NSIgeT0iMTc1IiB3aWR0aD0iNzAiIGhlaWdodD0iNTUiIHJ4PSI4IiBmaWxsPSIjZThmNWY0IiBvcGFjaXR5PSIwLjkiLz4KICA8IS0tIEJ1cyBmcm9udCBzdHJpcGUgLS0+CiAgPHJlY3QgeD0iNjAiIHk9IjI1NSIgd2lkdGg9IjM5MiIgaGVpZ2h0PSI4IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTUpIi8+CiAgPCEtLSBXaGVlbHMgLS0+CiAgPGNpcmNsZSBjeD0iMTQ4IiBjeT0iMzc1IiByPSIzOCIgZmlsbD0iIzBkMWEzMyIvPgogIDxjaXJjbGUgY3g9IjE0OCIgY3k9IjM3NSIgcj0iMjIiIGZpbGw9IiMyYTNkNWUiLz4KICA8Y2lyY2xlIGN4PSIxNDgiIGN5PSIzNzUiIHI9IjEwIiBmaWxsPSIjMWE3ZjdhIi8+CiAgPGNpcmNsZSBjeD0iMzY0IiBjeT0iMzc1IiByPSIzOCIgZmlsbD0iIzBkMWEzMyIvPgogIDxjaXJjbGUgY3g9IjM2NCIgY3k9IjM3NSIgcj0iMjIiIGZpbGw9IiMyYTNkNWUiLz4KICA8Y2lyY2xlIGN4PSIzNjQiIGN5PSIzNzUiIHI9IjEwIiBmaWxsPSIjMWE3ZjdhIi8+CiAgPCEtLSBXaGVlbCBhcmNoZXMgLS0+CiAgPHBhdGggZD0iTTEwNSAzNzAgUTE0OCAzMjAgMTkxIDM3MCIgZmlsbD0iIzFhMjc0NCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTMyMSAzNzAgUTM2NCAzMjAgNDA3IDM3MCIgZmlsbD0iIzFhMjc0NCIgb3BhY2l0eT0iMC41Ii8+CiAgPCEtLSBNVkJMIHRleHQgb24gYnVzIC0tPgogIDx0ZXh0IHg9IjI1NiIgeT0iMzQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOSI+TVZCTDwvdGV4dD4KICA8IS0tIFNwYW5uZXIvd3JlbmNoIGljb24gKHNlcnZpY2UgZGVzayBpbmRpY2F0b3IpIHRvcCByaWdodCAtLT4KICA8Y2lyY2xlIGN4PSI0MDAiIGN5PSIxMTIiIHI9IjUyIiBmaWxsPSIjMWE3ZjdhIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTEyIiByPSI0NCIgZmlsbD0iIzFhMjc0NCIvPgogIDwhLS0gV3JlbmNoIHNoYXBlIC0tPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQwMCwxMTIpIHJvdGF0ZSg0NSkiPgogICAgPHJlY3QgeD0iLTYiIHk9Ii0zMCIgd2lkdGg9IjEyIiBoZWlnaHQ9IjYwIiByeD0iNCIgZmlsbD0id2hpdGUiLz4KICAgIDxjaXJjbGUgY3g9IjAiIGN5PSItMzAiIHI9IjE0IiBmaWxsPSJ3aGl0ZSIvPgogICAgPGNpcmNsZSBjeD0iMCIgY3k9Ii0zMCIgcj0iOCIgZmlsbD0iIzFhMjc0NCIvPgogICAgPGNpcmNsZSBjeD0iMCIgY3k9IjMwIiByPSIxNCIgZmlsbD0id2hpdGUiLz4KICAgIDxjaXJjbGUgY3g9IjAiIGN5PSIzMCIgcj0iOCIgZmlsbD0iIzFhMjc0NCIvPgogIDwvZz4KPC9zdmc+">
+
 <style>
 :root{--navy:#1a2744;--navy-mid:#1e2e52;--teal:#1a7f7a;--teal-light:#e8f5f4;--teal-mid:#2a9d96;--amber:#e07b00;--amber-light:#fff4e0;--red:#c0392b;--red-light:#fdecea;--green:#1e8a50;--green-light:#e8f7ee;--grey:#f4f5f7;--grey-mid:#e2e4e9;--grey-dark:#6b7280;--text:#1a2744;--text-mid:#4b5563;--radius:8px;--shadow:0 1px 4px rgba(26,39,68,.10);--sb:220px;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -8721,5 +8730,79 @@ init();
   <div class="mob-menu-item" onclick="pushAllToTodo()"><span class="mob-menu-item-icon">📋</span><span class="mob-menu-item-label">Sync Microsoft To Do</span></div>
   <div class="mob-menu-item" onclick="toggleAuth()"><span class="mob-menu-item-icon">🔓</span><span class="mob-menu-item-label">Sign out</span></div>
 </div>
+<!-- PWA Install Banner -->
+<div id="pwa-install-banner" style="display:none;position:fixed;bottom:70px;left:12px;right:12px;z-index:350;
+  background:var(--navy);color:white;border-radius:14px;padding:14px 16px;
+  align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.3);">
+  <div style="font-size:28px;flex-shrink:0;">🚌</div>
+  <div style="flex:1;">
+    <div style="font-weight:700;font-size:14px;">Install Service Desk</div>
+    <div style="font-size:12px;opacity:.7;margin-top:2px;">Add to home screen for quick access</div>
+  </div>
+  <button onclick="installPWA()" style="background:var(--teal);color:white;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;">Install</button>
+  <button onclick="document.getElementById('pwa-install-banner').style.display='none'" 
+    style="background:rgba(255,255,255,.1);color:white;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:16px;">✕</button>
+</div>
+<!-- iOS Install Hint (shown on iOS Safari only) -->
+<div id="ios-install-hint" style="display:none;position:fixed;bottom:70px;left:12px;right:12px;z-index:350;
+  background:var(--navy);color:white;border-radius:14px;padding:14px 16px;
+  align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.3);">
+  <div style="font-size:28px;flex-shrink:0;">🚌</div>
+  <div style="flex:1;">
+    <div style="font-weight:700;font-size:14px;">Install Service Desk</div>
+    <div style="font-size:12px;opacity:.7;margin-top:2px;">Tap <strong>Share</strong> → <strong>Add to Home Screen</strong></div>
+  </div>
+  <button onclick="document.getElementById('ios-install-hint').style.display='none';localStorage.setItem('pwa-hint-dismissed','1')"
+    style="background:rgba(255,255,255,.1);color:white;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:16px;">✕</button>
+</div>
+<script>
+// Show iOS install hint on iOS Safari (not in standalone mode)
+(function(){
+  var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  var standalone = window.navigator.standalone;
+  var dismissed = localStorage.getItem('pwa-hint-dismissed');
+  if (iOS && !standalone && !dismissed) {
+    setTimeout(function() {
+      var el = document.getElementById('ios-install-hint');
+      if (el) el.style.display = 'flex';
+    }, 3000);
+  }
+})();
+
+// ─── PWA SERVICE WORKER ───────────────────────────────────────────────────────
+(function() {
+  if ('serviceWorker' in navigator) {
+    // Register SW from blob URL (works for single-file apps)
+    const swCode = atob('CmNvbnN0IENBQ0hFID0gJ212Ymwtc2QtdjEnOwpjb25zdCBBU1NFVFMgPSBbJy4vJywgJy4vV29ya3Nob3BIdWIuaHRtbCddOwoKc2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZSA9PiB7CiAgZS53YWl0VW50aWwoCiAgICBjYWNoZXMub3BlbihDQUNIRSkudGhlbihjID0+IGMuYWRkQWxsKEFTU0VUUykuY2F0Y2goKCkgPT4ge30pKQogICk7CiAgc2VsZi5za2lwV2FpdGluZygpOwp9KTsKCnNlbGYuYWRkRXZlbnRMaXN0ZW5lcignYWN0aXZhdGUnLCBlID0+IHsKICBlLndhaXRVbnRpbCgKICAgIGNhY2hlcy5rZXlzKCkudGhlbihrZXlzID0+CiAgICAgIFByb21pc2UuYWxsKGtleXMuZmlsdGVyKGsgPT4gayAhPT0gQ0FDSEUpLm1hcChrID0+IGNhY2hlcy5kZWxldGUoaykpKQogICAgKQogICk7CiAgc2VsZi5jbGllbnRzLmNsYWltKCk7Cn0pOwoKc2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGUgPT4gewogIC8vIE9ubHkgY2FjaGUgR0VUIHJlcXVlc3RzIGZvciBvdXIgb3duIGZpbGVzCiAgaWYgKGUucmVxdWVzdC5tZXRob2QgIT09ICdHRVQnKSByZXR1cm47CiAgaWYgKGUucmVxdWVzdC51cmwuaW5jbHVkZXMoJ2dyYXBoLm1pY3Jvc29mdC5jb20nKSkgcmV0dXJuOwogIGlmIChlLnJlcXVlc3QudXJsLmluY2x1ZGVzKCdsb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tJykpIHJldHVybjsKICBlLnJlc3BvbmRXaXRoKAogICAgZmV0Y2goZS5yZXF1ZXN0KQogICAgICAudGhlbihyID0+IHsKICAgICAgICBpZiAociAmJiByLnN0YXR1cyA9PT0gMjAwKSB7CiAgICAgICAgICBjb25zdCBjbG9uZSA9IHIuY2xvbmUoKTsKICAgICAgICAgIGNhY2hlcy5vcGVuKENBQ0hFKS50aGVuKGMgPT4gYy5wdXQoZS5yZXF1ZXN0LCBjbG9uZSkpOwogICAgICAgIH0KICAgICAgICByZXR1cm4gcjsKICAgICAgfSkKICAgICAgLmNhdGNoKCgpID0+IGNhY2hlcy5tYXRjaChlLnJlcXVlc3QpKQogICk7Cn0pOwo=');
+    const blob = new Blob([swCode], {type: 'text/javascript'});
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl, {scope: './'}). then(reg => {
+      console.log('SW registered, scope:', reg.scope);
+    }).catch(e => {
+      console.log('SW registration failed (normal for file:// or non-HTTPS):', e.message);
+    });
+  }
+  // iOS PWA install prompt
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.style.display = 'flex';
+  });
+  window.addEventListener('appinstalled', () => {
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.style.display = 'none';
+    deferredPrompt = null;
+  });
+  window.installPWA = function() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    }
+  };
+})();
+
+</script>
 </body>
 </html>
