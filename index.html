@@ -3196,6 +3196,7 @@ async function printJobCardId(id){
     <tr><th>VIN</th><td colspan="3">${v.vin||'—'}</td><th>Engine #</th><td>${v.engine||'—'}</td></tr>
     <tr><th>Date in</th><td>${fd(j.dateIn)||'—'}</td><th>Date out</th><td>${fd(j.dateOut)||'—'}</td><th>Odometer</th><td>${j.odo?Number(j.odo).toLocaleString()+' km':'—'}</td></tr>
     <tr><th>Technician</th><td>${j.tech||'—'}</td><th>Authorised by</th><td>${j.auth||'—'}</td><th>Hours</th><td>${j.hours||'—'}</td></tr>
+    <tr><th>Next service date</th><td>${j.nsDate?fd(j.nsDate):'—'}</td><th>Next service km</th><td>${j.nsOdo?Number(j.nsOdo).toLocaleString()+' km':'—'}</td><th>Next service notes</th><td>${j.nsNotes||'—'}</td></tr>
   </table>
 
   ${faultRows?`<div class="sect">Faults reported / Work requested</div>
