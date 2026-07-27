@@ -648,6 +648,37 @@ a, input, textarea, select { -webkit-touch-callout: default; }
   }
 }
 
+
+@media (max-width: 900px) {
+  /* Modal sits above the bottom nav bar */
+  .mbg {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+    align-items: flex-end !important;
+  }
+  .modal {
+    max-height: calc(92vh - 60px - env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 20px 20px 0 0 !important;
+    margin-bottom: 0 !important;
+  }
+  /* Footer sticks to bottom of modal, never behind nav */
+  .mf {
+    position: sticky !important;
+    bottom: 0 !important;
+    background: white !important;
+    z-index: 10 !important;
+    border-top: 1px solid var(--grey-b) !important;
+    padding: 12px 14px !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+  .mf .btn { flex: 1 !important; min-height: 44px !important; }
+
+  /* Page content clears bottom nav */
+  .main {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
 </style>
 </head>
 <body>
