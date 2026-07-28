@@ -7613,20 +7613,7 @@ function openMobMenu(){const el=document.getElementById('mob-menu-overlay');if(e
 function closeMobMenu(){const el=document.getElementById('mob-menu-overlay');if(el){el.classList.remove('show');document.body.style.overflow='';}}
 function mobNav(page){closeMobMenu();showPage(page,null);}
 function updateBottomNav(pageName){
-  const map={dashboard:'bn-dashboard',fleet:'bn-fleet',jobcards:'bn-jobcards',defects:'bn-jobcards'};
-  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
-  if(openDefs.length)alerts.push({icon:'⚠️',text:openDefs.length+' open defect'+(openDefs.length>1?'s':''),page:'defects',urgent:openDefs.some(d=>d.severity==='Safety critical')});
-  if(ds.length)alerts.push({icon:'🟡',text:ds.length+' service'+(ds.length>1?'s':'')+' due within 30 days',page:'service',urgent:false});
-  if(openTasks.length)alerts.push({icon:'🔧',text:openTasks.length+' open task'+(openTasks.length>1?'s':''),page:'tasks',urgent:false});
-  const ae=document.getElementById('mob-alerts');
-  if(ae){ae.style.display=alerts.length?'block':'none';ae.innerHTML=alerts.map(a=>'<div class="mob-alert-item" onclick="mobNav(\x27'+a.page+'\x27)"><span style="font-size:18px;">'+a.icon+'</span><span style="flex:1;font-size:13px;font-weight:'+(a.urgent?700:600)+';color:'+(a.urgent?'var(--red)':'var(--navy)')+';">'+a.text+'</span><span style="color:var(--grey-dark);">›</span></div>').join('');}
-  const feedItems=[];
-  defects.filter(d=>canSeeVehicle(d.vehicleId)).slice(0,3).forEach(d=>{const v=fleet.find(x=>x.id===d.vehicleId)||{};feedItems.push({time:d.dateReported||'',icon:d.status==='Cleared'?'✅':'⚠️',title:(d.refNum||'Defect')+' — Fleet '+(v.fleet||'?'),sub:d.desc||'',badge:d.status,bc:d.status==='Cleared'?'var(--green)':'var(--red)',oc:"openDefectModal('"+d.id+"')"});});
-  jobCards.filter(j=>canSeeVehicle(j.vehicleId)).slice(0,3).forEach(j=>{const v=fleet.find(x=>x.id===j.vehicleId)||{};feedItems.push({time:j.dateIn||'',icon:'🔧',title:(j.jobNum||'JC')+' — Fleet '+(v.fleet||'?'),sub:j.desc||'',badge:j.status,bc:j.status==='Complete'?'var(--green)':'var(--teal)',oc:"openJobCardModal('"+j.id+"')"});});
-  ptHistory.slice(0,2).forEach(r=>{const v=fleet.find(x=>x.id===(r.vehicleId||r.vId))||{};feedItems.push({time:r.dt?.slice(0,10)||'',icon:r.failCount>0?'🟠':'🚦',title:'Pre-trip — Fleet '+(r.vFleet||v.fleet||'?'),sub:'Driver: '+(r.driver||'—')+' · '+(r.failCount>0?r.failCount+' failed':'All passed'),badge:r.failCount>0?'Failed':'Passed',bc:r.failCount>0?'var(--amber)':'var(--green)',oc:"viewPtRecord('"+r.id+"')"});});
-  feedItems.sort((a,b)=>(b.time||'').localeCompare(a.time||''));
-  const fe=document.getElementById('mob-feed-list');
-  if(fe)fe.innerHTML=feedItems.slice(0,8).map(f=>'<div class="mob-feed-item" onclick="'+f.oc+'"><span class="mob-feed-icon">'+f.icon+'</span><div class="mob-feed-text"><div class="mob-feed-title">'+f.title+'</div><div class="mob-feed-sub">'+f.sub+'</div></div><span class="badge" style="background:'+f.bc+';color:white;font-size:10px;">'+f.badge+'</span></div>').join('')||'<div style="padding:16px;text-align:center;color:var(--grey-dark);">No recent activity</div>';
+  // No bottom nav - no-op
 }
 function openQuickCapture(){
   const ov=document.getElementById('quick-capture-overlay');const sh=document.getElementById('quick-capture');
