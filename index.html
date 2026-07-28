@@ -518,21 +518,9 @@ button,
 /* Inputs still selectable */
 input, textarea, select { -webkit-user-select: text; user-select: text; }
 
-/* Prevent rubber-band scroll on the whole page */
+/* Prevent rubber-band scroll */
 html, body {
   overscroll-behavior: none;
-  overflow: hidden;
-  height: 100%;
-  width: 100%;
-  position: fixed;
-}
-
-/* The shell scrolls, not the body */
-.shell {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  height: calc(100vh - 52px);
 }
 
 /* Smooth momentum scrolling everywhere */
