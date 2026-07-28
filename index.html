@@ -189,8 +189,6 @@ textarea{min-height:72px;resize:vertical;}
   .nt { padding: 13px 16px !important; font-size: 14px !important; min-height: 46px; }
   .sb-toggle-label { padding: 13px 16px !important; font-size: 12px !important; }
 
-  /* Modals slide up from bottom */
-  .mbg { padding: 0 !important; align-items: flex-end !important; }
   .modal, .modal.wide, .modal.xl {
     max-width: 100% !important; width: 100% !important;
     border-radius: 16px 16px 0 0 !important;
@@ -528,14 +526,11 @@ html, body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Modals scroll internally, not the page */
-.mbg { overflow-y: auto; overscroll-behavior: contain; }
+/* Modals scroll internally */
+.modal { overflow-y: auto; overscroll-behavior: contain; }
 
-/* Remove double-tap zoom on buttons */
-button, a, input[type="submit"], .btn, 
-
-/* App-like button press feedback */
-.btn:active { opacity: 0.82; transform: scale(0.98); }
+/* Remove double-tap zoom on buttons only */
+button, .btn, .mob-action-btn, .sev-btn { touch-action: manipulation; }
 .mob-card:active { transform: scale(0.985); opacity: 0.9; }
 .mob-action-btn:active { transform: scale(0.94); }
 
@@ -558,13 +553,10 @@ button, a, input[type="submit"], .btn,
 }
 
 /* Prevent iOS callout on long press */
-* { -webkit-touch-callout: none; }
-/* Allow callout on links and inputs */
-a, input, textarea, select { -webkit-touch-callout: default; }
+/* touch-callout only on buttons */
+button, .btn { -webkit-touch-callout: none; }
+a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
 
-/* Page transitions - slide feel */
-.page { transition: opacity 0.15s ease; }
-.page.active { opacity: 1; }
 
 /* Scrollbar hidden on mobile */
 @media (max-width: 900px) {
@@ -2834,12 +2826,7 @@ function populateAllFilters(){
 function activePage(){const a=document.querySelector('.page.active');return a?a.id.replace('page-',''):'dashboard';}
 function showPage(name,tab){
   updateBottomNav(name);
-  // Brief fade for native feel
-  const prev = document.querySelector('.page.active');
-  if (prev && prev.id !== 'page-'+name) {
-    prev.style.opacity = '0';
-    setTimeout(() => { prev.style.opacity = ''; }, 80);
-  }if(isMobile()&&name==='dashboard'){const mob=document.getElementById('mob-dashboard');const desk=document.getElementById('desk-dashboard');if(mob)mob.style.display='block';if(desk)desk.style.display='none';}
+if(isMobile()&&name==='dashboard'){const mob=document.getElementById('mob-dashboard');const desk=document.getElementById('desk-dashboard');if(mob)mob.style.display='block';if(desk)desk.style.display='none';}
   if(connected && !canAccess(name)){showSt('warn','You do not have permission to access that page.');return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
