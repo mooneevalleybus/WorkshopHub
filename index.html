@@ -2839,7 +2839,7 @@ if(isMobile()&&name==='dashboard'){const mob=document.getElementById('mob-dashbo
 }
 function renderPage(name){
   populateAllFilters();
-  if(name==='dashboard'){renderDash();if(isMobile())renderMobDash();}
+  if(name==='dashboard'){renderDash();}
   else if(name==='fleet')renderFleet();
   else if(name==='tasks')renderTasks();
   else if(name==='parts')renderParts();
@@ -6115,7 +6115,7 @@ function applyRoleUI() {
   if (rpWrap) rpWrap.style.display = (currentRole==='admin'||_realRole==='admin') ? 'flex' : 'none';
   // Always re-render dashboard so tiles/sections reflect the real role
   if (!activePg || activePg === 'dashboard') renderDash();
-  if(isMobile()&&(!activePg||activePg==='dashboard'))renderMobDash();
+
 }
 
 function canAccess(page) {
