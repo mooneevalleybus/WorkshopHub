@@ -2583,7 +2583,7 @@ const CFG = {
   L_ACCQUOTES: '3649f660-a3f0-4c83-821b-57c08864c488',
   L_CAL:       'f01885c4-b570-413c-962e-521e62f2843b',
   SCOPES:    ['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/Files.ReadWrite.All','offline_access','openid','profile'],
-  get REDIR(){ return window.location.href.split('?')[0]; }
+  get REDIR(){ return 'https://mooneevalleybus.github.io/WorkshopHub/'; }
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -2625,8 +2625,11 @@ async function doToken(body){
 }
 async function handleCallback(){
   const code=new URLSearchParams(window.location.search).get('code');
-  if(!code)return false;
-  const v=localStorage.getItem('mvbl_pv'); if(!v)return false; localStorage.removeItem('mvbl_pv');
+  if(!code){console.log('handleCallback: no code in URL');return false;}
+  const v=localStorage.getItem('mvbl_pv');
+  if(!v){console.log('handleCallback: no PKCE verifier in localStorage');return false;}
+  localStorage.removeItem('mvbl_pv');
+  console.log('handleCallback: exchanging code for token, redirect_uri=',CFG.REDIR);
   window.history.replaceState({},'',window.location.pathname);
   return doToken({client_id:CFG.CLIENT_ID,grant_type:'authorization_code',code,redirect_uri:CFG.REDIR,code_verifier:v,scope:CFG.SCOPES.join(' ')});
 }
