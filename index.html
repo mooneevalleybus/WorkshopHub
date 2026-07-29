@@ -2607,7 +2607,7 @@ async function signIn(){
   if(status)status.textContent='Redirecting to Microsoft login…';
 
   const{v,c}=await pkce();
-  sessionStorage.setItem('pv',v);
+  localStorage.setItem('mvbl_pv',v);
   const p=new URLSearchParams({client_id:CFG.CLIENT_ID,response_type:'code',redirect_uri:CFG.REDIR,scope:CFG.SCOPES.join(' '),code_challenge:c,code_challenge_method:'S256',response_mode:'query'});
   window.location.href=`https://login.microsoftonline.com/${CFG.TENANT_ID}/oauth2/v2.0/authorize?${p}`;
 }
@@ -2626,7 +2626,7 @@ async function doToken(body){
 async function handleCallback(){
   const code=new URLSearchParams(window.location.search).get('code');
   if(!code)return false;
-  const v=sessionStorage.getItem('pv'); if(!v)return false;
+  const v=localStorage.getItem('mvbl_pv'); if(!v)return false; localStorage.removeItem('mvbl_pv');
   window.history.replaceState({},'',window.location.pathname);
   return doToken({client_id:CFG.CLIENT_ID,grant_type:'authorization_code',code,redirect_uri:CFG.REDIR,code_verifier:v,scope:CFG.SCOPES.join(' ')});
 }
@@ -7759,7 +7759,13 @@ async function init(){
   renderFaultCodes();
   // Show connected immediately if we have a cached token
   const cached=localStorage.getItem('mvbl_tok');
-  if(cached){try{const{t,e}=JSON.parse(cached);if(Date.now()<e-60000){token=t;updateAuthUI(true);}}catch(e){}}
+  if(cached){try{
+    const parsed=JSON.parse(cached);
+    const{t,e}=parsed;
+    const sess=parsed.s||Infinity;
+    if(Date.now()<e-60000&&Date.now()<sess){token=t;updateAuthUI(true);startSessionTimer();}
+    else if(Date.now()>=sess){localStorage.removeItem('mvbl_tok');}
+  }catch(e){}}
   if(window.location.search.includes('code=')){
     const ok=await handleCallback();
     if(ok){updateAuthUI(true);await loadAll();return;}
