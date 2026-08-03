@@ -6236,8 +6236,10 @@ function openVehicleTimeline(vehicleId) {
 function renderFinancial() {
   // Populate filters
   const vf = document.getElementById('fin-veh');
-  if (vf && vf.options.length <= 1) {
-    fleet.slice().sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet)).forEach(v=>{
+  if (vf) {
+    // Reset and repopulate with company filter applied
+    while(vf.options.length > 1) vf.remove(1);
+    fleet.filter(v=>canSeeVehicleObj(v)).slice().sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet)).forEach(v=>{
       const o=document.createElement('option');o.value=v.id;o.textContent=`Fleet ${v.fleet}${v.rego?' — '+v.rego:''}`;vf.appendChild(o);
     });
   }
@@ -6253,6 +6255,7 @@ function renderFinancial() {
   const yr  = document.getElementById('fin-year')?.value||new Date().getFullYear().toString();
 
   const filtered = parts.filter(p=>{
+    if (!canSeeVehicle(p.vehicleId)) return false;
     if (vid && p.vehicleId!==vid) return false;
     if (yr && !(p.orderDate||'').startsWith(yr)) return false;
     return true;
