@@ -6055,7 +6055,7 @@ async function loadUserRole() {
     const match = (users.value||[]).find(x=>(x.fields?.Email||'').toLowerCase()===currentUserEmail);
     if (match) {
       const role = (match.fields?.Role||'').toLowerCase();
-      if (['driver','office','tech','manager','admin'].includes(role)) currentRole = role;
+      if (['driver','office','tech','manager','owner','admin'].includes(role)) currentRole = role;
       currentCompanyFilter = match.fields?.CompanyFilter || '';
     }
     // If no match found, default to driver (most restrictive) unless email is not set
