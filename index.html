@@ -6416,7 +6416,7 @@ function renderFinancialJobParts() {
   // Populate vehicle filter
   const vf = document.getElementById('fin-jc-veh');
   if (vf && vf.options.length <= 1) {
-    fleet.slice().sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet)).forEach(v=>{
+    fleet.filter(v=>canSeeVehicleObj(v)).slice().sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet)).forEach(v=>{
       const o=document.createElement('option');o.value=v.id;
       o.textContent=`Fleet ${v.fleet}${v.rego?' — '+v.rego:''}`;vf.appendChild(o);
     });
@@ -6436,7 +6436,7 @@ function renderFinancialJobParts() {
   const rows = [];
   let jobsWithParts = new Set();
 
-  jobCards.filter(j=>(!vid||j.vehicleId===vid)&&(!yr||!(j.dateIn||'').startsWith(yr)?false:true))
+  jobCards.filter(j=>canSeeVehicle(j.vehicleId)&&(!vid||j.vehicleId===vid)&&(!yr||!(j.dateIn||'').startsWith(yr)?false:true))
     .sort((a,b)=>(b.dateIn||'').localeCompare(a.dateIn||''))
     .forEach(j=>{
       const v=fleet.find(x=>x.id===j.vehicleId)||{};
@@ -6515,7 +6515,7 @@ function exportJobPartsCSV() {
   const vid = document.getElementById('fin-jc-veh')?.value||'';
   const yr  = document.getElementById('fin-jc-year')?.value||'';
   const rows = [['Job #','Date','Fleet','Rego','Part no.','Description','Qty','Unit price','Total ex GST','Total inc GST']];
-  jobCards.filter(j=>(!vid||j.vehicleId===vid)&&(!yr||!(j.dateIn||'').startsWith(yr)?false:true))
+  jobCards.filter(j=>canSeeVehicle(j.vehicleId)&&(!vid||j.vehicleId===vid)&&(!yr||!(j.dateIn||'').startsWith(yr)?false:true))
     .sort((a,b)=>(b.dateIn||'').localeCompare(a.dateIn||''))
     .forEach(j=>{
       const v=fleet.find(x=>x.id===j.vehicleId)||{};
