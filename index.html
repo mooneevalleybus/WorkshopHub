@@ -835,7 +835,7 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
       <span class="ct">Fleet register</span>
       <div class="tb">
         <input class="si" type="text" id="fleet-search" placeholder="Search…" oninput="renderFleet()">
-        <select id="fleet-co" onchange="setPreferredCoId(this.value);renderFleet()" style="width:155px;"><option value="">All companies</option></select>
+        <select id="fleet-co" onchange="renderFleet()" style="width:155px;"><option value="">All companies</option></select>
         <button class="btn bp" onclick="openVehicleModal()">+ Add vehicle</button>
       </div>
     </div>
@@ -852,7 +852,7 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
     <div class="ch">
       <span class="ct">Task log</span>
       <div class="tb">
-        <select id="task-co" onchange="setPreferredCoId(this.value);renderTasks()" style="width:145px;"><option value="">All companies</option></select>
+        <select id="task-co" onchange="renderTasks()" style="width:145px;"><option value="">All companies</option></select>
         <select id="task-veh" onchange="renderTasks()" style="width:145px;"><option value="">All vehicles</option></select>
         <select id="task-st" onchange="renderTasks()" style="width:120px;"><option value="">All statuses</option><option>Open</option><option>In progress</option><option>Done</option></select>
         <button class="btn bp" onclick="openTaskModal()">+ Log task</button>
@@ -868,7 +868,7 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
     <div class="ch">
       <span class="ct">Parts &amp; orders</span>
       <div class="tb">
-        <select id="parts-co" onchange="setPreferredCoId(this.value);renderParts()" style="width:145px;"><option value="">All companies</option></select>
+        <select id="parts-co" onchange="renderParts()" style="width:145px;"><option value="">All companies</option></select>
         <select id="parts-veh" onchange="renderParts()" style="width:145px;"><option value="">All vehicles</option></select>
         <select id="parts-st" onchange="renderParts()" style="width:120px;"><option value="">All statuses</option><option>On order</option><option>Arrived</option><option>Fitted</option></select>
         <button class="btn bp" onclick="openPartModal()">+ Add part</button>
@@ -884,7 +884,7 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
     <div class="ch">
       <span class="ct">Job cards</span>
       <div class="tb">
-        <select id="jc-co" onchange="setPreferredCoId(this.value);renderJobCards()" style="width:145px;"><option value="">All companies</option></select>
+        <select id="jc-co" onchange="renderJobCards()" style="width:145px;"><option value="">All companies</option></select>
         <select id="jc-fveh" onchange="renderJobCards()" style="width:145px;"><option value="">All vehicles</option></select>
         <select id="jc-st" onchange="renderJobCards()" style="width:120px;"><option value="">All statuses</option><option>Open</option><option>In progress</option><option>Complete</option></select>
         <button class="btn bp" onclick="openJobCardModal()">+ New job card</button>
@@ -900,7 +900,7 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
     <div class="ch">
       <span class="ct">Defect notices</span>
       <div class="tb">
-        <select id="def-co" onchange="setPreferredCoId(this.value);renderDefects()" style="width:145px;"><option value="">All companies</option></select>
+        <select id="def-co" onchange="renderDefects()" style="width:145px;"><option value="">All companies</option></select>
         <select id="def-fveh" onchange="renderDefects()" style="width:145px;"><option value="">All vehicles</option></select>
         <select id="def-st" onchange="renderDefects()" style="width:130px;"><option value="">All statuses</option><option>Open</option><option>Cleared</option></select>
         <button class="btn bp" onclick="openDefectModal()">+ Log defect</button>
@@ -916,7 +916,7 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
     <div class="ch">
       <span class="ct">Accident reports</span>
       <div class="tb">
-        <select id="acc-co" onchange="setPreferredCoId(this.value);renderAccidents()" style="width:145px;"><option value="">All companies</option></select>
+        <select id="acc-co" onchange="renderAccidents()" style="width:145px;"><option value="">All companies</option></select>
         <select id="acc-fveh" onchange="renderAccidents()" style="width:145px;"><option value="">All vehicles</option></select>
         <button class="btn bp" onclick="openAccidentModal()">+ New report</button>
       </div>
@@ -953,7 +953,7 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
     <div class="ch">
       <span class="ct">Service schedule</span>
       <div class="tb">
-        <select id="svc-co" onchange="setPreferredCoId(this.value);renderService()" style="width:145px;"><option value="">All companies</option></select>
+        <select id="svc-co" onchange="renderService()" style="width:145px;"><option value="">All companies</option></select>
         <select id="svc-filter" onchange="renderService()" style="width:170px;">
           <option value="all">All vehicles</option><option value="overdue">Overdue only</option>
           <option value="30">Due within 30 days</option><option value="60">Due within 60 days</option><option value="90">Due within 90 days</option>
@@ -2824,31 +2824,8 @@ function coFilter(selId){
   const cur=el.value;
   el.innerHTML='<option value="">All companies</option>'+companies.map(c=>`<option value="${c.id}"${c.id===cur?' selected':''}>${c.name}</option>`).join('');
 }
-const CO_FILTER_SELECTS=['fleet-co','task-co','parts-co','jc-co','def-co','acc-co','svc-co'];
-// Returns the company id to default the view to: last choice saved in this browser,
-// falling back to the company flagged IsDefault in SharePoint (normally MVBL).
-function getPreferredCoId(){
-  const saved=localStorage.getItem('mvbl_pref_co');
-  if(saved!==null&&(saved===''||companies.some(c=>c.id===saved)))return saved;
-  const def=companies.find(c=>c.isDefault);
-  return def?def.id:'';
-}
-// Sets the "current company view" across every list page and remembers it for next time.
-function setPreferredCoId(v){
-  localStorage.setItem('mvbl_pref_co',v||'');
-  CO_FILTER_SELECTS.forEach(id=>{const el=document.getElementById(id);if(el)el.value=v||'';});
-}
-// Applies the saved/default company view once per session — only for roles that aren't
-// already locked to a single company (currentCompanyFilter), so external operator logins
-// are never touched.
-function applyPreferredCoFilter(){
-  if(currentCompanyFilter)return;
-  if(window._coFilterInit)return;
-  window._coFilterInit=true;
-  setPreferredCoId(getPreferredCoId());
-}
 function populateAllFilters(){
-  CO_FILTER_SELECTS.forEach(coFilter);
+  ['fleet-co','task-co','parts-co','jc-co','def-co','acc-co','svc-co'].forEach(coFilter);
   ['task-veh','parts-veh','jc-veh','def-veh','acc-veh'].forEach(id=>vFilter(id,''));
 }
 
@@ -5867,23 +5844,20 @@ async function renderInlinePhotos(containerEl) {
 
 // ─── SHAREPOINT FOLDER LINK ───────────────────────────────────────────────────
 function spFolderUrl(module, refNum) {
-  // Use SharePoint's proper folder viewer URL format
-  // This works for both Workshop Hub and Shared Documents libraries
   const sitePath = '/sites/Workshop-MooneeValleyBusLines';
+  // These must exactly match what photoFolder() returns — files are in Shared Documents
   const folderMap = {
-    defects:    'Defects',
-    jobcards:   'Job Cards',
-    accidents:  'Accidents',
-    tasks:      'Tasks',
-    parts:      'Parts',
-    notes:      'Notes',
-    repairnotes:'Repair Notes',
-    pretrip:    'Pre-Trip',
-    accquotes:  'Accident Quote Files',
+    defects:     'Defects',
+    jobcards:    'Job Cards',
+    accidents:   'Accidents',
+    accquotes:   'Accidents',
+    tasks:       'Tasks',
+    parts:       'Parts',
+    notes:       'Notes',
+    repairnotes: 'Repair Notes',
+    pretrip:     'Pre-Trip',
   };
   const folderName = folderMap[module] || module;
-  // Try Workshop Hub first (new uploads), fall back to Shared Documents (old uploads)
-  // Use the AllItems.aspx viewer with ?id= param — most reliable way to open a folder
   const folderPath = refNum
     ? `${sitePath}/Shared Documents/${folderName}/${refNum}`
     : `${sitePath}/Shared Documents/${folderName}`;
@@ -6078,7 +6052,7 @@ async function loadUserRole() {
     const match = (users.value||[]).find(x=>(x.fields?.Email||'').toLowerCase()===currentUserEmail);
     if (match) {
       const role = (match.fields?.Role||'').toLowerCase();
-      if (['driver','office','tech','manager','owner','admin'].includes(role)) currentRole = role;
+      if (['driver','office','tech','manager','admin'].includes(role)) currentRole = role;
       currentCompanyFilter = match.fields?.CompanyFilter || '';
     }
     // If no match found, default to driver (most restrictive) unless email is not set
@@ -6088,7 +6062,6 @@ async function loadUserRole() {
     currentRole = 'admin';
   }
   applyRoleUI();
-  applyPreferredCoFilter();
 }
 
 function applyRoleUI() {
@@ -6440,7 +6413,7 @@ function renderFinancialJobParts() {
   // Populate vehicle filter
   const vf = document.getElementById('fin-jc-veh');
   if (vf && vf.options.length <= 1) {
-    fleet.filter(v=>canSeeVehicleObj(v)).slice().sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet)).forEach(v=>{
+    fleet.slice().sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet)).forEach(v=>{
       const o=document.createElement('option');o.value=v.id;
       o.textContent=`Fleet ${v.fleet}${v.rego?' — '+v.rego:''}`;vf.appendChild(o);
     });
@@ -6460,7 +6433,7 @@ function renderFinancialJobParts() {
   const rows = [];
   let jobsWithParts = new Set();
 
-  jobCards.filter(j=>canSeeVehicle(j.vehicleId)&&(!vid||j.vehicleId===vid)&&(!yr||!(j.dateIn||'').startsWith(yr)?false:true))
+  jobCards.filter(j=>(!vid||j.vehicleId===vid)&&(!yr||!(j.dateIn||'').startsWith(yr)?false:true))
     .sort((a,b)=>(b.dateIn||'').localeCompare(a.dateIn||''))
     .forEach(j=>{
       const v=fleet.find(x=>x.id===j.vehicleId)||{};
@@ -6539,7 +6512,7 @@ function exportJobPartsCSV() {
   const vid = document.getElementById('fin-jc-veh')?.value||'';
   const yr  = document.getElementById('fin-jc-year')?.value||'';
   const rows = [['Job #','Date','Fleet','Rego','Part no.','Description','Qty','Unit price','Total ex GST','Total inc GST']];
-  jobCards.filter(j=>canSeeVehicle(j.vehicleId)&&(!vid||j.vehicleId===vid)&&(!yr||!(j.dateIn||'').startsWith(yr)?false:true))
+  jobCards.filter(j=>(!vid||j.vehicleId===vid)&&(!yr||!(j.dateIn||'').startsWith(yr)?false:true))
     .sort((a,b)=>(b.dateIn||'').localeCompare(a.dateIn||''))
     .forEach(j=>{
       const v=fleet.find(x=>x.id===j.vehicleId)||{};
