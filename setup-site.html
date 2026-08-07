@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MVBL Service Desk — Site Setup Tool</title>
+<style>
+  :root {
+    --navy: #1a2744; --teal: #1a7f7a; --green: #1e8a50;
+    --red: #c0392b; --amber: #e07b00; --grey: #f4f5f7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, Arial, sans-serif; }
+  body { background: var(--grey); min-height: 100vh; }
+  .header { background: var(--navy); color: white; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+  .logo { width: 40px; height: 40px; background: var(--teal); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; }
+  .header h1 { font-size: 18px; }
+  .header p { font-size: 12px; opacity: .6; margin-top: 2px; }
+  .container { max-width: 700px; margin: 32px auto; padding: 0 16px; }
+  .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .card h2 { font-size: 16px; color: var(--navy); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--grey); }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 5px; }
+  input, select { width: 100%; padding: 10px 12px; border: 1px solid #dde0e7; border-radius: 8px; font-size: 14px; margin-bottom: 14px; font-family: inherit; }
+  input:focus, select:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(26,127,122,.15); }
+  .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .15s; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary { background: var(--teal); color: white; width: 100%; }
+  .btn-secondary { background: var(--navy); color: white; }
+  .log { background: #1a1a2e; color: #e0e0e0; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 12px; line-height: 1.7; max-height: 400px; overflow-y: auto; display: none; margin-top: 16px; }
+  .log.show { display: block; }
+  .log-ok   { color: #4ade80; }
+  .log-err  { color: #f87171; }
+  .log-info { color: #60a5fa; }
+  .log-warn { color: #fbbf24; }
+  .progress { margin-top: 16px; display: none; }
+  .progress.show { display: block; }
+  .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  .progress-fill { height: 100%; background: var(--teal); border-radius: 4px; transition: width .3s; width: 0%; }
+  .progress-text { font-size: 13px; color: #64748b; text-align: center; }
+  .result-box { border-radius: 8px; padding: 16px; margin-top: 16px; display: none; }
+  .result-box.show { display: block; }
+  .result-box.success { background: #f0fdf4; border: 1px solid #86efac; }
+  .result-box.error   { background: #fef2f2; border: 1px solid #fca5a5; }
+  .result-box h3 { font-size: 15px; margin-bottom: 8px; }
+  .result-box.success h3 { color: var(--green); }
+  .result-box.error h3 { color: var(--red); }
+  .result-box p { font-size: 13px; color: #374151; line-height: 1.6; }
+  .list-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+  .list-item:last-child { border: none; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot.pending { background: #94a3b8; }
+  .dot.running { background: var(--amber); }
+  .dot.done    { background: var(--green); }
+  .dot.error   { background: var(--red); }
+  .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: 13px; color: #1e40af; line-height: 1.6; }
+  .info-box strong { display: block; margin-bottom: 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">MV</div>
+  <div>
+    <h1>Service Desk — Site Setup Tool</h1>
+    <p>Creates all required SharePoint lists for a new customer site</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h2>⚠️ How to use this tool</h2>
+    <div class="info-box">
+      <strong>Before running this tool:</strong>
+      1. Create a new SharePoint Team Site for the customer (e.g. VicLink Service Desk)<br>
+      2. Open this HTML file from that new site's context, OR<br>
+      3. Sign in below with an account that has Owner access to the new site
+    </div>
+    <div class="info-box" style="background:#fff7ed;border-color:#fed7aa;color:#92400e;">
+      <strong>⚡ This will create ~14 SharePoint lists on the target site.</strong>
+      Run it once per customer site. It's safe to run again — existing lists are skipped.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>1. Sign in & configure</h2>
+
+    <label>Target site URL</label>
+    <input type="url" id="site-url" placeholder="https://mvbus.sharepoint.com/sites/VicLink-ServiceDesk" />
+
+    <label>Azure App Client ID</label>
+    <input type="text" id="client-id" value="b023bde8-9b0a-418c-ab6e-ee2fa62a813d" />
+
+    <label>Azure Tenant ID</label>
+    <input type="text" id="tenant-id" value="1107f160-8e52-466d-a70d-b6ae79cd903b" />
+
+    <button class="btn btn-secondary" onclick="signIn()" id="signin-btn">🔐 Sign in with Microsoft</button>
+    <div id="user-info" style="margin-top:10px;font-size:13px;color:var(--green);display:none;"></div>
+  </div>
+
+  <div class="card" id="setup-card" style="display:none;">
+    <h2>2. Customer details</h2>
+
+    <label>Company name (exact — used in CompanyFilter)</label>
+    <input type="text" id="company-name" placeholder="e.g. VicLink" />
+
+    <label>Customer admin email (will be added to WorkshopUsers)</label>
+    <input type="email" id="admin-email" placeholder="e.g. manager@viclink.com.au" />
+
+    <label>Their role</label>
+    <select id="admin-role">
+      <option value="manager">Manager</option>
+      <option value="owner">Owner</option>
+      <option value="admin">Admin (full access)</option>
+      <option value="tech">Tech</option>
+      <option value="office">Office</option>
+    </select>
+
+    <div id="list-status"></div>
+
+    <button class="btn btn-primary" onclick="runSetup()" id="run-btn">🚀 Create all lists</button>
+
+    <div class="progress" id="progress">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text">Starting...</div>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <div class="result-box" id="result"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+let token = null;
+
+function getClientId() { return document.getElementById('client-id').value.trim(); }
+function getTenantId() { return document.getElementById('tenant-id').value.trim(); }
+function getSiteUrl()  { return document.getElementById('site-url').value.trim().replace(/\/$/, ''); }
+
+async function pkce() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  const v = btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+  const c = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  return { v, c };
+}
+
+async function signIn() {
+  const { v, c } = await pkce();
+  localStorage.setItem('setup_pv', v);
+  const params = new URLSearchParams({
+    client_id: getClientId(),
+    response_type: 'code',
+    redirect_uri: window.location.href.split('?')[0],
+    scope: 'https://graph.microsoft.com/Sites.ReadWrite.All offline_access openid profile',
+    code_challenge: c,
+    code_challenge_method: 'S256',
+    response_mode: 'query',
+  });
+  window.location.href = `https://login.microsoftonline.com/${getTenantId()}/oauth2/v2.0/authorize?${params}`;
+}
+
+async function handleCallback() {
+  const code = new URLSearchParams(window.location.search).get('code');
+  if (!code) return false;
+  const v = localStorage.getItem('setup_pv');
+  if (!v) return false;
+  localStorage.removeItem('setup_pv');
+  window.history.replaceState({}, '', window.location.pathname);
+
+  const r = await fetch(`https://login.microsoftonline.com/${getTenantId()}/oauth2/v2.0/token`, {
+    method: 'POST',
+    body: new URLSearchParams({
+      client_id: getClientId(),
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: window.location.href.split('?')[0],
+      code_verifier: v,
+      scope: 'https://graph.microsoft.com/Sites.ReadWrite.All offline_access openid profile',
+    })
+  });
+  const d = await r.json();
+  if (!d.access_token) { alert('Sign in failed: ' + JSON.stringify(d)); return false; }
+  token = d.access_token;
+  return true;
+}
+
+async function loadUser() {
+  const r = await fetch('https://graph.microsoft.com/v1.0/me', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const d = await r.json();
+  const el = document.getElementById('user-info');
+  el.textContent = `✅ Signed in as ${d.displayName} (${d.mail || d.userPrincipalName})`;
+  el.style.display = 'block';
+  document.getElementById('setup-card').style.display = 'block';
+  document.getElementById('signin-btn').textContent = '✅ Signed in';
+  document.getElementById('signin-btn').disabled = true;
+}
+
+// ─── GRAPH HELPERS ────────────────────────────────────────────────────────────
+async function gGet(url) {
+  const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  return r.json();
+}
+async function gPost(url, body) {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+// ─── GET SITE ID ──────────────────────────────────────────────────────────────
+async function getSiteId() {
+  const siteUrl = getSiteUrl();
+  const u = new URL(siteUrl);
+  const host = u.hostname;
+  const path = u.pathname;
+  const d = await gGet(`https://graph.microsoft.com/v1.0/sites/${host}:${path}`);
+  if (!d.id) throw new Error(`Could not find site: ${siteUrl} — ${JSON.stringify(d)}`);
+  return d.id;
+}
+
+// ─── LIST DEFINITIONS ─────────────────────────────────────────────────────────
+const LIST_DEFS = [
+  {
+    name: 'WorkshopFleet',
+    desc: 'Vehicle fleet register',
+    columns: [
+      { name: 'Rego',         type: 'text' },
+      { name: 'RegoExpiry',   type: 'dateTime' },
+      { name: 'Year',         type: 'text' },
+      { name: 'Make',         type: 'text' },
+      { name: 'VIN',          type: 'text' },
+      { name: 'EngineNum',    type: 'text' },
+      { name: 'TransSerial',  type: 'text' },
+      { name: 'Capacity',     type: 'text' },
+      { name: 'Owner',        type: 'text' },
+      { name: 'Odo',          type: 'text' },
+      { name: 'OdoDate',      type: 'dateTime' },
+      { name: 'SvcDate',      type: 'dateTime' },
+      { name: 'SvcKm',        type: 'text' },
+      { name: 'Notes',        type: 'note' },
+      { name: 'VehicleId',    type: 'text' },
+    ]
+  },
+  {
+    name: 'WorkshopDefects',
+    desc: 'Vehicle defect reports',
+    columns: [
+      { name: 'VehicleId',    type: 'text' },
+      { name: 'Severity',     type: 'text' },
+      { name: 'Status',       type: 'text' },
+      { name: 'Description',  type: 'note' },
+      { name: 'ReportedBy',   type: 'text' },
+      { name: 'DateReported', type: 'dateTime' },
+      { name: 'Odo',          type: 'text' },
+      { name: 'ClearedBy',    type: 'text' },
+      { name: 'DateCleared',  type: 'dateTime' },
+      { name: 'Notes',        type: 'note' },
+      { name: 'Photos',       type: 'note' },
+    ]
+  },
+  {
+    name: 'WorkshopJobCards',
+    desc: 'Workshop job cards',
+    columns: [
+      { name: 'VehicleId',    type: 'text' },
+      { name: 'DateIn',       type: 'dateTime' },
+      { name: 'DateOut',      type: 'dateTime' },
+      { name: 'OdoIn',        type: 'text' },
+      { name: 'Technician',   type: 'text' },
+      { name: 'Description',  type: 'note' },
+      { name: 'Status',       type: 'text' },
+      { name: 'Notes',        type: 'note' },
+      { name: 'JCPhotos',     type: 'note' },
+      { name: 'Parts',        type: 'note' },
+      { name: 'Labour',       type: 'note' },
+      { name: 'OtherCosts',   type: 'note' },
+      { name: 'NsDate',       type: 'dateTime' },
+      { name: 'NsKm',         type: 'text' },
+      { name: 'NsNotes',      type: 'note' },
+      { name: 'Auth',         type: 'text' },
+      { name: 'Hours',        type: 'text' },
+      { name: 'WorkPerformed',type: 'note' },
+      { name: 'Faults',       type: 'note' },
+    ]
+  },
+  {
+    name: 'WorkshopTasks',
+    desc: 'Workshop tasks',
+    columns: [
+      { name: 'VehicleId',    type: 'text' },
+      { name: 'Priority',     type: 'text' },
+      { name: 'Status',       type: 'text' },
+      { name: 'Technician',   type: 'text' },
+      { name: 'DateLogged',   type: 'dateTime' },
+      { name: 'DateDue',      type: 'dateTime' },
+      { name: 'Odo',          type: 'text' },
+      { name: 'Notes',        type: 'note' },
+      { name: 'TaskPhotos',   type: 'note' },
+    ]
+  },
+  {
+    name: 'WorkshopParts',
+    desc: 'Parts orders',
+    columns: [
+      { name: 'VehicleId',    type: 'text' },
+      { name: 'Description',  type: 'note' },
+      { name: 'Supplier',     type: 'text' },
+      { name: 'PartNum',      type: 'text' },
+      { name: 'Invoice',      type: 'text' },
+      { name: 'Cost',         type: 'text' },
+      { name: 'Status',       type: 'text' },
+      { name: 'OrderDate',    type: 'dateTime' },
+      { name: 'ReceivedDate', type: 'dateTime' },
+      { name: 'Notes',        type: 'note' },
+      { name: 'PartPhotos',   type: 'note' },
+    ]
+  },
+  {
+    name: 'WorkshopAccidents',
+    desc: 'Accident records',
+    columns: [
+      { name: 'VehicleId',    type: 'text' },
+      { name: 'FleetNum',     type: 'text' },
+      { name: 'Rego',         type: 'text' },
+      { name: 'Driver',       type: 'text' },
+      { name: 'DateTime',     type: 'dateTime' },
+      { name: 'Location',     type: 'text' },
+      { name: 'AtFault',      type: 'text' },
+      { name: 'ClaimNum',     type: 'text' },
+      { name: 'Insurer',      type: 'text' },
+      { name: 'ThirdParty',   type: 'text' },
+      { name: 'Extra',        type: 'note' },
+      { name: 'Photos',       type: 'note' },
+      { name: 'Report',       type: 'note' },
+    ]
+  },
+  {
+    name: 'WorkshopAccidentQuotes',
+    desc: 'Repair quotes for accidents',
+    columns: [
+      { name: 'VehicleId',    type: 'text' },
+      { name: 'FleetNum',     type: 'text' },
+      { name: 'Rego',         type: 'text' },
+      { name: 'Repairer',     type: 'text' },
+      { name: 'IncidentDate', type: 'dateTime' },
+      { name: 'QuoteDate',    type: 'dateTime' },
+      { name: 'ClaimNum',     type: 'text' },
+      { name: 'RefNum',       type: 'text' },
+      { name: 'Status',       type: 'text' },
+      { name: 'Rows',         type: 'note' },
+      { name: 'GrandTotal',   type: 'text' },
+      { name: 'AccidentId',   type: 'text' },
+      { name: 'Notes',        type: 'note' },
+    ]
+  },
+  {
+    name: 'WorkshopPreTrip',
+    desc: 'Pre-trip inspection records',
+    columns: [
+      { name: 'VehicleId',      type: 'text' },
+      { name: 'FleetNum',       type: 'text' },
+      { name: 'Rego',           type: 'text' },
+      { name: 'Driver',         type: 'text' },
+      { name: 'InspDate',       type: 'dateTime' },
+      { name: 'Odo',            type: 'text' },
+      { name: 'Result',         type: 'text' },
+      { name: 'FailCount',      type: 'text' },
+      { name: 'DefectsRaised',  type: 'text' },
+      { name: 'Items',          type: 'note' },
+    ]
+  },
+  {
+    name: 'WorkshopVSI',
+    desc: 'Vehicle Safety Inspection records',
+    columns: [
+      { name: 'VehicleId',   type: 'text' },
+      { name: 'FleetNum',    type: 'text' },
+      { name: 'Rego',        type: 'text' },
+      { name: 'InspDate',    type: 'dateTime' },
+      { name: 'Odo',         type: 'text' },
+      { name: 'NextDue',     type: 'dateTime' },
+      { name: 'NextOdo',     type: 'text' },
+      { name: 'Inspector',   type: 'text' },
+      { name: 'Summary',     type: 'note' },
+      { name: 'Items',       type: 'note' },
+    ]
+  },
+  {
+    name: 'WorkshopMaintHistory',
+    desc: 'Maintenance history records',
+    columns: [
+      { name: 'VehicleId',  type: 'text' },
+      { name: 'Date',       type: 'dateTime' },
+      { name: 'Odo',        type: 'text' },
+      { name: 'By',         type: 'text' },
+      { name: 'Category',   type: 'text' },
+      { name: 'NsDate',     type: 'dateTime' },
+      { name: 'NsKm',       type: 'text' },
+    ]
+  },
+  {
+    name: 'WorkshopCalendar',
+    desc: 'Calendar events',
+    columns: [
+      { name: 'EventDate',  type: 'dateTime' },
+      { name: 'EndDate',    type: 'dateTime' },
+      { name: 'EventType',  type: 'text' },
+      { name: 'VehicleId',  type: 'text' },
+      { name: 'FleetNum',   type: 'text' },
+      { name: 'Notes',      type: 'note' },
+      { name: 'Colour',     type: 'text' },
+      { name: 'LinkedId',   type: 'text' },
+    ]
+  },
+  {
+    name: 'WorkshopUsers',
+    desc: 'App user access control',
+    columns: [
+      { name: 'Email',         type: 'text' },
+      { name: 'Role',          type: 'text' },
+      { name: 'CompanyFilter', type: 'text' },
+      { name: 'DisplayName',   type: 'text' },
+    ]
+  },
+  {
+    name: 'WorkshopCompanies',
+    desc: 'Operator companies',
+    columns: [
+      { name: 'ShortName',   type: 'text' },
+      { name: 'Address',     type: 'text' },
+      { name: 'Phone',       type: 'text' },
+      { name: 'Email',       type: 'text' },
+      { name: 'Contact',     type: 'text' },
+      { name: 'Notes',       type: 'note' },
+    ]
+  },
+  {
+    name: 'WorkshopNotes',
+    desc: 'Workshop notes',
+    columns: [
+      { name: 'NoteTitle',  type: 'text' },
+      { name: 'Content',    type: 'note' },
+      { name: 'Author',     type: 'text' },
+      { name: 'NoteDate',   type: 'dateTime' },
+      { name: 'Photos',     type: 'note' },
+    ]
+  },
+];
+
+// ─── COLUMN TYPE MAP ──────────────────────────────────────────────────────────
+function colDef(name, type) {
+  if (type === 'text')     return { name, text: {} };
+  if (type === 'note')     return { name, text: { allowMultipleLines: true, linesForEditing: 6 } };
+  if (type === 'dateTime') return { name, dateTime: { format: 'dateOnly' } };
+  if (type === 'number')   return { name, number: {} };
+  return { name, text: {} };
+}
+
+// ─── LOG HELPER ───────────────────────────────────────────────────────────────
+function log(msg, type = 'info') {
+  const el = document.getElementById('log');
+  el.classList.add('show');
+  const line = document.createElement('div');
+  line.className = `log-${type}`;
+  line.textContent = `${new Date().toLocaleTimeString()} ${msg}`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function setProgress(pct, text) {
+  document.getElementById('progress').classList.add('show');
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = text;
+}
+
+// ─── MAIN SETUP ───────────────────────────────────────────────────────────────
+async function runSetup() {
+  const companyName = document.getElementById('company-name').value.trim();
+  const adminEmail  = document.getElementById('admin-email').value.trim();
+  const adminRole   = document.getElementById('admin-role').value;
+  const siteUrl     = getSiteUrl();
+
+  if (!companyName) { alert('Please enter the company name'); return; }
+  if (!adminEmail)  { alert('Please enter the admin email'); return; }
+  if (!siteUrl)     { alert('Please enter the site URL'); return; }
+  if (!token)       { alert('Please sign in first'); return; }
+
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Setting up...';
+
+  const resultEl = document.getElementById('result');
+  resultEl.className = 'result-box';
+  resultEl.style.display = 'none';
+
+  try {
+    log(`Starting setup for ${companyName} on ${siteUrl}`, 'info');
+    log(`Getting site ID...`, 'info');
+
+    const siteId = await getSiteId();
+    log(`✓ Site ID: ${siteId}`, 'ok');
+
+    // Get existing lists to avoid duplicates
+    const existingR = await gGet(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists?$select=name,id`);
+    const existing = (existingR.value || []).map(l => l.name.toLowerCase());
+    log(`Found ${existing.length} existing lists`, 'info');
+
+    const listIds = {};
+    let done = 0;
+
+    for (const listDef of LIST_DEFS) {
+      done++;
+      setProgress(Math.round(done / LIST_DEFS.length * 85), `Creating ${listDef.name}...`);
+
+      if (existing.includes(listDef.name.toLowerCase())) {
+        log(`⟳ ${listDef.name} — already exists, skipping`, 'warn');
+        // Get its ID anyway
+        const found = existingR.value.find(l => l.name.toLowerCase() === listDef.name.toLowerCase());
+        if (found) listIds[listDef.name] = found.id;
+        continue;
+      }
+
+      try {
+        // Create the list
+        const createR = await gPost(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists`, {
+          displayName: listDef.name,
+          description: listDef.desc,
+          list: { template: 'genericList' }
+        });
+
+        if (createR.error) throw new Error(createR.error.message);
+        listIds[listDef.name] = createR.id;
+        log(`✓ Created ${listDef.name}`, 'ok');
+
+        // Add columns
+        for (const col of listDef.columns) {
+          const colR = await gPost(
+            `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${createR.id}/columns`,
+            colDef(col.name, col.type)
+          );
+          if (colR.error) {
+            log(`  ⚠ Column ${col.name}: ${colR.error.message}`, 'warn');
+          }
+        }
+        log(`  ✓ Added ${listDef.columns.length} columns to ${listDef.name}`, 'ok');
+
+      } catch (e) {
+        log(`✗ ${listDef.name}: ${e.message}`, 'err');
+      }
+
+      // Small delay to avoid throttling
+      await new Promise(r => setTimeout(r, 300));
+    }
+
+    // Add user to WorkshopUsers
+    setProgress(90, 'Adding user to WorkshopUsers...');
+    if (listIds['WorkshopUsers']) {
+      try {
+        const userR = await gPost(
+          `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIds['WorkshopUsers']}/items`,
+          { fields: { Title: adminEmail, Email: adminEmail, Role: adminRole, CompanyFilter: companyName, DisplayName: companyName + ' Admin' } }
+        );
+        if (userR.error) throw new Error(userR.error.message);
+        log(`✓ Added ${adminEmail} to WorkshopUsers as ${adminRole}`, 'ok');
+      } catch (e) {
+        log(`⚠ Could not add user: ${e.message}`, 'warn');
+      }
+    }
+
+    // Add company to WorkshopCompanies
+    setProgress(95, 'Adding company record...');
+    if (listIds['WorkshopCompanies']) {
+      try {
+        await gPost(
+          `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIds['WorkshopCompanies']}/items`,
+          { fields: { Title: companyName, ShortName: companyName } }
+        );
+        log(`✓ Added ${companyName} to WorkshopCompanies`, 'ok');
+      } catch (e) {
+        log(`⚠ Could not add company: ${e.message}`, 'warn');
+      }
+    }
+
+    setProgress(100, 'Complete!');
+    log('', 'info');
+    log('═══════════════════════════════════════', 'ok');
+    log('✅ SETUP COMPLETE', 'ok');
+    log('═══════════════════════════════════════', 'ok');
+
+    // Show list IDs for copying into the app
+    log('', 'info');
+    log('List IDs (copy these into the app CFG):', 'info');
+    for (const [name, id] of Object.entries(listIds)) {
+      log(`  ${name}: ${id}`, 'info');
+    }
+
+    resultEl.className = 'result-box success show';
+    resultEl.innerHTML = `
+      <h3>✅ ${companyName} site is ready</h3>
+      <p>All ${LIST_DEFS.length} lists have been created on <strong>${siteUrl}</strong></p>
+      <p style="margin-top:8px;"><strong>Next steps:</strong></p>
+      <p>1. Copy the List IDs from the log below into the app configuration<br>
+         2. Give ${adminEmail} access to this SharePoint site (Site permissions → Add member)<br>
+         3. In the main hub WorkshopUsers list, add ${adminEmail} with CompanyFilter = <strong>${companyName}</strong></p>
+    `;
+
+  } catch (e) {
+    log(`\n✗ Setup failed: ${e.message}`, 'err');
+    resultEl.className = 'result-box error show';
+    resultEl.innerHTML = `<h3>❌ Setup failed</h3><p>${e.message}</p><p style="margin-top:8px;">Check the log above for details.</p>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🚀 Create all lists';
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+(async () => {
+  const ok = await handleCallback();
+  if (ok) await loadUser();
+})();
+</script>
+</body>
+</html>
