@@ -154,7 +154,7 @@ async function signIn() {
   const params = new URLSearchParams({
     client_id: getClientId(),
     response_type: 'code',
-    redirect_uri: window.location.href.split('?')[0],
+    redirect_uri: 'https://mooneevalleybus.github.io/WorkshopHub/setup-site.html',
     scope: 'https://graph.microsoft.com/Sites.ReadWrite.All offline_access openid profile',
     code_challenge: c,
     code_challenge_method: 'S256',
@@ -177,7 +177,7 @@ async function handleCallback() {
       client_id: getClientId(),
       grant_type: 'authorization_code',
       code,
-      redirect_uri: window.location.href.split('?')[0],
+      redirect_uri: 'https://mooneevalleybus.github.io/WorkshopHub/setup-site.html',
       code_verifier: v,
       scope: 'https://graph.microsoft.com/Sites.ReadWrite.All offline_access openid profile',
     })
