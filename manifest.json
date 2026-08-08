@@ -48,5 +48,10 @@
   "categories": [
     "productivity",
     "utilities"
+  ],
+  "id": "/",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
   ]
 }
