@@ -1135,7 +1135,7 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
       <div id="pt-section-fluids"></div>
       <div style="font-size:13px;font-weight:700;color:var(--navy);margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--teal-light);">2. Visual check</div>
       <div id="pt-section-visual"></div>
-      <div style="font-size:13px;font-weight:700;color:var(--navy);margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--teal-light);">3. Start bus and check</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--teal-light);"><span style="font-size:13px;font-weight:700;color:var(--navy);">3. Start bus and check</span><button class="btn sm" style="background:var(--green);color:white;padding:4px 10px;font-size:11px;" onclick="passAllSection('running',PT_SECTIONS.running)">✓ Pass all</button></div>
       <div id="pt-section-running"></div>
       <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--grey-mid);display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <button class="btn bp" onclick="submitPreTrip()">&#10003; Submit inspection</button>
@@ -7652,7 +7652,11 @@ async function autoUpdateServiceDate(vehicleId,newSvcDate,newSvcKm){
 }
 
 // ─── PASS ALL ─────────────────────────────────────────────────────────────────
-function passAllSection(secId,items){items.forEach(item=>{setPT(item.id,'pass');});}
+function passAllSection(secId,items){
+  if(!items&&PT_SECTIONS){items=PT_SECTIONS[secId]||[];}
+  items.forEach(item=>{setPT(item.id,'pass');});
+  if(navigator.vibrate)navigator.vibrate(20);
+}
 function vsiPassSection(startItem,endItem){
   for(let i=startItem;i<=endItem;i++){const b=document.querySelector('input[name="vsi-'+i+'"][value="yes"]');if(b){b.checked=true;vsiMark('vsi-'+i,'yes');}}
   vsiUpdateSummary();
@@ -8272,6 +8276,7 @@ init();
   <div class="modal xl" style="max-height:92vh;overflow-y:auto;border-radius:10px;">
     <div class="mh" style="position:sticky;top:0;background:white;z-index:10;">
       <span class="mt" id="mvsi-title">New Safety Inspection</span>
+      <button onclick="vsiPassAll()" style="background:var(--green);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-right:8px;">✓ Pass all items</button>
       <button class="mx" onclick="closeModal('m-vsi')">&#215;</button>
     </div>
     <div class="mb" style="padding:0;">
@@ -8327,7 +8332,7 @@ init();
             </tr>
           </thead>
           <tbody id="vsi-tbody">
-          <tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">TYRES & WHEELS</td></tr>
+          <tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">TYRES & WHEELS</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(0,5)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-0">
   <td style="width:42%;">Wheel Nuts (Visual)</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-0" value="yes" onchange="vsiMark('vsi-0','yes')"> Yes</label></div></td>
@@ -8376,7 +8381,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-5-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-5-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BRAKES</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BRAKES</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(6,14)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-6">
   <td style="width:42%;">Brake Lines & Hoses for Condition</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-6" value="yes" onchange="vsiMark('vsi-6','yes')"> Yes</label></div></td>
@@ -8449,7 +8454,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-14-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-14-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">CONTROLS</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">CONTROLS</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(15,19)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-15">
   <td style="width:42%;">Gear & Clutch Controls for Correct Operation</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-15" value="yes" onchange="vsiMark('vsi-15','yes')"> Yes</label></div></td>
@@ -8490,7 +8495,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-19-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-19-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">LIGHTING</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">LIGHTING</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(20,22)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-20">
   <td style="width:42%;">Headlamps for Operation & Damage</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-20" value="yes" onchange="vsiMark('vsi-20','yes')"> Yes</label></div></td>
@@ -8515,7 +8520,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-22-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-22-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BATTERY</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BATTERY</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(23,24)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-23">
   <td style="width:42%;">Battery Terminals & Cables for Condition</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-23" value="yes" onchange="vsiMark('vsi-23','yes')"> Yes</label></div></td>
@@ -8532,7 +8537,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-24-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-24-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">GENERAL</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">GENERAL</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(25,32)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-25">
   <td style="width:42%;">Power Steering System for Leaks</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-25" value="yes" onchange="vsiMark('vsi-25','yes')"> Yes</label></div></td>
@@ -8597,7 +8602,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-32-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-32-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BODY</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BODY</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(33,40)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-33">
   <td style="width:42%;">Glazing for Condition</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-33" value="yes" onchange="vsiMark('vsi-33','yes')"> Yes</label></div></td>
@@ -8665,7 +8670,7 @@ init();
 <tr><td colspan="6" style="background:#0d1a2e;color:white;padding:10px 14px;font-size:12px;font-weight:700;letter-spacing:.05em;border-top:3px solid var(--teal);">
   ── PART 2 (MMS 2.4.2.3) ──────────────────────────────────────────────────
 </td></tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">SUSPENSION</td></tr><tr id="row-vsi-41">
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">SUSPENSION</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(41,46)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr><tr id="row-vsi-41">
   <td style="width:42%;">Radius Rods for Condition of Joints</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-41" value="yes" onchange="vsiMark('vsi-41','yes')"> Yes</label></div></td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-41" value="no" onchange="vsiMark('vsi-41','no')"> No</label></div></td>
@@ -8713,7 +8718,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-46-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-46-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BRAKES (PART 2)</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BRAKES (PART 2)</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(47,49)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-47">
   <td style="width:42%;">Vacuum System Air Filter for Security & Cleanliness</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-47" value="yes" onchange="vsiMark('vsi-47','yes')"> Yes</label></div></td>
@@ -8738,7 +8743,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-49-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-49-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">STEERING</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">STEERING</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(50,52)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-50">
   <td style="width:42%;">Steering Box for Security & Operation</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-50" value="yes" onchange="vsiMark('vsi-50','yes')"> Yes</label></div></td>
@@ -8763,7 +8768,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-52-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-52-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">GENERAL (PART 2)</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">GENERAL (PART 2)</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(53,58)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-53">
   <td style="width:42%;">Engine Insulating Material for Contamination</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-53" value="yes" onchange="vsiMark('vsi-53','yes')"> Yes</label></div></td>
@@ -8812,7 +8817,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-58-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-58-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BODY (PART 2)</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BODY (PART 2)</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(59,60)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-59">
   <td style="width:42%;">Body Mounting Attachments for Security & Condition</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-59" value="yes" onchange="vsiMark('vsi-59','yes')"> Yes</label></div></td>
@@ -8829,7 +8834,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-60-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-60-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">SIGNS</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">SIGNS</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(61,61)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-61">
   <td style="width:42%;">Check Quality and Condition of Legal Signs</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-61" value="yes" onchange="vsiMark('vsi-61','yes')"> Yes</label></div></td>
@@ -8838,7 +8843,7 @@ init();
   <td style="width:15%;"><input type="date" id="vsi-61-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
   <td style="width:22%;"><input type="text" id="vsi-61-sign" placeholder="Signed" style="border:none;border-bottom:1px solid var(--grey-b);width:100%;font-size:12px;font-family:inherit;padding:3px 4px;outline:none;background:transparent;"></td>
 </tr>
-<tr><td colspan="6" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">ROAD TEST</td></tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">ROAD TEST</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="vsiPassSection(62,62)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
 <tr id="row-vsi-62">
   <td style="width:42%;">Road Test</td>
   <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="vsi-62" value="yes" onchange="vsiMark('vsi-62','yes')"> Yes</label></div></td>
