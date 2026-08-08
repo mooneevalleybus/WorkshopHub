@@ -1131,9 +1131,9 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
       <div class="fr" style="margin-bottom:18px;">
         <div><label>Notes (optional)</label><input id="pt-notes" type="text" placeholder="Any general comments…"></div>
       </div>
-      <div style="font-size:13px;font-weight:700;color:var(--navy);margin:0 0 8px;padding-bottom:6px;border-bottom:2px solid var(--teal-light);">1. Fluid levels — check oil, fuel and water</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px;padding-bottom:6px;border-bottom:2px solid var(--teal-light);"><span style="font-size:13px;font-weight:700;color:var(--navy);">1. Fluid levels — check oil, fuel and water</span><button class="btn sm" style="background:var(--green);color:white;padding:4px 10px;font-size:11px;" onclick="passAllSection('fluids',PT_SECTIONS.fluids)">✓ Pass all</button></div>
       <div id="pt-section-fluids"></div>
-      <div style="font-size:13px;font-weight:700;color:var(--navy);margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--teal-light);">2. Visual check</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--teal-light);"><span style="font-size:13px;font-weight:700;color:var(--navy);">2. Visual check</span><button class="btn sm" style="background:var(--green);color:white;padding:4px 10px;font-size:11px;" onclick="passAllSection('visual',PT_SECTIONS.visual)">✓ Pass all</button></div>
       <div id="pt-section-visual"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--teal-light);"><span style="font-size:13px;font-weight:700;color:var(--navy);">3. Start bus and check</span><button class="btn sm" style="background:var(--green);color:white;padding:4px 10px;font-size:11px;" onclick="passAllSection('running',PT_SECTIONS.running)">✓ Pass all</button></div>
       <div id="pt-section-running"></div>
