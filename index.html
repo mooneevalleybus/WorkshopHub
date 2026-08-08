@@ -488,7 +488,6 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   .desk-dash { display:none!important; }
   .hbrand > div > div:last-child { display:none!important; }
   #role-badge,#role-preview-wrap,#todo-sync-btn,#company-filter-badge { display:none!important; }
-  .shell { margin-top:48px!important; }
   input,select,textarea { font-size:16px!important; }
   .btn { min-height:40px; }
 @media (min-width: 901px) {
@@ -543,14 +542,6 @@ button, .btn, .mob-action-btn, .sev-btn { touch-action: manipulation; }
 
 /* iOS status bar padding for standalone mode */
 @supports (padding-top: env(safe-area-inset-top)) {
-  .header {
-    padding-top: env(safe-area-inset-top);
-    height: calc(52px + env(safe-area-inset-top));
-  }
-  .shell {
-    height: calc(100vh - 52px - env(safe-area-inset-top));
-    margin-top: calc(52px + env(safe-area-inset-top)) !important;
-  }
   
 }
 
@@ -666,17 +657,6 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
 
 
 /* ── iOS SAFE AREA (notch + home indicator) ────────────────────────────────── */
-/* Target installed PWA mode specifically */
-@media all and (display-mode: standalone) {
-  .header {
-    padding-top: env(safe-area-inset-top, 44px) !important;
-    height: calc(52px + env(safe-area-inset-top, 44px)) !important;
-  }
-  .shell {
-    margin-top: calc(52px + env(safe-area-inset-top, 44px)) !important;
-  }
-}
-/* ── iOS SAFE AREA (notch + home indicator) ────────────────────────────────── */
 .header {
   /* Extend header behind iOS status bar */
   padding-top: env(safe-area-inset-top, 0px);
@@ -697,9 +677,6 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
     padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
     padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
   }
-  .shell {
-    margin-top: calc(52px + env(safe-area-inset-top, 0px)) !important;
-  }
   /* Main content side padding for notch */
   .main {
     padding-left: max(8px, env(safe-area-inset-left, 0px)) !important;
@@ -714,15 +691,74 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
   .mob-menu-header {
     padding-top: calc(20px + env(safe-area-inset-top, 44px)) !important;
   }
-  /* Shell starts below header which accounts for safe area */
-  .shell {
-    margin-top: calc(52px + env(safe-area-inset-top, 44px)) !important;
-  }
   /* Header height */
   .header {
     height: calc(52px + env(safe-area-inset-top, 44px)) !important;
     padding-top: env(safe-area-inset-top, 44px) !important;
   }
+}
+
+
+/* ── SAFE AREA — ONE DEFINITIVE RULE (replaces all above) ─────────────────── */
+/* Works in both browser and installed PWA mode on iOS and Android */
+.header {
+  padding-top: env(safe-area-inset-top, 0px);
+  height: calc(52px + env(safe-area-inset-top, 0px));
+  box-sizing: border-box;
+}
+.shell {
+  margin-top: calc(52px + env(safe-area-inset-top, 0px));
+}
+/* Mobile overrides */
+@media (max-width: 900px) {
+  .header {
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    height: calc(52px + env(safe-area-inset-top, 0px)) !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  .shell {
+    margin-top: calc(52px + env(safe-area-inset-top, 0px)) !important;
+  }
+}
+/* Installed PWA standalone mode */
+@media all and (display-mode: standalone) {
+  .header {
+    padding-top: env(safe-area-inset-top, 44px) !important;
+    height: calc(52px + env(safe-area-inset-top, 44px)) !important;
+  }
+  .shell {
+    margin-top: calc(52px + env(safe-area-inset-top, 44px)) !important;
+  }
+  .mob-menu-header {
+    padding-top: calc(16px + env(safe-area-inset-top, 44px)) !important;
+  }
+}
+
+
+/* Mobile filter bar */
+.mob-filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.mob-filter-bar .si {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--grey-b);
+  border-radius: 10px;
+  font-size: 15px;
+  background: white;
+  font-family: inherit;
+}
+.mob-filter-bar select {
+  padding: 10px 8px;
+  border: 1px solid var(--grey-b);
+  border-radius: 10px;
+  font-size: 14px;
+  background: white;
+  font-family: inherit;
 }
 
 </style>
@@ -892,7 +928,12 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
 </div><!-- /desk-dashboard -->
 
 <!-- FLEET -->
-<div class="page" id="page-fleet"><div id="mob-fleet-cards"></div>
+<div class="page" id="page-fleet"><div id="mob-fleet-cards">
+    <div class="mob-filter-bar">
+      <input class="si" type="text" id="mob-fleet-search" placeholder="🔍 Search fleet…" oninput="renderFleet()" style="flex:1;">
+      <select id="mob-fleet-co" onchange="renderFleet()" style="min-width:130px;"><option value="">All companies</option></select>
+    </div>
+  </div>
   <div class="card">
     <div class="ch">
       <span class="ct">Fleet register</span>
@@ -2994,7 +3035,29 @@ function renderDash(){
   }
 }
 
-function renderFleet(){if(isMobile()){renderMobCards("mob-fleet-cards",fleet.filter(v=>canSeeVehicleObj(v)),mobFleetCard,"No vehicles");return;}
+function renderFleet(){
+  if(isMobile()){
+    const mobSearch=document.getElementById('mob-fleet-search');
+    const mobCo=document.getElementById('mob-fleet-co');
+    // Populate company dropdown
+    if(mobCo&&mobCo.options.length<=1){
+      companies.filter(c=>canSeeVehicleObj({owner:c.id})||true).forEach(c=>{
+        if(!mobCo.querySelector('option[value="'+c.id+'"]')){
+          const o=document.createElement('option');o.value=c.id;o.textContent=c.name;mobCo.appendChild(o);
+        }
+      });
+    }
+    const s=(mobSearch?.value||'').toLowerCase();
+    const co=mobCo?.value||'';
+    const visible=fleet.filter(v=>{
+      if(!canSeeVehicleObj(v))return false;
+      if(co&&v.owner!==co)return false;
+      if(s){const hay=[v.fleet,v.rego,v.make,v.year,(companies.find(x=>x.id===v.owner)||{}).name].join(' ').toLowerCase();if(!hay.includes(s))return false;}
+      return true;
+    });
+    renderMobCards("mob-fleet-cards",visible,mobFleetCard,"No vehicles found");
+    return;
+  }
   const s=(document.getElementById('fleet-search')?.value||'').toLowerCase();
   const cf=document.getElementById('fleet-co')?.value||'';
   const rows=fleet.filter(v=>canSeeVehicleObj(v)&&(!cf||v.owner===cf)&&(!s||(v.fleet||'').includes(s)||(v.rego||'').toLowerCase().includes(s)||(v.make||'').toLowerCase().includes(s))).sort((a,b)=>{const na=parseInt(a.fleet),nb=parseInt(b.fleet);const va=isNaN(na)?Infinity:na,vb=isNaN(nb)?Infinity:nb;if(va!==vb)return va-vb;return(a.fleet||'').localeCompare(b.fleet||'');});
@@ -5908,7 +5971,7 @@ async function renderInlinePhotos(containerEl) {
 // ─── SHAREPOINT FOLDER LINK ───────────────────────────────────────────────────
 function spFolderUrl(module, refNum) {
   const sitePath = '/sites/Workshop-MooneeValleyBusLines';
-  // These must exactly match what photoFolder() returns — files are in Shared Documents
+  // Files are stored in the "Workshop Hub" document library
   const folderMap = {
     defects:     'Defects',
     jobcards:    'Job Cards',
@@ -5922,9 +5985,9 @@ function spFolderUrl(module, refNum) {
   };
   const folderName = folderMap[module] || module;
   const folderPath = refNum
-    ? `${sitePath}/Shared Documents/${folderName}/${refNum}`
-    : `${sitePath}/Shared Documents/${folderName}`;
-  return `${CFG.SITE_URL}/Shared%20Documents/Forms/AllItems.aspx?id=${encodeURIComponent(folderPath)}&viewid=`;
+    ? `${sitePath}/Workshop Hub/${folderName}/${refNum}`
+    : `${sitePath}/Workshop Hub/${folderName}`;
+  return `${CFG.SITE_URL}/Workshop%20Hub/Forms/AllItems.aspx?id=${encodeURIComponent(folderPath)}&viewid=fbcb9a93-941e-44a7-97c8-921944a2138d`;
 }
 
 function showSpFolderLink(elId, module, refNum) {
