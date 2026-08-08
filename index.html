@@ -466,7 +466,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 .mob-action-btn.accent { background:var(--teal); }
 #mob-menu-overlay { display:none;position:fixed;inset:0;background:var(--navy);z-index:400;overflow-y:auto;padding:0 0 80px; }
 #mob-menu-overlay.show { display:block; }
-.mob-menu-header { display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.1); }
+.mob-menu-header { display:flex;align-items:center;justify-content:space-between;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top, 44px));border-bottom:1px solid rgba(255,255,255,.1); }
 .mob-menu-title { color:white;font-size:17px;font-weight:700; }
 .mob-menu-close { background:rgba(255,255,255,.1);border:none;color:white;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer; }
 .mob-menu-section { padding:16px 20px 4px;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.08em;text-transform:uppercase; }
@@ -704,6 +704,24 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
   .main {
     padding-left: max(8px, env(safe-area-inset-left, 0px)) !important;
     padding-right: max(8px, env(safe-area-inset-right, 0px)) !important;
+  }
+}
+
+
+/* ── PWA STANDALONE MODE FIXES ───────────────────────────────────────────── */
+@media all and (display-mode: standalone) {
+  /* Menu overlay - push header below status bar */
+  .mob-menu-header {
+    padding-top: calc(20px + env(safe-area-inset-top, 44px)) !important;
+  }
+  /* Shell starts below header which accounts for safe area */
+  .shell {
+    margin-top: calc(52px + env(safe-area-inset-top, 44px)) !important;
+  }
+  /* Header height */
+  .header {
+    height: calc(52px + env(safe-area-inset-top, 44px)) !important;
+    padding-top: env(safe-area-inset-top, 44px) !important;
   }
 }
 
