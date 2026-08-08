@@ -483,7 +483,6 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   .main { padding:8px!important;padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))!important; }
   .mob-dash { display:block!important; }
   .desk-dash { display:none!important; }
-  .header { padding:0 12px!important;height:48px!important; }
   .hbrand > div > div:last-child { display:none!important; }
   #role-badge,#role-preview-wrap,#todo-sync-btn,#company-filter-badge { display:none!important; }
   .shell { margin-top:48px!important; }
@@ -660,6 +659,38 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
 
 @media (max-width: 900px) {
   .sb-toggle { display: block !important; }
+}
+
+
+/* ── iOS SAFE AREA (notch + home indicator) ────────────────────────────────── */
+.header {
+  /* Extend header behind iOS status bar */
+  padding-top: env(safe-area-inset-top, 0px);
+  height: calc(52px + env(safe-area-inset-top, 0px));
+  /* Ensure content is padded correctly */
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+}
+.shell {
+  margin-top: calc(52px + env(safe-area-inset-top, 0px)) !important;
+}
+
+@media (max-width: 900px) {
+  .header {
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    height: calc(52px + env(safe-area-inset-top, 0px)) !important;
+    padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+  }
+  .shell {
+    margin-top: calc(52px + env(safe-area-inset-top, 0px)) !important;
+  }
+  /* Main content side padding for notch */
+  .main {
+    padding-left: max(8px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(8px, env(safe-area-inset-right, 0px)) !important;
+  }
 }
 
 </style>
