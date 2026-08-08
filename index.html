@@ -761,6 +761,16 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
   font-family: inherit;
 }
 
+
+@media (max-width: 900px) {
+  /* Hide desktop card on fleet page - mobile uses mob-fleet-cards instead */
+  #page-fleet > .card { display: none !important; }
+  /* Same for other card-view pages */
+  #page-defects > .card { display: none !important; }
+  #page-jobcards > .card { display: none !important; }
+  #page-tasks > .card { display: none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -931,7 +941,8 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
 <div class="page" id="page-fleet"><div id="mob-fleet-cards">
     <div class="mob-filter-bar">
       <input class="si" type="text" id="mob-fleet-search" placeholder="🔍 Search fleet…" oninput="renderFleet()" style="flex:1;">
-      <select id="mob-fleet-co" onchange="renderFleet()" style="min-width:130px;"><option value="">All companies</option></select>
+      <select id="mob-fleet-co" onchange="renderFleet()" style="min-width:110px;"><option value="">All</option></select>
+      <button class="btn bp" onclick="openVehicleModal()" style="white-space:nowrap;padding:10px 12px;">+ Add</button>
     </div>
   </div>
   <div class="card">
