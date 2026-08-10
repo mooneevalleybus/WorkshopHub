@@ -801,6 +801,16 @@ a, input, textarea, select, .nt, li { -webkit-touch-callout: default; }
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
     <span id="role-badge" style="display:none;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;"></span>
+    <span id="desk-site-switch-wrap" style="display:none;align-items:center;gap:6px;">
+      <span style="font-size:11px;color:rgba(255,255,255,.5);">Site:</span>
+      <select id="desk-site-select" onchange="switchSite(this.value)"
+        style="font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:white;cursor:pointer;font-family:inherit;">
+        <option value="default">MVBL</option>
+        <option value="viclink">VicLink</option>
+        <option value="takura">Takura</option>
+        <option value="oriley">O'Riley</option>
+      </select>
+    </span>
     <span id="role-preview-wrap" style="display:none;align-items:center;gap:6px;">
       <span style="font-size:11px;color:rgba(255,255,255,.5);">Preview as:</span>
       <select id="role-preview-select" onchange="previewRole(this.value)"
@@ -2744,6 +2754,9 @@ function getSiteConfig(email, companyFilter) {
 // Admin can switch between customer sites
 let _activeSite = 'default';
 function switchSite(siteKey) {
+  // Sync desktop dropdown
+  const dd = document.getElementById('desk-site-select');
+  if(dd) dd.value = siteKey;
   const config = SITE_CONFIGS[siteKey];
   if (!config) { alert('Site not configured yet'); return; }
   _activeSite = siteKey;
@@ -2858,6 +2871,8 @@ function updateAuthUI(on){
   const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=(on&&(currentRole==='admin'||_realRole==='admin'))?'flex':'none';
   // Show site switcher for admin only
   const isAdmin = on && (currentRole==='admin'||_realRole==='admin');
+  const dssw = document.getElementById('desk-site-switch-wrap');
+  if(dssw) dssw.style.display = isAdmin ? 'flex' : 'none';
   ['mob-site-switch-section','mob-site-mvbl','mob-site-viclink','mob-site-takura','mob-site-oriley'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.style.display=isAdmin?'flex':'none';
