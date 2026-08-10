@@ -2683,22 +2683,98 @@ const FAULT_CODES=[
 // ══════════════════════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
+// ─── SITE CONFIGS PER CUSTOMER ───────────────────────────────────────────────
+const SITE_CONFIGS = {
+  // MVBL main site — all internal staff
+  'default': {
+    SITE_URL:    'https://mvbus.sharepoint.com/sites/Workshop-MooneeValleyBusLines',
+    L_FLEET:     'cbfd019e-84a4-48d3-aa7d-ab7f4e729f6a',
+    L_TASKS:     '0750a186-4691-4564-9e2d-183aaa8c7c13',
+    L_PARTS:     'd0a310c5-0e57-488e-b65e-63eb5f10476e',
+    L_JOBS:      '8e669308-8e96-4973-9e07-6b90d614fcb0',
+    L_DEFECTS:   '8047bf19-9ddd-4c01-ad18-3a24d9b0d858',
+    L_ACC:       'eac50b26-0767-41fe-8d3e-ffe4d84811bc',
+    L_COS:       'ed1bdd49-8666-4ea2-87b6-921a4c1391f1',
+    L_NOTES:     'WorkshopNotes',
+    L_REPAIRNOTES: 'WorkshopRepairNotes',
+    L_VSI:       '1daf96b5-e71b-4c9c-960e-11c55bc0c272',
+    L_MAINT:     'f97e3677-9189-48ba-a9f8-28afde9bc2c6',
+    L_USERS:     'fca42343-fa5d-4a40-b90d-17a0ff9b9a4e',
+    L_PRETRIP:   'e2018357-60a3-48fb-a036-7aec93b9887d',
+    L_CAT:       '4e03ab20-4668-4641-bce5-227704b6d97d',
+    L_ACCQUOTES: '3649f660-a3f0-4c83-821b-57c08864c488',
+    L_CAL:       'f01885c4-b570-413c-962e-521e62f2843b',
+  },
+  // VicLink — separate SharePoint site
+  'viclink': {
+    SITE_URL:    'https://mvbus.sharepoint.com/sites/VicLink-ServiceDesk',
+    L_FLEET:     '8abff81b-eaa5-440c-a4ce-ad7e6079ae87',
+    L_TASKS:     '', // not yet created
+    L_PARTS:     '', // not yet created
+    L_JOBS:      '92f954e1-f221-4b13-b649-b34c56aaa94c',
+    L_DEFECTS:   '1ae53494-3414-4522-89c9-cc120cf89430',
+    L_ACC:       '75578888-7162-4380-b59f-527731d16d88',
+    L_COS:       '', // not yet created
+    L_NOTES:     'ea99a1f3-84de-4d6e-8c19-e90ac214c855',
+    L_REPAIRNOTES: '995f7557-a39a-49d7-86e9-264caf087240',
+    L_VSI:       'bd5bf886-41b5-4c10-b42b-61e716211983',
+    L_MAINT:     '4407b576-0000-4ab7-814b-47fb6db78f58',
+    L_USERS:     '', // not yet created
+    L_PRETRIP:   'b18fdec6-1718-42dd-a030-13033c6f35b6',
+    L_CAT:       '78f8993a-c221-45f7-a694-1f877ffef942',
+    L_ACCQUOTES: '71a8c358-9e70-4e9d-ba10-3c9828ba41f4',
+    L_CAL:       '945ebf6a-4fba-49cb-9556-befa67bc837d',
+  },
+  // Takura — add when site is ready
+  'takura': null,
+  // O'Riley — add when site is ready
+  'oriley': null,
+};
+
+// Determine which site config to use based on logged-in user's email domain/company
+function getSiteConfig(email, companyFilter) {
+  const e = (email||'').toLowerCase();
+  const c = (companyFilter||'').toLowerCase();
+  if (c.includes('viclink') || e.includes('viclink')) return SITE_CONFIGS['viclink'];
+  if (c.includes('takura') || e.includes('takura')) return SITE_CONFIGS['takura'] || SITE_CONFIGS['default'];
+  if (c.includes('oriley') || c.includes("o'riley") || e.includes('oriley')) return SITE_CONFIGS['oriley'] || SITE_CONFIGS['default'];
+  return SITE_CONFIGS['default'];
+}
+
+// Admin can switch between customer sites
+let _activeSite = 'default';
+function switchSite(siteKey) {
+  const config = SITE_CONFIGS[siteKey];
+  if (!config) { alert('Site not configured yet'); return; }
+  _activeSite = siteKey;
+  Object.assign(CFG, config);
+  // Clear cached data and reload
+  fleet=[]; defects=[]; jobCards=[]; tasks=[]; parts=[]; accidents=[];
+  accQuotes=[]; vsiHistory=[]; maintHistory=[]; calEvents=[]; ptHistory=[];
+  connected=false;
+  init();
+  closeMobMenu();
+  showSt('info','Switched to '+ siteKey.charAt(0).toUpperCase()+siteKey.slice(1)+' site');
+  setTimeout(clearSt,3000);
+}
+
 const CFG = {
   CLIENT_ID: 'b023bde8-9b0a-418c-ab6e-ee2fa62a813d',
   TENANT_ID: '1107f160-8e52-466d-a70d-b6ae79cd903b',
-  SITE_URL:  'https://mvbus.sharepoint.com/sites/Workshop-MooneeValleyBusLines',
-  L_FLEET:   'cbfd019e-84a4-48d3-aa7d-ab7f4e729f6a',
-  L_TASKS:   '0750a186-4691-4564-9e2d-183aaa8c7c13',
-  L_PARTS:   'd0a310c5-0e57-488e-b65e-63eb5f10476e',
-  L_JOBS:    '8e669308-8e96-4973-9e07-6b90d614fcb0',
-  L_DEFECTS: '8047bf19-9ddd-4c01-ad18-3a24d9b0d858',
-  L_ACC:     'eac50b26-0767-41fe-8d3e-ffe4d84811bc',
-  L_COS:     'ed1bdd49-8666-4ea2-87b6-921a4c1391f1',
-  L_NOTES:   'WorkshopNotes', // create this list in SharePoint — see chat for columns
-  L_REPAIRNOTES: 'WorkshopRepairNotes', // create this list in SharePoint — see chat for columns
-  L_VSI: '1daf96b5-e71b-4c9c-960e-11c55bc0c272',
-  L_MAINT: 'f97e3677-9189-48ba-a9f8-28afde9bc2c6',
-  L_USERS:   'fca42343-fa5d-4a40-b90d-17a0ff9b9a4e',
+  // These get overwritten after login based on user's company
+  SITE_URL:    'https://mvbus.sharepoint.com/sites/Workshop-MooneeValleyBusLines',
+  L_FLEET:     'cbfd019e-84a4-48d3-aa7d-ab7f4e729f6a',
+  L_TASKS:     '0750a186-4691-4564-9e2d-183aaa8c7c13',
+  L_PARTS:     'd0a310c5-0e57-488e-b65e-63eb5f10476e',
+  L_JOBS:      '8e669308-8e96-4973-9e07-6b90d614fcb0',
+  L_DEFECTS:   '8047bf19-9ddd-4c01-ad18-3a24d9b0d858',
+  L_ACC:       'eac50b26-0767-41fe-8d3e-ffe4d84811bc',
+  L_COS:       'ed1bdd49-8666-4ea2-87b6-921a4c1391f1',
+  L_NOTES:     'WorkshopNotes',
+  L_REPAIRNOTES: 'WorkshopRepairNotes',
+  L_VSI:       '1daf96b5-e71b-4c9c-960e-11c55bc0c272',
+  L_MAINT:     'f97e3677-9189-48ba-a9f8-28afde9bc2c6',
+  L_USERS:     'fca42343-fa5d-4a40-b90d-17a0ff9b9a4e',
   L_PRETRIP:   'e2018357-60a3-48fb-a036-7aec93b9887d',
   L_CAT:       '4e03ab20-4668-4641-bce5-227704b6d97d',
   L_ACCQUOTES: '3649f660-a3f0-4c83-821b-57c08864c488',
@@ -2706,6 +2782,14 @@ const CFG = {
   SCOPES:    ['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/Files.ReadWrite.All','offline_access','openid','profile'],
   get REDIR(){ return 'https://mooneevalleybus.github.io/WorkshopHub/'; }
 };
+
+// Apply site config for a user
+function applySiteConfig(email, companyFilter) {
+  const config = getSiteConfig(email, companyFilter);
+  if (!config) return;
+  Object.assign(CFG, config);
+  console.log('Site config applied:', CFG.SITE_URL);
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // STATE
@@ -2772,6 +2856,13 @@ function updateAuthUI(on){
   document.getElementById('auth-btn').textContent=on?'Sign out':'Sign in';
   const tsb=document.getElementById('todo-sync-btn');if(tsb)tsb.style.display=on?'inline-block':'none';
   const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=(on&&(currentRole==='admin'||_realRole==='admin'))?'flex':'none';
+  // Show site switcher for admin only
+  const isAdmin = on && (currentRole==='admin'||_realRole==='admin');
+  ['mob-site-switch-section','mob-site-mvbl','mob-site-viclink','mob-site-takura','mob-site-oriley'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=isAdmin?'flex':'none';
+  });
+  if(isAdmin) document.getElementById('mob-site-switch-section').style.display='block';
   const ls=document.getElementById('login-screen');
   const vis=on?'visible':'hidden';
   if(ls)ls.style.display=on?'none':'flex';
@@ -6189,8 +6280,10 @@ async function loadUserRole() {
     const match = (users.value||[]).find(x=>(x.fields?.Email||'').toLowerCase()===currentUserEmail);
     if (match) {
       const role = (match.fields?.Role||'').toLowerCase();
-      if (['driver','office','tech','manager','admin'].includes(role)) currentRole = role;
+      if (['driver','office','tech','manager','owner','admin'].includes(role)) currentRole = role;
       currentCompanyFilter = match.fields?.CompanyFilter || '';
+      // Switch to correct SharePoint site for this user
+      applySiteConfig(currentUserEmail, currentCompanyFilter);
     }
     // If no match found, default to driver (most restrictive) unless email is not set
     else if (currentUserEmail) currentRole = 'driver'; // not in list = most restrictive
@@ -9113,6 +9206,11 @@ init();
   <div class="mob-menu-item" onclick="mobNav('faultcodes')"><span class="mob-menu-item-icon">🔌</span><span class="mob-menu-item-label">Fault Codes</span></div>
   <div class="mob-menu-section">App</div>
   <div class="mob-menu-item" id="mob-install-item" onclick="installPWA()" style="display:none;"><span class="mob-menu-item-icon">📲</span><span class="mob-menu-item-label">Download as App</span></div>
+  <div class="mob-menu-section" id="mob-site-switch-section" style="display:none;">Switch site</div>
+  <div class="mob-menu-item" id="mob-site-mvbl" style="display:none;" onclick="switchSite('default')"><span class="mob-menu-item-icon">🏢</span><span class="mob-menu-item-label">MVBL (main site)</span></div>
+  <div class="mob-menu-item" id="mob-site-viclink" style="display:none;" onclick="switchSite('viclink')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">VicLink</span></div>
+  <div class="mob-menu-item" id="mob-site-takura" style="display:none;" onclick="switchSite('takura')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">Takura</span></div>
+  <div class="mob-menu-item" id="mob-site-oriley" style="display:none;" onclick="switchSite('oriley')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">O'Riley</span></div>
   <div class="mob-menu-section">Account</div>
   <div class="mob-menu-item" id="mob-role-preview-wrap" style="display:none;flex-direction:column;align-items:flex-start;gap:8px;">
     <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;text-transform:uppercase;">Preview as role</div>
