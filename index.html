@@ -2930,9 +2930,20 @@ function updateAuthUI(on){
   document.getElementById('auth-dot').title=on?'Connected to SharePoint':'Not connected';
   document.getElementById('auth-btn').textContent=on?'Sign out':'Sign in';
   const tsb=document.getElementById('todo-sync-btn');if(tsb)tsb.style.display=on?'inline-block':'none';
+  // Only show role preview for admin - check after role is loaded
+  setTimeout(()=>{
+    const isAdm = connected && (currentRole==='admin'||_realRole==='admin');
+    const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=isAdm?'flex':'none';
+    const drpw=document.getElementById('role-preview-wrap');if(drpw)drpw.style.display=isAdm?'flex':'none';
+    const isAdm2 = connected && (currentRole==='admin'||_realRole==='admin');
+    const dssw=document.getElementById('desk-site-switch-wrap');if(dssw)dssw.style.display=isAdm2?'flex':'none';
+    ['mob-site-switch-section','mob-site-mvbl','mob-site-viclink','mob-site-takura','mob-site-oriley'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.style.display=isAdm2?'flex':'none';
+    });
+    if(isAdm2){const ss=document.getElementById('mob-site-switch-section');if(ss)ss.style.display='block';}
+  }, 500);
   const isAdminRole = on && (currentRole==='admin'||_realRole==='admin');
-  const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=isAdminRole?'flex':'none';
-  const drpw=document.getElementById('role-preview-wrap');if(drpw)drpw.style.display=isAdminRole?'flex':'none';
   // Show site switcher for admin only
   const isAdmin = isAdminRole;
   const dssw = document.getElementById('desk-site-switch-wrap');
@@ -2956,10 +2967,18 @@ async function gPost(url,body){const r=await fetch(url,{method:'POST',headers:{A
 async function gPatch(url,body){const r=await fetch(url,{method:'PATCH',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok){const t=await r.text();throw new Error(`${r.status}: ${t}`);}return r.json();}
 async function gDel(url){const r=await fetch(url,{method:'DELETE',headers:{Authorization:`Bearer ${token}`}});if(!r.ok)throw new Error(`${r.status} ${url}`);}
 
+// Cache site IDs per URL
+const _siteIdCache = {};
 async function getSiteId(){
-  if(siteId)return siteId;
-  const d=await gGet(`https://graph.microsoft.com/v1.0/sites/mvbus.sharepoint.com:/sites/Workshop-MooneeValleyBusLines`);
-  siteId=d.id; return siteId;
+  const url = CFG.SITE_URL;
+  if(_siteIdCache[url]) return _siteIdCache[url];
+  // Parse site path from URL
+  const u = new URL(url);
+  const d = await gGet(`https://graph.microsoft.com/v1.0/sites/${u.hostname}:${u.pathname}`);
+  if(!d.id) throw new Error('Could not get site ID for ' + url);
+  _siteIdCache[url] = d.id;
+  console.log('getSiteId:', url, '->', d.id);
+  return d.id;
 }
 async function listItems(list){
   const sid=await getSiteId();
@@ -3012,7 +3031,7 @@ async function loadAll(){
       console.log('Site switched to', CFG.SITE_URL, '— reloading data');
       const safe2 = async (fn) => { try { return await fn(); } catch(e) { console.warn('List reload warning:', e.message); return []; } };
       const[fi2,ti2,pi2,ji2,di2,ai2,ni2,rni2,vsii2,mhi2,cati2,aqi2,cali2]=await Promise.all([
-        safe2(()=>listItems(CFG.L_FLEET)),
+        safe2(()=>{console.log('Loading fleet from',CFG.SITE_URL,'list',CFG.L_FLEET);return listItems(CFG.L_FLEET);}),
         safe2(()=>listItems(CFG.L_TASKS)),
         safe2(()=>listItems(CFG.L_PARTS)),
         safe2(()=>listItems(CFG.L_JOBS)),
