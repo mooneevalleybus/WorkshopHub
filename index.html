@@ -3004,8 +3004,42 @@ async function loadAll(){
     catalogue=cati.map(spToCat).sort((a,b)=>(a.category||'').localeCompare(b.category||''));
     accQuotes=aqi.map(spToAq).sort((a,b)=>(b.qDate||'').localeCompare(a.qDate||''));
     calEvents=(cali||[]).map(spToCal);
-    connected=true; updateAuthUI(true); clearSt(); populateAllFilters();
+    // Get user role and switch to correct site BEFORE loading data
     await loadUserRole();
+    // Now reload all lists from the correct site if site changed
+    const siteChanged = CFG.SITE_URL !== SITE_CONFIGS['default'].SITE_URL;
+    if(siteChanged){
+      console.log('Site switched to', CFG.SITE_URL, '— reloading data');
+      const safe2 = async (fn) => { try { return await fn(); } catch(e) { console.warn('List reload warning:', e.message); return []; } };
+      const[fi2,ti2,pi2,ji2,di2,ai2,ni2,rni2,vsii2,mhi2,cati2,aqi2,cali2]=await Promise.all([
+        safe2(()=>listItems(CFG.L_FLEET)),
+        safe2(()=>listItems(CFG.L_TASKS)),
+        safe2(()=>listItems(CFG.L_PARTS)),
+        safe2(()=>listItems(CFG.L_JOBS)),
+        safe2(()=>listItems(CFG.L_DEFECTS)),
+        safe2(()=>listItems(CFG.L_ACC)),
+        safe2(()=>CFG.L_NOTES?listItems(CFG.L_NOTES):[]),
+        safe2(()=>CFG.L_REPAIRNOTES?listItems(CFG.L_REPAIRNOTES):[]),
+        safe2(()=>listItems(CFG.L_VSI)),
+        safe2(()=>listItems(CFG.L_MAINT)),
+        safe2(()=>CFG.L_CAT?listItems(CFG.L_CAT):[]),
+        safe2(()=>CFG.L_ACCQUOTES?listItems(CFG.L_ACCQUOTES):[]),
+        safe2(()=>CFG.L_CAL?listItems(CFG.L_CAL):[]),
+      ]);
+      fleet=fi2.map(spToV);
+      tasks=ti2.map(spToT);
+      parts=pi2.map(spToP);
+      jobCards=ji2.map(spToJ);
+      defects=di2.map(spToD);
+      accidents=ai2.map(spToAcc);
+      notes=ni2.map(spToNote||((x)=>x));
+      repairNotes=rni2.map(spToRN||((x)=>x));
+      vsiHistory=vsii2.map(spToVsi);
+      maintHistory=mhi2.map(spToMaint);
+      accQuotes=aqi2.map(spToAq);
+      calEvents=cali2.map(spToCal);
+    }
+    connected=true; updateAuthUI(true); clearSt(); populateAllFilters();
     renderPage(activePage());
     checkMigration();
     setTimeout(()=>pushAllToTodo(),3000);
