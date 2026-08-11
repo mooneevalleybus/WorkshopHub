@@ -7491,8 +7491,12 @@ function canSeeVehicle(vehicleId) {
 
 function canSeeVehicleObj(v) {
   if (!currentCompanyFilter) return true;
+  // Check owner directly (for customer sites where owner field = company name)
+  if ((v.owner||'').toLowerCase() === currentCompanyFilter.toLowerCase()) return true;
+  // Check via companies lookup (for MVBL where owner = company ID)
   const co = companies.find(x=>x.id===v.owner);
-  return (co?.name||'') === currentCompanyFilter;
+  if ((co?.name||'').toLowerCase() === currentCompanyFilter.toLowerCase()) return true;
+  return false;
 }
 
 // Show company filter badge in header if filtered
@@ -7523,8 +7527,11 @@ function canSeeVehicle(vehicleId) {
   if (!currentCompanyFilter) return true;
   const v = fleet.find(x => x.id === vehicleId);
   if (!v) return false;
+  // Check owner directly first (customer sites)
+  if ((v.owner||'').toLowerCase() === currentCompanyFilter.toLowerCase()) return true;
+  // Then check via companies lookup (MVBL)
   const co = companies.find(c => c.id === v.owner);
-  return (co?.name || '') === currentCompanyFilter;
+  return (co?.name||'').toLowerCase() === currentCompanyFilter.toLowerCase();
 }
 
 // ─── ROLE PREVIEW (admin only) ────────────────────────────────────────────────
@@ -7943,7 +7950,7 @@ async function pushAllToTodo(){
 }
 
 // ─── MOBILE APP ───────────────────────────────────────────────────────────────
-function isMobile(){return window.innerWidth<=900;}
+function isMobile(){return window.innerWidth<=768;}
 function openMobMenu(){const el=document.getElementById('mob-menu-overlay');if(el){el.classList.add('show');document.body.style.overflow='hidden';}}
 function closeMobMenu(){const el=document.getElementById('mob-menu-overlay');if(el){el.classList.remove('show');document.body.style.overflow='';}}
 function mobNav(page){closeMobMenu();showPage(page,null);}
