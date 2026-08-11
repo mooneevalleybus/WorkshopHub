@@ -3045,18 +3045,19 @@ async function loadAll(){
         safe2(()=>CFG.L_ACCQUOTES?listItems(CFG.L_ACCQUOTES):[]),
         safe2(()=>CFG.L_CAL?listItems(CFG.L_CAL):[]),
       ]);
-      fleet=fi2.map(spToV);
+      fleet=fi2.map(spToV).sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet));
       tasks=ti2.map(spToT);
       parts=pi2.map(spToP);
       jobCards=ji2.map(spToJ);
-      defects=di2.map(spToD);
+      defects=di2.map(spToDef);
       accidents=ai2.map(spToAcc);
-      notes=ni2.map(spToNote||((x)=>x));
-      repairNotes=rni2.map(spToRN||((x)=>x));
-      vsiHistory=vsii2.map(spToVsi);
-      maintHistory=mhi2.map(spToMaint);
-      accQuotes=aqi2.map(spToAq);
+      notes=ni2.map(spToNo||((x)=>x));
+      repairNotes=rni2.map(spToRn||((x)=>x));
+      vsiHistory=vsii2.map(spToVsi).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+      maintHistory=mhi2.map(spToMh||((x)=>x)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+      accQuotes=aqi2.map(spToAq).sort((a,b)=>(b.qDate||'').localeCompare(a.qDate||''));
       calEvents=cali2.map(spToCal);
+      catalogue=[];
     }
     connected=true; updateAuthUI(true); clearSt(); populateAllFilters();
     renderPage(activePage());
