@@ -2783,21 +2783,33 @@ function getSiteConfig(email, companyFilter) {
 
 // Admin can switch between customer sites
 let _activeSite = 'default';
-function switchSite(siteKey) {
+async function switchSite(siteKey) {
+  const config = SITE_CONFIGS[siteKey];
+  if (!config) { alert('Site not yet configured — lists still being set up'); return; }
+  _activeSite = siteKey;
+  // Apply new site config
+  Object.assign(CFG, config);
+  console.log('Switched to site:', CFG.SITE_URL);
+  // Sync dropdowns
   const dd = document.getElementById('desk-site-select');
   if(dd) dd.value = siteKey;
-  const config = SITE_CONFIGS[siteKey];
-  if (!config) { alert('Site not configured yet'); return; }
-  _activeSite = siteKey;
-  Object.assign(CFG, config);
-  // Clear cached data and reload
+  // Clear all cached data
   fleet=[]; defects=[]; jobCards=[]; tasks=[]; parts=[]; accidents=[];
   accQuotes=[]; vsiHistory=[]; maintHistory=[]; calEvents=[]; ptHistory=[];
-  connected=false;
-  init();
+  companies=[]; notes=[]; repairNotes=[];
   closeMobMenu();
-  showSt('info','Switched to '+ siteKey.charAt(0).toUpperCase()+siteKey.slice(1)+' site');
-  setTimeout(clearSt,3000);
+  showSt('info','Loading ' + siteKey.charAt(0).toUpperCase()+siteKey.slice(1)+' data…');
+  try {
+    // Reload all data from new site - skip auth, token is already valid
+    await loadAll();
+    renderPage(activePage());
+    populateAllFilters();
+    showSt('info','Switched to ' + siteKey.charAt(0).toUpperCase()+siteKey.slice(1));
+    setTimeout(clearSt, 3000);
+  } catch(e) {
+    showSt('err', 'Failed to load ' + siteKey + ' data: ' + e.message);
+    console.error('switchSite error:', e);
+  }
 }
 
 const CFG = {
