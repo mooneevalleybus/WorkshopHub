@@ -2909,9 +2909,11 @@ function updateAuthUI(on){
   document.getElementById('auth-dot').title=on?'Connected to SharePoint':'Not connected';
   document.getElementById('auth-btn').textContent=on?'Sign out':'Sign in';
   const tsb=document.getElementById('todo-sync-btn');if(tsb)tsb.style.display=on?'inline-block':'none';
-  const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=(on&&(currentRole==='admin'||_realRole==='admin'))?'flex':'none';
+  const isAdminRole = on && (currentRole==='admin'||_realRole==='admin');
+  const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=isAdminRole?'flex':'none';
+  const drpw=document.getElementById('role-preview-wrap');if(drpw)drpw.style.display=isAdminRole?'flex':'none';
   // Show site switcher for admin only
-  const isAdmin = on && (currentRole==='admin'||_realRole==='admin');
+  const isAdmin = isAdminRole;
   const dssw = document.getElementById('desk-site-switch-wrap');
   if(dssw) dssw.style.display = isAdmin ? 'flex' : 'none';
   ['mob-site-switch-section','mob-site-mvbl','mob-site-viclink','mob-site-takura','mob-site-oriley'].forEach(id=>{
@@ -2953,6 +2955,7 @@ async function deleteItem(list,spId){const sid=await getSiteId();return gDel(`ht
 // ══════════════════════════════════════════════════════════════════════════════
 async function loadAll(){
   showSt('info','Loading from SharePoint…');
+  console.log('loadAll: using site', CFG.SITE_URL);
   const safe = async (fn) => { try { return await fn(); } catch(e) { console.warn('List load warning:', e.message); return []; } };
   try{
     const[ci,fi,ti,pi,ji,di,ai,ni,rni,vsii,mhi,cati,aqi,cali]=await Promise.all([
