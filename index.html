@@ -800,6 +800,27 @@ select option {
 .hdr-dd-item:last-child { border-bottom: none; }
 .hdr-dd-item:hover { background: #e8f5f4; color: #1a7f7a; }
 
+
+@media (min-width: 901px) {
+  /* Hide mobile-only elements on desktop */
+  #mob-fleet-cards,
+  #mob-defect-cards,
+  #mob-jc-cards,
+  #mob-task-cards,
+  #mob-maint-cards,
+  #mob-vsi-cards,
+  #mob-acc-cards,
+  #mob-aq-cards,
+  #mob-service-cards,
+  #mob-parts-cards { display: none !important; }
+  .mob-filter-bar { display: none !important; }
+  /* Show desktop cards on desktop */
+  #page-fleet > .card,
+  #page-defects > .card,
+  #page-jobcards > .card,
+  #page-tasks > .card { display: block !important; }
+}
+
 </style>
 </head>
 <body>
