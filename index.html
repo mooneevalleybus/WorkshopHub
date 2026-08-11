@@ -6328,28 +6328,37 @@ const REPORT_ONLY = {
   office: ['fleet','defects','pretrip'],
 };
 
+// MVBL main site constants - always used for user lookup regardless of active site
+const MVBL_SITE_ID = 'mvbus.sharepoint.com,4275863d-a8ba-4377-8f50-9092f2b9135f,3c9e34af-70e5-46e9-ae0e-264e8c9316f9';
+const MVBL_USERS_LIST = 'fca42343-fa5d-4a40-b90d-17a0ff9b9a4e';
+
 async function loadUserRole() {
   try {
-    const sid = await getSiteId();
-    // Get current user email via Graph
-    const me = await gGet('https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName');
+    // Always get user email first
+    const me = await gGet('https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,displayName');
     currentUserEmail = (me.mail || me.userPrincipalName || '').toLowerCase();
     if (!currentUserEmail) return;
-    // Look up in WorkshopUsers list
-    const users = await gGet(`https://graph.microsoft.com/v1.0/sites/${sid}/lists/${CFG.L_USERS}/items?$expand=fields&$top=500`);
+    console.log('Looking up user:', currentUserEmail);
+
+    // ALWAYS look up in MVBL WorkshopUsers list - never the customer site
+    const usersUrl = `https://graph.microsoft.com/v1.0/sites/${MVBL_SITE_ID}/lists/${MVBL_USERS_LIST}/items?$expand=fields&$top=500`;
+    const users = await gGet(usersUrl);
     const match = (users.value||[]).find(x=>(x.fields?.Email||'').toLowerCase()===currentUserEmail);
+
     if (match) {
       const role = (match.fields?.Role||'').toLowerCase();
       if (['driver','office','tech','manager','owner','operator','admin'].includes(role)) currentRole = role;
       currentCompanyFilter = match.fields?.CompanyFilter || '';
+      console.log('User found — role:', currentRole, 'company:', currentCompanyFilter);
       // Switch to correct SharePoint site for this user
       applySiteConfig(currentUserEmail, currentCompanyFilter);
+    } else {
+      console.warn('User not found in WorkshopUsers:', currentUserEmail);
+      currentRole = 'driver';
     }
-    // If no match found, default to driver (most restrictive) unless email is not set
-    else if (currentUserEmail) currentRole = 'driver'; // not in list = most restrictive
   } catch(e) {
-    console.warn('Role load failed, defaulting to admin:', e.message);
-    currentRole = 'admin';
+    console.warn('Role load failed:', e.message);
+    currentRole = 'driver'; // default to most restrictive, not admin
   }
   applyRoleUI();
 }
