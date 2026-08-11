@@ -3218,6 +3218,7 @@ function renderDash(){
 }
 
 function renderFleet(){
+  console.log('renderFleet: isMobile='+isMobile()+' fleet='+fleet.length+' companyFilter='+currentCompanyFilter);
   if(isMobile()){
     const mobSearch=document.getElementById('mob-fleet-search');
     const mobCo=document.getElementById('mob-fleet-co');
