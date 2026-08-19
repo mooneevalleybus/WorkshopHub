@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-<title>MVBL Service Desk</title>
+<title>Fleet Desk</title>
 <!-- PWA -->
 
 <link rel="manifest" href="manifest.json">
@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Service Desk">
+<meta name="apple-mobile-web-app-title" content="Fleet Desk">
 <link rel="apple-touch-icon" href="data:image/png;base64,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">
 <link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,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">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8IS0tIEJhY2tncm91bmQgLS0+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0iIzFhMjc0NCIvPgogIDwhLS0gQnVzIGJvZHkgLS0+CiAgPHJlY3QgeD0iNjAiIHk9IjE2MCIgd2lkdGg9IjM5MiIgaGVpZ2h0PSIyMTAiIHJ4PSIyMiIgZmlsbD0iIzFhN2Y3YSIvPgogIDwhLS0gQnVzIHJvb2YgLS0+CiAgPHJlY3QgeD0iODAiIHk9IjE0MCIgd2lkdGg9IjM1MiIgaGVpZ2h0PSI0MCIgcng9IjE0IiBmaWxsPSIjMWE3ZjdhIi8+CiAgPCEtLSBXaW5kb3dzIHJvdyAtLT4KICA8cmVjdCB4PSI5NSIgeT0iMTc1IiB3aWR0aD0iNzAiIGhlaWdodD0iNTUiIHJ4PSI4IiBmaWxsPSIjZThmNWY0IiBvcGFjaXR5PSIwLjkiLz4KICA8cmVjdCB4PSIxODUiIHk9IjE3NSIgd2lkdGg9IjcwIiBoZWlnaHQ9IjU1IiByeD0iOCIgZmlsbD0iI2U4ZjVmNCIgb3BhY2l0eT0iMC45Ii8+CiAgPHJlY3QgeD0iMjc1IiB5PSIxNzUiIHdpZHRoPSI3MCIgaGVpZ2h0PSI1NSIgcng9IjgiIGZpbGw9IiNlOGY1ZjQiIG9wYWNpdHk9IjAuOSIvPgogIDxyZWN0IHg9IjM2NSIgeT0iMTc1IiB3aWR0aD0iNzAiIGhlaWdodD0iNTUiIHJ4PSI4IiBmaWxsPSIjZThmNWY0IiBvcGFjaXR5PSIwLjkiLz4KICA8IS0tIEJ1cyBmcm9udCBzdHJpcGUgLS0+CiAgPHJlY3QgeD0iNjAiIHk9IjI1NSIgd2lkdGg9IjM5MiIgaGVpZ2h0PSI4IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTUpIi8+CiAgPCEtLSBXaGVlbHMgLS0+CiAgPGNpcmNsZSBjeD0iMTQ4IiBjeT0iMzc1IiByPSIzOCIgZmlsbD0iIzBkMWEzMyIvPgogIDxjaXJjbGUgY3g9IjE0OCIgY3k9IjM3NSIgcj0iMjIiIGZpbGw9IiMyYTNkNWUiLz4KICA8Y2lyY2xlIGN4PSIxNDgiIGN5PSIzNzUiIHI9IjEwIiBmaWxsPSIjMWE3ZjdhIi8+CiAgPGNpcmNsZSBjeD0iMzY0IiBjeT0iMzc1IiByPSIzOCIgZmlsbD0iIzBkMWEzMyIvPgogIDxjaXJjbGUgY3g9IjM2NCIgY3k9IjM3NSIgcj0iMjIiIGZpbGw9IiMyYTNkNWUiLz4KICA8Y2lyY2xlIGN4PSIzNjQiIGN5PSIzNzUiIHI9IjEwIiBmaWxsPSIjMWE3ZjdhIi8+CiAgPCEtLSBXaGVlbCBhcmNoZXMgLS0+CiAgPHBhdGggZD0iTTEwNSAzNzAgUTE0OCAzMjAgMTkxIDM3MCIgZmlsbD0iIzFhMjc0NCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTMyMSAzNzAgUTM2NCAzMjAgNDA3IDM3MCIgZmlsbD0iIzFhMjc0NCIgb3BhY2l0eT0iMC41Ii8+CiAgPCEtLSBNVkJMIHRleHQgb24gYnVzIC0tPgogIDx0ZXh0IHg9IjI1NiIgeT0iMzQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOSI+TVZCTDwvdGV4dD4KICA8IS0tIFNwYW5uZXIvd3JlbmNoIGljb24gKHNlcnZpY2UgZGVzayBpbmRpY2F0b3IpIHRvcCByaWdodCAtLT4KICA8Y2lyY2xlIGN4PSI0MDAiIGN5PSIxMTIiIHI9IjUyIiBmaWxsPSIjMWE3ZjdhIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTEyIiByPSI0NCIgZmlsbD0iIzFhMjc0NCIvPgogIDwhLS0gV3JlbmNoIHNoYXBlIC0tPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQwMCwxMTIpIHJvdGF0ZSg0NSkiPgogICAgPHJlY3QgeD0iLTYiIHk9Ii0zMCIgd2lkdGg9IjEyIiBoZWlnaHQ9IjYwIiByeD0iNCIgZmlsbD0id2hpdGUiLz4KICAgIDxjaXJjbGUgY3g9IjAiIGN5PSItMzAiIHI9IjE0IiBmaWxsPSJ3aGl0ZSIvPgogICAgPGNpcmNsZSBjeD0iMCIgY3k9Ii0zMCIgcj0iOCIgZmlsbD0iIzFhMjc0NCIvPgogICAgPGNpcmNsZSBjeD0iMCIgY3k9IjMwIiByPSIxNCIgZmlsbD0id2hpdGUiLz4KICAgIDxjaXJjbGUgY3g9IjAiIGN5PSIzMCIgcj0iOCIgZmlsbD0iIzFhMjc0NCIvPgogIDwvZz4KPC9zdmc+">
@@ -821,15 +821,75 @@ select option {
   #page-tasks > .card { display: block !important; }
 }
 
+
+/* Digital Signature */
+.sig-pad-wrap {
+  border: 2px solid var(--grey-b);
+  border-radius: 10px;
+  background: #fafafa;
+  position: relative;
+  overflow: hidden;
+}
+.sig-pad-wrap canvas {
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+}
+.sig-pad-wrap .sig-clear {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(255,255,255,.9);
+  border: 1px solid var(--grey-b);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sig-label {
+  font-size: 11px;
+  color: var(--grey-dark);
+  margin-top: 4px;
+}
+
+
+.qr-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 8px;
+  background: white;
+  border: 2px solid var(--grey-b);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+  transition: all .15s;
+  line-height: 1.3;
+}
+.qr-action-btn:hover, .qr-action-btn:active {
+  background: var(--teal-light);
+  border-color: var(--teal);
+  color: var(--teal);
+  transform: scale(0.97);
+}
+
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 <!-- LOGIN OVERLAY -->
 <div id="login-screen" style="position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
   <div style="background:white;border-radius:16px;padding:40px 36px;max-width:400px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.35);">
     <div style="width:64px;height:64px;background:var(--teal);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:white;margin:0 auto 20px;">MV</div>
-    <div style="font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px;">Moonee Valley Bus Lines Service Desk</div>
-    <div style="font-size:13px;color:var(--grey-dark);margin-bottom:32px;">Moonee Valley Bus Lines Service Desk</div>
+    <div style="font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px;">Fleet Desk</div>
+    <div style="font-size:13px;color:var(--grey-dark);margin-bottom:32px;">Fleet Desk</div>
     <button id="login-btn" onclick="signIn()" style="width:100%;padding:13px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s;" onmouseover="this.style.background='var(--teal-mid)'" onmouseout="this.style.background='var(--teal)'">
       <svg width="20" height="20" viewBox="0 0 21 21" fill="white" xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/><rect x="11" width="10" height="10"/><rect y="11" width="10" height="10"/><rect x="11" y="11" width="10" height="10" opacity=".5"/></svg>
       Sign in with Microsoft
@@ -845,7 +905,7 @@ select option {
     <button class="sb-toggle" onclick="isMobile()?openMobMenu():toggleSidebar()" aria-label="Toggle menu">&#9776;</button>
     <div class="hlogo">MV</div>
     <div>
-      <div style="font-size:15px;font-weight:600;">MV Service Desk</div>
+      <div style="font-size:15px;font-weight:600;">Fleet Desk</div>
       <div style="font-size:11px;opacity:.55;margin-top:1px;">Moonee Valley Bus Lines</div>
     </div>
   </div>
@@ -1198,10 +1258,18 @@ select option {
       <div id="pt-section-visual"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--teal-light);"><span style="font-size:13px;font-weight:700;color:var(--navy);">3. Start bus and check</span><button class="btn sm" style="background:var(--green);color:white;padding:4px 10px;font-size:11px;" onclick="passAllSection('running',PT_SECTIONS.running)">✓ Pass all</button></div>
       <div id="pt-section-running"></div>
-      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--grey-mid);display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <button class="btn bp" onclick="submitPreTrip()">&#10003; Submit inspection</button>
-        <button class="btn bs" onclick="resetPreTrip()">Reset</button>
-        <span id="pt-result" style="font-size:13px;font-weight:600;"></span>
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--grey-mid);">
+        <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px;">Driver signature</label>
+        <div class="sig-pad-wrap" style="height:120px;margin-bottom:12px;">
+          <canvas id="pt-sig-canvas" style="width:100%;height:120px;"></canvas>
+          <button class="sig-clear" onclick="clearSig('pt-sig-canvas')">Clear</button>
+        </div>
+        <div class="sig-label" style="margin-bottom:12px;">Sign above with finger or mouse</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn bp" onclick="submitPreTrip()">&#10003; Submit inspection</button>
+          <button class="btn bs" onclick="resetPreTrip()">Reset</button>
+          <span id="pt-result" style="font-size:13px;font-weight:600;"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -1764,7 +1832,7 @@ select option {
       <div class="fr c4"><div><label>Odometer (km)</label><input id="v-odo" type="number"></div><div><label>Odo date</label><input id="v-odoDate" type="date"></div><div><label>Next service date</label><input id="v-svcDate" type="date"></div><div><label>Next service km</label><input id="v-svcKm" type="number"></div></div>
       <div class="fr"><div><label>Notes</label><textarea id="v-notes"></textarea></div></div>
     </div>
-    <div class="mf"><button class="btn bs" onclick="closeModal('m-vehicle')">Cancel</button><button class="btn bprint" onclick="printVehicle()">&#128424; Print / PDF</button><button class="btn bp" id="v-save-btn" onclick="saveVehicle()">Save vehicle</button></div>
+    <div class="mf"><button class="btn" style="background:#e8f5f4;color:var(--teal);border:1px solid var(--teal);" onclick="showVehicleQR(document.getElementById('v-id').value)">QR Code</button><button class="btn bs" onclick="closeModal('m-vehicle')">Cancel</button><button class="btn bprint" onclick="printVehicle()">&#128424; Print / PDF</button><button class="btn bp" id="v-save-btn" onclick="saveVehicle()">Save vehicle</button></div>
   </div>
 </div>
 
@@ -3115,7 +3183,7 @@ function spToAcc(x){const f=x.fields||{};
   };
 }
 
-function vToSp(v){return{Title:v.fleet,Rego:v.rego,RegoExpiry:v.regoExp,Year:v.year,Make:v.make,VIN:v.vin,EngineNum:v.engineNo,TransSerial:v.transSerial,Capacity:v.capacity,Owner:v.owner,Odo:v.odo?String(v.odo):'',OdoDate:v.odoDate||'',SvcDate:v.svcDate||'',SvcKm:v.svcKm?String(v.svcKm):'',Notes:v.notes||''};}
+function vToSp(v){const d=s=>s&&s.trim()?s:null;return{Title:v.fleet,Rego:v.rego||'',RegoExpiry:d(v.regoExp),Year:v.year||'',Make:v.make||'',VIN:v.vin||'',EngineNum:v.engineNo||'',TransSerial:v.transSerial||'',Capacity:v.capacity||'',Owner:v.owner||'',Odo:v.odo?String(v.odo):'',OdoDate:d(v.odoDate),SvcDate:d(v.svcDate),SvcKm:v.svcKm?String(v.svcKm):'',Notes:v.notes||''};}
 function tToSp(t){const f={Title:t.desc,VehicleId:t.vehicleId,Priority:t.priority,Status:t.status,Technician:t.tech,DateLogged:t.dateLogged||null,DateDue:t.dateDone||null,Odo:t.odo?String(t.odo):'',Notes:JSON.stringify({text:t.notes||'',docsUploaded:!!t.docsUploaded})};if(t.photos?.length)f.TaskPhotos=JSON.stringify(t.photos);return f;}
 
 
@@ -3834,40 +3902,122 @@ function printAccident(){const id=g('acc-id');closeModal('m-accident');if(id)pri
 function printAccidentId(id){
   const a=accidents.find(x=>x.id===id);if(!a)return;
   const v=fleet.find(x=>x.id===a.vehicleId)||{};
+  const co=companies.find(x=>x.id===v.owner)||{};
   const w=window.open('','_blank');
   const photos=a.photos?.filter(Boolean)||[];
-  w.document.write(`<!DOCTYPE html><html><head><title>Accident Report ${a.refNum}</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h1{font-size:16px;color:#1a2744;border-bottom:2px solid #c0392b;padding-bottom:6px;}table{width:100%;border-collapse:collapse;margin-bottom:12px;}td,th{border:1px solid #ccc;padding:5px 7px;}.sect{font-weight:700;color:#1a2744;margin:10px 0 4px;font-size:13px;border-bottom:1px solid #e2e4e9;padding-bottom:3px;}.box{border:1px solid #ccc;padding:6px;min-height:40px;margin-bottom:8px;white-space:pre-wrap;font-size:12px;}.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}.photos img{width:100%;height:90px;object-fit:cover;border:1px solid #ccc;}@media print{button{display:none;}}
-/* ── DASH WARNING LIGHTS ─────────────────────────────────────────────────── */
-.dlb{border-radius:6px;padding:5px 3px;text-align:center;cursor:default;width:70px;min-width:70px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:2px solid rgba(255,255,255,.15);box-sizing:border-box;}
-.dlb-arrow{width:52px;min-width:52px;}
-.dlb-red{background:#5a0000;border-color:#cc0000;}
-.dlb-yellow{background:#4a3800;border-color:#cc9900;}
-.dlb-green{background:#003a00;border-color:#009900;}
-.dlb-blue{background:#001a5a;border-color:#0044cc;}
-.dl-pos{font-size:8px;font-weight:700;color:rgba(255,255,255,.4);font-family:monospace;line-height:1;}
-.dl-lbl{font-size:7.5px;color:rgba(255,255,255,.9);text-align:center;line-height:1.3;font-weight:600;}
-.dl-arrow{font-size:24px;color:white;line-height:1;}
-.dl-num{text-align:center;color:#888;font-size:10px;font-weight:700;padding:2px 0;}
-/* ── FUSE BOARD ──────────────────────────────────────────────────────────── */
-.fbox{border:1px solid #3a5a8c;border-radius:4px;padding:4px 2px;text-align:center;cursor:default;min-width:38px;width:38px;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-sizing:border-box;transition:border-color .15s;}
-.fbox:hover{border-color:#2a9d96;}
-.fbox-pos{font-size:9px;font-weight:700;color:#aac;font-family:monospace;line-height:1;}
-.fbox-size{font-size:7px;color:#688;line-height:1.1;text-align:center;}
-.relay-box{min-width:42px;width:42px;min-height:46px;}
-</style></head><body>
-  <h1>Accident Report — ${a.refNum}</h1>
-  <table><tr><th>Fleet #</th><td>${v.fleet||'—'}</td><th>Rego</th><td>${v.rego||'—'}</td><th>Date/time</th><td>${a.dateTime?new Date(a.dateTime).toLocaleString('en-AU'):'—'}</td></tr>
-  <tr><th>Driver</th><td>${a.driver||'—'}</td><th>Licence</th><td>${a.licence||'—'}</td><th>Location</th><td>${a.location||'—'}</td></tr>
-  <tr><th>Police attended?</th><td>${a.police}</td><th>Event no.</th><td>${a.policeEvent||'—'}</td><th>Injuries</th><td>${a.injuries}</td></tr>
-  <tr><th>Fault assessment</th><td colspan="3">${a.fault}</td><th>Est. damage</th><td>${a.damage?'$'+parseFloat(a.damage).toFixed(2):'—'}</td></tr></table>
-  <div class="sect">Description of incident</div><div class="box">${a.desc||'—'}</div>
-  <div class="sect">Vehicle damage</div><div class="box">${a.vehicleDamage||'—'}</div>
-  <div class="sect">Third party details</div><div class="box">${a.thirdParty||'—'}</div>
-  <div class="sect">Witnesses</div><div class="box">${a.witnesses||'—'}</div>
-  ${photos.length?`<div class="sect">Photos</div><div class="photos">${photos.map(p=>`<img src="${p}">`).join('')}</div>`:''}
-  <button onclick="window.print()">Print</button></body></html>`);
+  const faultIcon=a.atFault==='Yes'?'⚠️ AT FAULT':'✅ NOT AT FAULT';
+  const faultColor=a.atFault==='Yes'?'#c0392b':'#1e8a50';
+
+  w.document.write(`<!DOCTYPE html>
+<html><head><title>Incident Report ${a.refNum||''}</title>
+<style>
+  @page { size: A4; margin: 20mm; }
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #222; margin: 0; }
+  .header { background: #1a2744; color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .header h1 { margin: 0; font-size: 18px; }
+  .header .ref { font-size: 14px; opacity: .8; }
+  .fault-badge { padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; color: white; background: ${faultColor}; }
+  .section { margin-bottom: 16px; }
+  .section-title { background: #1a7f7a; color: white; padding: 5px 10px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  td, th { border: 1px solid #ddd; padding: 6px 8px; font-size: 11px; }
+  th { background: #f4f5f7; font-weight: 700; width: 30%; color: #1a2744; }
+  .box { border: 1px solid #ddd; padding: 10px; border-radius: 4px; min-height: 60px; font-size: 11px; line-height: 1.6; white-space: pre-wrap; }
+  .photos { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+  .photos img { width: 180px; height: 140px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+  .sig-box { border: 1px solid #ddd; border-radius: 4px; height: 60px; margin-top: 6px; }
+  .footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 10px; color: #888; display: flex; justify-content: space-between; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media print { button { display: none !important; } }
+</style></head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>🚨 Vehicle Incident Report</h1>
+    <div class="ref">${a.refNum||'—'} &nbsp;|&nbsp; Moonee Valley Bus Lines</div>
+  </div>
+  <div class="fault-badge">${faultIcon}</div>
+</div>
+
+<div class="two-col">
+  <div class="section">
+    <div class="section-title">Vehicle details</div>
+    <table>
+      <tr><th>Fleet #</th><td>${v.fleet||'—'}</td></tr>
+      <tr><th>Registration</th><td>${v.rego||a.rego||'—'}</td></tr>
+      <tr><th>Make / Model</th><td>${v.make||'—'}</td></tr>
+      <tr><th>Year</th><td>${v.year||'—'}</td></tr>
+      <tr><th>Operator</th><td>${co.name||'—'}</td></tr>
+    </table>
+  </div>
+  <div class="section">
+    <div class="section-title">Incident details</div>
+    <table>
+      <tr><th>Date / Time</th><td>${a.dateTime?new Date(a.dateTime).toLocaleString('en-AU'):'—'}</td></tr>
+      <tr><th>Location</th><td>${a.location||'—'}</td></tr>
+      <tr><th>Driver</th><td>${a.driver||'—'}</td></tr>
+      <tr><th>At fault</th><td style="font-weight:700;color:${faultColor}">${a.atFault||'—'}</td></tr>
+      <tr><th>Ref #</th><td>${a.refNum||'—'}</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="section">
+    <div class="section-title">Insurance details</div>
+    <table>
+      <tr><th>Insurer</th><td>${a.insurer||'—'}</td></tr>
+      <tr><th>Claim number</th><td>${a.claimNum||'—'}</td></tr>
+    </table>
+  </div>
+  <div class="section">
+    <div class="section-title">Third party details</div>
+    <div class="box">${a.thirdParty||'None recorded'}</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Incident description</div>
+  <div class="box">${a.desc||a.report||'No description recorded'}</div>
+</div>
+
+${a.extra?`<div class="section">
+  <div class="section-title">Additional details</div>
+  <div class="box">${a.extra}</div>
+</div>`:''}
+
+${photos.length?`<div class="section">
+  <div class="section-title">Photos (${photos.length})</div>
+  <div class="photos">${photos.map(p=>p.startsWith('data:')?`<img src="${p}">`:`<a href="${p}" style="display:inline-block;padding:10px;border:1px solid #ddd;border-radius:4px;font-size:11px;">📷 Photo</a>`).join('')}</div>
+</div>`:''}
+
+<div class="two-col" style="margin-top:20px;">
+  <div class="section">
+    <div class="section-title">Driver signature</div>
+    <div class="sig-box"></div>
+    <div style="font-size:10px;color:#888;margin-top:4px;">Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</div>
+  </div>
+  <div class="section">
+    <div class="section-title">Manager signature</div>
+    <div class="sig-box"></div>
+    <div style="font-size:10px;color:#888;margin-top:4px;">Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>Generated: ${new Date().toLocaleString('en-AU')} | Fleet Desk</span>
+  <span>CONFIDENTIAL — Internal use only</span>
+</div>
+
+<div style="text-align:center;margin-top:16px;">
+  <button onclick="window.print()" style="padding:10px 28px;background:#1a2744;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">🖨 Print / Save PDF</button>
+</div>
+
+</body></html>`);
   w.document.close();w.focus();
 }
+
 
 // ══════════════════════════════════════════════════════════════════════════════
 // FAULT CODES
@@ -4771,7 +4921,7 @@ function jcRecalc() {
 async function exportAllData() {
   const data = {
     exportedAt: new Date().toISOString(),
-    source: 'Moonee Valley Bus Lines Service Desk',
+    source: 'Fleet Desk',
     version: 1,
     companies, fleet, tasks, parts, jobCards, defects, accidents, notes, repairNotes, vsiHistory, maintHistory,
     jaltest: jaltestEntries || [],
@@ -4798,7 +4948,7 @@ async function importAllData(input) {
   try {
     const text = await file.text();
     const data = JSON.parse(text);
-    if (!data || data.source !== 'Moonee Valley Bus Lines Service Desk') {
+    if (!data || data.source !== 'Fleet Desk') {
       if (!confirm('This file doesn\'t look like a Service Desk backup. Import anyway?')) {
         statusEl.textContent = ''; input.value=''; return;
       }
@@ -6779,7 +6929,7 @@ function printQRCard(vehicleId) {
     @media print{button{display:none;}}
   </style></head><body>
   <h2>Fleet ${v.fleet}${v.rego?' — '+v.rego:''} | QR Code Access Card</h2>
-  <p class="sub">Moonee Valley Bus Lines Service Desk — Scan to access on your phone</p>
+  <p class="sub">Fleet Desk — Scan to access on your phone</p>
   <div class="grid">
     ${pages.map(p=>`<div class="card">
       <img src="https://chart.googleapis.com/chart?cht=qr&chs=130x130&chl=${encodeURIComponent(generateQRUrl(p.page,vehicleId))}&choe=UTF-8" alt="${p.label}">
@@ -7555,11 +7705,19 @@ function canSeeVehicle(vehicleId) {
 
 function canSeeVehicleObj(v) {
   if (!currentCompanyFilter) return true;
-  // Check owner directly (for customer sites where owner field = company name)
-  if ((v.owner||'').toLowerCase() === currentCompanyFilter.toLowerCase()) return true;
-  // Check via companies lookup (for MVBL where owner = company ID)
+  const cf = currentCompanyFilter.toLowerCase();
+  const own = (v.owner||'').toLowerCase();
+  // Direct match
+  if (own === cf) return true;
+  // Partial match (e.g. owner='VicLink Pty Ltd' filter='VicLink')
+  if (own && (own.includes(cf) || cf.includes(own))) return true;
+  // Check via companies lookup (MVBL where owner = company ID)
   const co = companies.find(x=>x.id===v.owner);
-  if ((co?.name||'').toLowerCase() === currentCompanyFilter.toLowerCase()) return true;
+  if ((co?.name||'').toLowerCase() === cf) return true;
+  // On customer sites (no companies list), show all vehicles regardless of owner field
+  // since all vehicles on that site belong to that customer
+  const isCustomerSite = CFG.SITE_URL !== SITE_CONFIGS['default'].SITE_URL;
+  if (isCustomerSite) return true;
   return false;
 }
 
@@ -7591,11 +7749,7 @@ function canSeeVehicle(vehicleId) {
   if (!currentCompanyFilter) return true;
   const v = fleet.find(x => x.id === vehicleId);
   if (!v) return false;
-  // Check owner directly first (customer sites)
-  if ((v.owner||'').toLowerCase() === currentCompanyFilter.toLowerCase()) return true;
-  // Then check via companies lookup (MVBL)
-  const co = companies.find(c => c.id === v.owner);
-  return (co?.name||'').toLowerCase() === currentCompanyFilter.toLowerCase();
+  return canSeeVehicleObj(v);
 }
 
 // ─── ROLE PREVIEW (admin only) ────────────────────────────────────────────────
@@ -8200,6 +8354,236 @@ document.addEventListener('click', e => {
   }
 });
 
+// ─── DIGITAL SIGNATURE PAD ────────────────────────────────────────────────────
+function initSigPad(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  // Set canvas size
+  canvas.width = canvas.offsetWidth || 300;
+  canvas.height = canvas.offsetHeight || 120;
+  ctx.strokeStyle = '#1a2744';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  let drawing = false, lastX = 0, lastY = 0;
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+  }
+
+  function start(e) {
+    e.preventDefault();
+    drawing = true;
+    const p = getPos(e);
+    lastX = p.x; lastY = p.y;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+  }
+  function draw(e) {
+    e.preventDefault();
+    if (!drawing) return;
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  }
+  function stop(e) { drawing = false; }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stop);
+  canvas.addEventListener('mouseleave', stop);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove', draw, { passive: false });
+  canvas.addEventListener('touchend', stop);
+}
+
+function clearSig(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function getSigDataUrl(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return '';
+  // Check if blank
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const hasContent = data.data.some((v, i) => i % 4 === 3 && v > 0);
+  return hasContent ? canvas.toDataURL('image/png') : '';
+}
+
+// ─── QR CODE ─────────────────────────────────────────────────────────────────
+let _qrInstance = null;
+
+function showVehicleQR(vehicleId) {
+  const v = fleet.find(x => x.id === vehicleId);
+  if (!v) return;
+  
+  // URL that opens app and navigates to this vehicle
+  const appUrl = `${window.location.origin}${window.location.pathname}#vehicle=${encodeURIComponent(vehicleId)}`;
+  
+  document.getElementById('qr-fleet-label').textContent = 'Fleet ' + (v.fleet||'?');
+  document.getElementById('qr-rego-label').textContent = v.rego || '';
+  
+  // Clear previous QR
+  const container = document.getElementById('qr-canvas');
+  container.innerHTML = '';
+  if (_qrInstance) { _qrInstance.clear(); _qrInstance = null; }
+  
+  try {
+    _qrInstance = new QRCode(container, {
+      text: appUrl,
+      width: 200,
+      height: 200,
+      colorDark: '#1a2744',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    container.innerHTML = '<div style="padding:20px;color:var(--red);">QR library not loaded</div>';
+  }
+  
+  openModal('m-qr');
+}
+
+function printQR() {
+  const label = document.getElementById('qr-fleet-label').textContent;
+  const rego = document.getElementById('qr-rego-label').textContent;
+  const canvas = document.querySelector('#qr-canvas canvas');
+  const img = document.querySelector('#qr-canvas img');
+  const src = canvas ? canvas.toDataURL() : img ? img.src : '';
+  
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>QR Code - ${label}</title>
+    <style>
+      body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+      .label { font-size: 24px; font-weight: 700; color: #1a2744; margin-bottom: 4px; }
+      .rego { font-size: 16px; color: #666; margin-bottom: 20px; }
+      img { width: 250px; height: 250px; border: 2px solid #1a2744; border-radius: 8px; padding: 12px; }
+      .hint { font-size: 12px; color: #666; margin-top: 12px; }
+      @media print { button { display: none; } }
+    </style></head><body>
+    <div class="label">${label}</div>
+    <div class="rego">${rego}</div>
+    <img src="${src}">
+    <div class="hint">Scan to open in Fleet Desk</div>
+    <br><button onclick="window.print()">Print</button>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 500);
+}
+
+// Handle QR deep link on load - show action menu
+(function() {
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#vehicle=')) {
+    const vid = decodeURIComponent(hash.replace('#vehicle=', ''));
+    window.addEventListener('mvbl-ready', () => {
+      setTimeout(() => showQRActionMenu(vid), 500);
+    });
+  }
+})();
+
+// ─── QR SCAN ACTION MENU ─────────────────────────────────────────────────────
+let _qrActionVehicleId = null;
+
+function showQRActionMenu(vehicleId) {
+  const v = fleet.find(x => x.id === vehicleId);
+  if (!v) {
+    // Vehicle not found - might not be loaded yet
+    alert('Vehicle not found. Please sign in first.');
+    return;
+  }
+  _qrActionVehicleId = vehicleId;
+  document.getElementById('qra-fleet-label').textContent = 'Fleet ' + (v.fleet || '?');
+  document.getElementById('qra-rego-label').textContent = (v.rego || '') + (v.make ? ' · ' + v.make : '');
+  openModal('m-qr-action');
+  if (navigator.vibrate) navigator.vibrate(20);
+}
+
+function qrAction(action) {
+  const vid = _qrActionVehicleId;
+  const v = fleet.find(x => x.id === vid) || {};
+  closeModal('m-qr-action');
+
+  switch(action) {
+    case 'pretrip':
+      showPage('pretrip', null);
+      setTimeout(() => {
+        const vSel = document.getElementById('pt-veh');
+        if (vSel) { vSel.value = vid; if(typeof ptVehChanged==='function') ptVehChanged(); }
+        // Auto-fill odometer
+        autoFillOdo(vid, 'pt-odo');
+        // Pre-fill driver name if remembered
+        const driverEl = document.getElementById('pt-driver');
+        if (driverEl && !driverEl.value) driverEl.value = recallDriver() || '';
+        // Set datetime to now
+        const dtEl = document.getElementById('pt-dt');
+        if (dtEl) dtEl.value = new Date().toISOString().slice(0,16);
+        showSt('info', 'Pre-trip ready for Fleet ' + (v.fleet||'?'));
+        setTimeout(clearSt, 3000);
+      }, 300);
+      break;
+
+    case 'defect':
+      openDefectModal(null);
+      setTimeout(() => {
+        const vSel = document.getElementById('def-veh') || document.getElementById('d-veh');
+        if (vSel) { vSel.value = vid; if(typeof defVehChanged==='function') defVehChanged(); }
+        autoFillOdo(vid, 'd-odo');
+        setSeverity('Minor');
+        showSt('info', 'Defect form ready for Fleet ' + (v.fleet||'?'));
+        setTimeout(clearSt, 3000);
+      }, 300);
+      break;
+
+    case 'jobcard':
+      openJobCardModal(null);
+      setTimeout(() => {
+        const vSel = document.getElementById('jc-veh');
+        if (vSel) { vSel.value = vid; if(typeof jcUpdateVeh==='function') jcUpdateVeh(); }
+        autoFillOdo(vid, 'jc-odo');
+        const dateEl = document.getElementById('jc-dateIn');
+        if (dateEl) dateEl.value = new Date().toISOString().slice(0,10);
+        showSt('info', 'Job card ready for Fleet ' + (v.fleet||'?'));
+        setTimeout(clearSt, 3000);
+      }, 300);
+      break;
+
+    case 'maint':
+      // Open maintenance history page with add maint modal
+      showPage('mainthistory', null);
+      setTimeout(() => {
+        if(typeof openMaintModal==='function') openMaintModal(null);
+        setTimeout(() => {
+          const vSel = document.getElementById('maint-veh');
+          if (vSel) { vSel.value = vid; if(typeof maintVehChanged==='function') maintVehChanged(); }
+          autoFillOdo(vid, 'maint-odo');
+          const dateEl = document.getElementById('maint-date');
+          if (dateEl) dateEl.value = new Date().toISOString().slice(0,10);
+          showSt('info', 'Maintenance log ready for Fleet ' + (v.fleet||'?'));
+          setTimeout(clearSt, 3000);
+        }, 200);
+      }, 300);
+      break;
+
+    case 'details':
+      showPage('fleet', null);
+      setTimeout(() => editVehicle(vid), 300);
+      break;
+  }
+}
+
 async function init(){
   companies=[{id:'mvbl',spId:null,name:'MVBL',isDefault:true}];
   restoreSbState();
@@ -8323,7 +8707,7 @@ const PT_SECTIONS={
 let ptState={};
 let ptHistory=JSON.parse(localStorage.getItem('mvbl_pretrip')||'[]');
 
-function renderPreTrip(){
+function renderPreTrip(){setTimeout(()=>initSigPad('pt-sig-canvas'),300);
   vOpts('pt-veh','');
   document.getElementById('pt-dt').value=new Date().toISOString().slice(0,16);
   ptState={};
@@ -8386,7 +8770,7 @@ async function submitPreTrip(){
   if(v&&odo){v.odo=odo;v.odoDate=dt?dt.slice(0,10):today();
     if(connected&&v.spId){try{await updateItem(CFG.L_FLEET,v.spId,vToSp(v));}catch(e){console.error(e);}}}
   const record={id:uid(),dt,vId,vFleet:v?.fleet||'?',vRego:v?.rego||'',driver,odo,notes:g('pt-notes'),
-    items:{...ptState},failCount:failedItems.length,
+    items:{...ptState},signature:ptSig,failCount:failedItems.length,
     passCount:allItems.filter(i=>ptState[i.id]==='pass').length,
     defectRefs:defectsRaised.map(d=>d.refNum)};
   ptHistory.unshift(record);
@@ -9365,7 +9749,7 @@ init();
 <!-- MOBILE FULL SCREEN MENU -->
 <div id="mob-menu-overlay">
   <div class="mob-menu-header">
-    <div class="mob-menu-title">MV Service Desk</div>
+    <div class="mob-menu-title">Fleet Desk</div>
     <button class="mob-menu-close" onclick="closeMobMenu()">✕</button>
   </div>
   <div class="mob-menu-section">Fleet</div>
@@ -9423,5 +9807,63 @@ init();
     </button>
   </div>
 </div>
+<!-- QR Code Modal -->
+<div class="mbg" id="m-qr">
+  <div class="modal sm">
+    <div class="mh">
+      <span class="mt">Vehicle QR Code</span>
+      <button class="mx" onclick="closeModal('m-qr')">&#215;</button>
+    </div>
+    <div class="mb" style="padding:24px;text-align:center;">
+      <div id="qr-fleet-label" style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px;"></div>
+      <div id="qr-rego-label" style="font-size:13px;color:var(--grey-dark);margin-bottom:20px;"></div>
+      <div id="qr-canvas" style="display:inline-block;padding:16px;background:white;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.1);margin-bottom:16px;"></div>
+      <div style="font-size:12px;color:var(--grey-dark);margin-bottom:20px;">Scan to open this vehicle in the app</div>
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button class="btn bt" onclick="printQR()">🖨 Print QR</button>
+        <button class="btn bs" onclick="closeModal('m-qr')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QR Scan Action Menu -->
+<div class="mbg" id="m-qr-action">
+  <div class="modal sm">
+    <div class="mh" style="background:var(--navy);color:white;border-radius:12px 12px 0 0;">
+      <div>
+        <div class="mt" id="qra-fleet-label" style="color:white;font-size:17px;"></div>
+        <div id="qra-rego-label" style="font-size:12px;opacity:.7;margin-top:2px;"></div>
+      </div>
+      <button class="mx" style="color:white;" onclick="closeModal('m-qr-action')">&#215;</button>
+    </div>
+    <div class="mb" style="padding:16px;">
+      <div style="font-size:12px;color:var(--grey-dark);margin-bottom:14px;text-align:center;">What would you like to do?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <button class="qr-action-btn" onclick="qrAction('pretrip')">
+          <span style="font-size:32px;">🚦</span>
+          <span>Pre-Trip<br>Inspection</span>
+        </button>
+        <button class="qr-action-btn" onclick="qrAction('defect')">
+          <span style="font-size:32px;">⚠️</span>
+          <span>Report<br>Defect</span>
+        </button>
+        <button class="qr-action-btn" onclick="qrAction('jobcard')">
+          <span style="font-size:32px;">🔧</span>
+          <span>New<br>Job Card</span>
+        </button>
+        <button class="qr-action-btn" onclick="qrAction('maint')">
+          <span style="font-size:32px;">📋</span>
+          <span>Log<br>Maintenance</span>
+        </button>
+      </div>
+      <button class="qr-action-btn" style="width:100%;grid-column:1/-1;" onclick="qrAction('details')">
+        <span style="font-size:24px;">🚌</span>
+        <span>View Vehicle Details &amp; History</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
