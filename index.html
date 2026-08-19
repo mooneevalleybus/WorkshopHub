@@ -8500,8 +8500,8 @@ let _qrActionVehicleId = null;
 function showQRActionMenu(vehicleId) {
   const v = fleet.find(x => x.id === vehicleId);
   if (!v) {
-    // Vehicle not found - might not be loaded yet
-    alert('Vehicle not found. Please sign in first.');
+    console.warn('QR vehicle lookup failed. Looking for id:', vehicleId, '| Active site:', CFG.SITE_URL, '| Fleet size:', fleet.length, '| Fleet ids:', fleet.map(x=>x.id));
+    alert('Vehicle not found on this site (' + (_activeSite||'default') + '). If this vehicle belongs to a different customer site, switch sites first, or re-print its QR code while viewing the correct site.');
     return;
   }
   _qrActionVehicleId = vehicleId;
