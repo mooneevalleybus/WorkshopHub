@@ -3385,7 +3385,7 @@ function renderFleet(){
     <td data-label="Odo">${v.odo?Number(v.odo).toLocaleString()+' km':'—'}</td>
     <td data-label="Service due">${svcBadge(v)}</td>
     <td data-label="Rego expiry">${v.regoExp||'—'}</td>
-    <td class="tda" style="white-space:nowrap"><button class="btn sm bs" onclick="editVehicle('${v.id}')">Edit</button> <button class="btn sm bt" onclick="openVehicleTimeline('${v.id}')">History</button> <button class="btn sm bt" onclick="openQRModal('${v.id}')">QR</button> <button class="btn sm bprint" onclick="printVehicleId('${v.id}')">Print</button> <button class="btn sm bd" onclick="delVehicle('${v.id}')">Del</button></td>
+    <td class="tda" style="white-space:nowrap"><button class="btn sm bs" onclick="editVehicle('${v.id}')">Edit</button> <button class="btn sm bt" onclick="openVehicleTimeline('${v.id}')">History</button> <button class="btn sm bt" onclick="showVehicleQR('${v.id}')">QR</button> <button class="btn sm bprint" onclick="printVehicleId('${v.id}')">Print</button> <button class="btn sm bd" onclick="delVehicle('${v.id}')">Del</button></td>
   </tr>`)).join('')||emptyR(14,'No vehicles found');
 }
 function openVehicleModal(id){
@@ -8452,7 +8452,7 @@ function showVehicleQR(vehicleId) {
     container.innerHTML = '<div style="padding:20px;color:var(--red);">QR library not loaded</div>';
   }
   
-  openModal('m-qr');
+  openModal('m-qr-single');
 }
 
 function printQR() {
@@ -9807,21 +9807,21 @@ init();
     </button>
   </div>
 </div>
-<!-- QR Code Modal -->
-<div class="mbg" id="m-qr">
+<!-- Vehicle QR Code Modal (single QR -> action menu) -->
+<div class="mbg" id="m-qr-single">
   <div class="modal sm">
     <div class="mh">
       <span class="mt">Vehicle QR Code</span>
-      <button class="mx" onclick="closeModal('m-qr')">&#215;</button>
+      <button class="mx" onclick="closeModal('m-qr-single')">&#215;</button>
     </div>
     <div class="mb" style="padding:24px;text-align:center;">
       <div id="qr-fleet-label" style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px;"></div>
       <div id="qr-rego-label" style="font-size:13px;color:var(--grey-dark);margin-bottom:20px;"></div>
       <div id="qr-canvas" style="display:inline-block;padding:16px;background:white;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.1);margin-bottom:16px;"></div>
-      <div style="font-size:12px;color:var(--grey-dark);margin-bottom:20px;">Scan to open this vehicle in the app</div>
+      <div style="font-size:12px;color:var(--grey-dark);margin-bottom:20px;">Scan to open this vehicle's quick-action menu</div>
       <div style="display:flex;gap:8px;justify-content:center;">
         <button class="btn bt" onclick="printQR()">🖨 Print QR</button>
-        <button class="btn bs" onclick="closeModal('m-qr')">Close</button>
+        <button class="btn bs" onclick="closeModal('m-qr-single')">Close</button>
       </div>
     </div>
   </div>
