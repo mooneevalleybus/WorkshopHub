@@ -2872,10 +2872,13 @@ function getSiteConfig(email, companyFilter) {
 
 // Admin can switch between customer sites
 let _activeSite = 'default';
+let _manualSiteOverride = false; // true once admin manually picks a site — auto role-based site detection must not clobber it
 async function switchSite(siteKey) {
   const config = SITE_CONFIGS[siteKey];
   if (!config) { alert('Site not yet configured — lists still being set up'); return; }
   _activeSite = siteKey;
+  _manualSiteOverride = true;
+  try { sessionStorage.setItem('mvbl_active_site', siteKey); } catch(e) {}
   // Apply new site config
   Object.assign(CFG, config);
   // Clear site ID cache so new site ID gets fetched
@@ -6607,8 +6610,12 @@ async function loadUserRole() {
       if (['driver','office','tech','manager','owner','operator','admin'].includes(role)) currentRole = role;
       currentCompanyFilter = match.fields?.CompanyFilter || '';
       console.log('User found — role:', currentRole, 'company:', currentCompanyFilter);
-      // Switch to correct SharePoint site for this user
-      applySiteConfig(currentUserEmail, currentCompanyFilter);
+      // Switch to correct SharePoint site for this user — unless admin has manually picked a different site this session
+      if (!_manualSiteOverride) {
+        applySiteConfig(currentUserEmail, currentCompanyFilter);
+      } else {
+        console.log('Skipping auto site-detection — manual override active:', _activeSite);
+      }
     } else {
       console.warn('User not found in WorkshopUsers:', currentUserEmail);
       currentRole = 'driver';
@@ -8621,6 +8628,18 @@ async function init(){
   populateAllFilters();
   renderPage('dashboard');
   renderFaultCodes();
+  // Restore a manually-picked admin site across reloads (otherwise it silently reverts to default)
+  try {
+    const savedSite = sessionStorage.getItem('mvbl_active_site');
+    if (savedSite && savedSite !== 'default' && SITE_CONFIGS[savedSite]) {
+      _activeSite = savedSite;
+      _manualSiteOverride = true;
+      Object.assign(CFG, SITE_CONFIGS[savedSite]);
+      const dd = document.getElementById('desk-site-select');
+      if (dd) dd.value = savedSite;
+      console.log('Restored manual site selection from session:', savedSite);
+    }
+  } catch(e) {}
   // Show connected immediately if we have a cached token
   const cached=localStorage.getItem('mvbl_tok');
   if(cached){try{
