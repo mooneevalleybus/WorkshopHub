@@ -1198,6 +1198,17 @@ select option {
     </div>
     <div class="cb tw"><table><thead><tr><th>Fleet #</th><th>Rego</th><th>Company</th><th>Make &amp; model</th><th>Next service</th><th>Days to go</th><th>Odometer</th><th>Service km</th><th>Km to go</th><th>Status</th><th>Part 3 due</th><th>Days to go</th><th>Part 3 status</th><th></th></tr></thead><tbody id="svc-tbody"></tbody></table></div>
   </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="ch">
+      <span class="ct">Part 3 Inspections <span style="font-weight:400;color:var(--grey-dark);font-size:12px;">(MMS 2.4.2.4 — 12 months or 100,000km)</span></span>
+      <div class="tb">
+        <select id="part3-hist-veh" onchange="renderPart3()" style="width:180px;"><option value="">All vehicles</option></select>
+        <button class="btn bp" onclick="openPart3Modal()">+ New Part 3 inspection</button>
+      </div>
+    </div>
+    <div class="cb tw"><table><thead><tr><th>Date</th><th>Vehicle</th><th>Result</th><th>Inspector</th><th>Next due</th><th></th></tr></thead><tbody id="part3-tbody-list"></tbody></table></div>
+  </div>
 </div>
 
 <!-- COMPANIES -->
@@ -2834,6 +2845,7 @@ const SITE_CONFIGS = {
     L_CAT:       '4e03ab20-4668-4641-bce5-227704b6d97d',
     L_ACCQUOTES: '3649f660-a3f0-4c83-821b-57c08864c488',
     L_CAL:       'f01885c4-b570-413c-962e-521e62f2843b',
+    L_PART3:     '58ed190c-cdfd-4232-8b5e-8056e18967ed',
   },
   // VicLink — separate SharePoint site
   'viclink': {
@@ -2854,6 +2866,7 @@ const SITE_CONFIGS = {
     L_CAT:       '3f379254-5c81-4be5-acec-ab5edd4aa9ea',
     L_ACCQUOTES: '74b214dc-e27b-45a5-ab11-c053ac715175',
     L_CAL:       '4d5cdf16-0b0a-4c64-a013-f790502c7fc0',
+    L_PART3:     '9a8e1479-cc63-483c-a55b-7689ee52aad2',
   },
   // Takura — add when site is ready
   'takura': null,
@@ -2876,6 +2889,7 @@ const SITE_CONFIGS = {
     L_CAT:       '852de034-f1ec-4603-8fc4-90fa97c3a13c',
     L_ACCQUOTES: 'c685f0dc-5472-45e9-bcf7-c17c4eb0d6f0',
     L_CAL:       '1808c64b-36ed-4bd3-b6ec-8aaa10c546a6',
+    L_PART3:     'f2d4c5d3-441b-42ef-82a8-3b61110b7d56',
   },
 };
 
@@ -2908,7 +2922,7 @@ async function switchSite(siteKey) {
   if(dd) dd.value = siteKey;
   // Clear all cached data
   fleet=[]; defects=[]; jobCards=[]; tasks=[]; parts=[]; accidents=[];
-  accQuotes=[]; vsiHistory=[]; maintHistory=[]; calEvents=[]; ptHistory=[];
+  accQuotes=[]; vsiHistory=[]; maintHistory=[]; calEvents=[]; ptHistory=[]; part3History=[];
   companies=[]; notes=[]; repairNotes=[];
   closeMobMenu();
   showSt('info','Loading ' + siteKey.charAt(0).toUpperCase()+siteKey.slice(1)+' data…');
@@ -2946,6 +2960,7 @@ const CFG = {
   L_CAT:       '4e03ab20-4668-4641-bce5-227704b6d97d',
   L_ACCQUOTES: '3649f660-a3f0-4c83-821b-57c08864c488',
   L_CAL:       'f01885c4-b570-413c-962e-521e62f2843b',
+  L_PART3:     '58ed190c-cdfd-4232-8b5e-8056e18967ed',
   SCOPES:    ['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/Files.ReadWrite.All','offline_access','openid','profile'],
   get REDIR(){ return 'https://mooneevalleybus.github.io/WorkshopHub/'; }
 };
@@ -3118,7 +3133,7 @@ async function loadAll(){
   const safe = async (fn) => { try { return await fn(); } catch(e) { console.warn('List load warning:', e.message); return []; } };
   const safeFleet = async (fn) => { try { return await fn(); } catch(e) { console.error('Fleet load FAILED:', e.message); showSt('err','Fleet failed to load: '+e.message); return []; } };
   try{
-    const[ci,fi,ti,pi,ji,di,ai,ni,rni,vsii,mhi,cati,aqi,cali]=await Promise.all([
+    const[ci,fi,ti,pi,ji,di,ai,ni,rni,vsii,mhi,cati,aqi,cali,p3i]=await Promise.all([
       safe(()=>listItems(CFG.L_COS)),
       safeFleet(()=>listItems(CFG.L_FLEET)),
       safe(()=>listItems(CFG.L_TASKS)),
@@ -3133,6 +3148,7 @@ async function loadAll(){
       safe(()=>listItems(CFG.L_CAT)),
       safe(()=>listItems(CFG.L_ACCQUOTES)),
       safe(()=>listItems(CFG.L_CAL)),
+      safe(()=>CFG.L_PART3?listItems(CFG.L_PART3):[]),
     ]);
     companies=ci.map(x=>({id:String(x.id),spId:String(x.id),name:x.fields?.Title||'',isDefault:x.fields?.IsDefault||false,sortOrder:x.fields?.SortOrder||99})).sort((a,b)=>a.sortOrder-b.sortOrder);
     if(!companies.length)companies=[{id:'mvbl',spId:null,name:'MVBL',isDefault:true}];
@@ -3143,6 +3159,7 @@ async function loadAll(){
     catalogue=cati.map(spToCat).sort((a,b)=>(a.category||'').localeCompare(b.category||''));
     accQuotes=aqi.map(spToAq).sort((a,b)=>(b.qDate||'').localeCompare(a.qDate||''));
     calEvents=(cali||[]).map(spToCal);
+    part3History=(p3i||[]).map(spToPart3).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     // Get user role and switch to correct site BEFORE loading data
     await loadUserRole();
     // Now reload all lists from the correct site if site changed
@@ -3150,7 +3167,7 @@ async function loadAll(){
     if(siteChanged){
       console.log('Site switched to', CFG.SITE_URL, '— reloading data');
       const safe2 = async (fn) => { try { return await fn(); } catch(e) { console.warn('List reload warning:', e.message); return []; } };
-      const[fi2,ti2,pi2,ji2,di2,ai2,ni2,rni2,vsii2,mhi2,cati2,aqi2,cali2]=await Promise.all([
+      const[fi2,ti2,pi2,ji2,di2,ai2,ni2,rni2,vsii2,mhi2,cati2,aqi2,cali2,p3i2]=await Promise.all([
         safe2(()=>{console.log('Loading fleet from',CFG.SITE_URL,'list',CFG.L_FLEET);return listItems(CFG.L_FLEET);}),
         safe2(()=>listItems(CFG.L_TASKS)),
         safe2(()=>listItems(CFG.L_PARTS)),
@@ -3164,6 +3181,7 @@ async function loadAll(){
         safe2(()=>CFG.L_CAT?listItems(CFG.L_CAT):[]),
         safe2(()=>CFG.L_ACCQUOTES?listItems(CFG.L_ACCQUOTES):[]),
         safe2(()=>CFG.L_CAL?listItems(CFG.L_CAL):[]),
+        safe2(()=>CFG.L_PART3?listItems(CFG.L_PART3):[]),
       ]);
       fleet=fi2.map(spToV).sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet));
       tasks=ti2.map(spToT);
@@ -3177,6 +3195,7 @@ async function loadAll(){
       maintHistory=mhi2.map(spToMh||((x)=>x)).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
       accQuotes=aqi2.map(spToAq).sort((a,b)=>(b.qDate||'').localeCompare(a.qDate||''));
       calEvents=cali2.map(spToCal);
+      part3History=p3i2.map(spToPart3).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
       catalogue=[];
     }
     connected=true; updateAuthUI(true); clearSt(); populateAllFilters();
@@ -3341,7 +3360,7 @@ function renderPage(name){
   else if(name==='defects')renderDefects();
   else if(name==='accident')renderAccidents();
   else if(name==='faultcodes')renderFaultCodes();
-  else if(name==='service')renderService();
+  else if(name==='service'){renderService();renderPart3();}
   else if(name==='companies')renderCompanies();
   else if(name==='pretrip')renderPreTrip();
   else if(name==='jaltest')renderJaltest();
@@ -5600,6 +5619,7 @@ async function delAccident(id){
 
 // ─── VEHICLE SAFETY INSPECTION ───────────────────────────────────────────────
 let vsiHistory = []; // loaded from SharePoint
+let part3History = []; // loaded from SharePoint
 
 function vsiPopulateVehicles() {
   const sel = document.getElementById('vsi-veh');
@@ -5913,6 +5933,358 @@ function printVsi(pageId) {
   <body>
   <h2>MMS 2.4.2.2 / 2.4.2.3 — VEHICLE SAFETY INSPECTION CHECKLIST (Parts 1 &amp; 2)</h2>
   <div style="font-size:9px;color:#666;">Moonee Valley Bus Lines · 6 Tullamarine Park Road, Tullamarine VIC 3043</div>
+  <div class="meta">
+    <div class="mf"><div class="ml">Registration</div><div class="mv">${rego||'—'}</div></div>
+    <div class="mf"><div class="ml">Date</div><div class="mv">${date?new Date(date).toLocaleDateString('en-AU'):'—'}</div></div>
+    <div class="mf"><div class="ml">Odometer (km)</div><div class="mv">${odo?Number(odo).toLocaleString()+' km':'—'}</div></div>
+    <div class="mf"><div class="ml">Next Due Date</div><div class="mv">${nextDue?new Date(nextDue).toLocaleDateString('en-AU'):'—'}</div></div>
+    <div class="mf"><div class="ml">Next Due Odometer</div><div class="mv">${nextOdo?Number(nextOdo).toLocaleString()+' km':'—'}</div></div>
+  </div>
+  <div class="summary">Result: <strong>${yes} Pass</strong>${no>0?` · <strong style="color:#c0392b;">${no} Fail — items require attention</strong>`:' · All pass'}</div>
+  <table>
+    <thead><tr>
+      <th style="background:#1a2744;color:white;padding:4px 6px;text-align:left;width:42%;font-size:9px;">ITEM</th>
+      <th style="background:#1a2744;color:white;padding:4px 6px;text-align:center;width:7%;font-size:9px;">Yes</th>
+      <th style="background:#1a2744;color:white;padding:4px 6px;text-align:center;width:7%;font-size:9px;">No</th>
+      <th style="background:#1a2744;color:white;padding:4px 6px;text-align:center;width:7%;font-size:9px;">N/A</th>
+      <th style="background:#1a2744;color:white;padding:4px 6px;width:15%;font-size:9px;">Rectified Date</th>
+      <th style="background:#1a2744;color:white;padding:4px 6px;width:22%;font-size:9px;">Signed</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="footer">
+    <div class="sf"><div class="sl">Inspector Name</div><div class="sv">${inspector}</div></div>
+    <div class="sf"><div class="sl">Signature</div><div class="sv">${sig}</div></div>
+    <div style="margin-left:auto;text-align:right;">
+      <div class="note">The operator must retain this form for a period of at least three years after the inspection.</div>
+    </div>
+  </div>
+  <button onclick="window.print()" style="margin-top:10px;padding:6px 14px;">Print / Save as PDF</button>
+  </body></html>`);
+  w.document.close();w.focus();
+}
+
+
+// ─── PART 3 INSPECTION (MMS 2.4.2.4) ─────────────────────────────────────────
+const PART3_ITEMS = [
+  {section:'BRAKES', items:['Brake Equipment for Assembly & Wear','Brake Drums/Discs for Condition','Air System for Contamination']},
+  {section:'GENERAL', items:['Gearbox Housing for Security & Condition','Engine Mountings for Condition','Chassis Rails & Cross Members for Condition & Cracks','Road Test']},
+];
+const PART3_TOTAL = PART3_ITEMS.reduce((n,s)=>n+s.items.length,0); // 7
+
+function part3AddMonths(dateStr, months){
+  if(!dateStr) return '';
+  const d = new Date(dateStr);
+  d.setMonth(d.getMonth()+months);
+  return d.toISOString().slice(0,10);
+}
+function part3RecalcDue(){
+  const date=document.getElementById('part3-date')?.value;
+  const odo=document.getElementById('part3-odo')?.value;
+  const ndEl=document.getElementById('part3-nextdue'), noEl=document.getElementById('part3-nextodo');
+  if(date && ndEl) ndEl.value = part3AddMonths(date,12);
+  if(odo && noEl) noEl.value = String(parseInt(odo)+100000);
+}
+
+function renderPart3(){
+  const vf = document.getElementById('part3-hist-veh');
+  if (vf) {
+    const cur = vf.value;
+    vf.innerHTML = '<option value="">All vehicles</option>' +
+      fleet.slice().sort((a,b)=>(parseInt(a.fleet)||0)-(parseInt(b.fleet)||0))
+        .map(v=>`<option value="${v.id}"${v.id===cur?' selected':''}>${v.fleet}${v.rego?' — '+v.rego:''}</option>`).join('');
+  }
+  const vid = document.getElementById('part3-hist-veh')?.value||'';
+  const rows = part3History.filter(r=>canSeeVehicle(r.vehicleId)&&(!vid||r.vehicleId===vid))
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const tbody = document.getElementById('part3-tbody-list');
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--grey-dark);padding:28px;">No Part 3 inspections recorded yet — click + New Part 3 inspection to start.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const v = fleet.find(x=>x.id===r.vehicleId)||{};
+    const noColor = r.summary?.includes('0 fail') || !r.summary?.includes('fail') ? 'var(--teal)' : 'var(--red)';
+    return isMob()
+      ? mobileCard(r.id,
+          `${v.fleet||'—'} — ${v.rego||r.rego||'—'}`,
+          `${r.date?fd(r.date):'—'} · ${r.summary||'—'}`,
+          `Inspector: ${r.inspector||'—'}`,
+          `openPart3Modal('${r.id}')`,
+          `<button class="btn sm bprint" onclick="event.stopPropagation();printPart3Record('${r.id}')">Print</button>`)
+      : `<tr>
+          <td class="tdf">${r.date?fd(r.date):'—'}</td>
+          <td>${v.fleet||'—'}${v.rego||r.rego?' — '+(v.rego||r.rego):''}</td>
+          <td><span style="color:${noColor};font-weight:600;">${r.summary||'—'}</span></td>
+          <td>${r.inspector||'—'}</td>
+          <td>${r.nextDue?fd(r.nextDue):'—'}${r.nextOdo?' / '+Number(r.nextOdo).toLocaleString()+' km':''}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn sm bs" onclick="openPart3Modal('${r.id}')">View</button>
+            <button class="btn sm bprint" onclick="printPart3Record('${r.id}')">Print</button>
+            <button class="btn sm bd" onclick="delPart3('${r.id}')">Del</button>
+          </td>
+        </tr>`;
+  }).join('');
+}
+
+function openPart3Modal(id) {
+  part3PopulateVehicles();
+  document.getElementById('mpart3-title').textContent = id ? 'View Part 3 Inspection' : 'New Part 3 Inspection';
+  if (id) {
+    const r = part3History.find(x=>x.id===id||x.spId===id);
+    if (r) part3LoadRecord(r.id);
+  } else {
+    clearPart3(true);
+    const d=document.getElementById('part3-date'); if(d) d.value=today();
+    ['part3-rego','part3-odo','part3-nextdue','part3-nextodo','part3-inspector','part3-sig'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('part3-veh').value='';
+    const sum=document.getElementById('part3-summary'); if(sum) sum.style.display='none';
+  }
+  openModal('m-part3');
+}
+
+function part3PopulateVehicles(){
+  const sel=document.getElementById('part3-veh'); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Select vehicle…</option>'+
+    fleet.slice().sort((a,b)=>(parseInt(a.fleet)||0)-(parseInt(b.fleet)||0))
+      .map(v=>`<option value="${v.id}"${v.id===cur?' selected':''}>${v.fleet}${v.rego?' — '+v.rego:''}</option>`).join('');
+}
+
+async function delPart3(id) {
+  if (!confirm('Delete this Part 3 inspection record?')) return;
+  const r = part3History.find(x=>x.id===id);
+  if (connected && r?.spId) {
+    try { await deleteItem(CFG.L_PART3, r.spId); } catch(e) { showSt('err',e.message); return; }
+  }
+  part3History = part3History.filter(x=>x.id!==id);
+  renderPart3();
+}
+
+function printPart3Record(id) {
+  const r = part3History.find(x=>x.id===id||x.spId===id);
+  if (!r) return;
+  part3LoadRecord(r.id);
+  setTimeout(() => printPart3(), 300);
+}
+
+function part3LoadVehicle() {
+  const vid = document.getElementById('part3-veh')?.value || '';
+  const v = fleet.find(x=>x.id===vid);
+  const regoEl = document.getElementById('part3-rego');
+  if (regoEl) regoEl.value = v?.rego || '';
+  const odoEl = document.getElementById('part3-odo');
+  if (odoEl && v?.odo) odoEl.value = v.odo;
+  clearPart3(true);
+  part3RecalcDue();
+}
+
+function part3Mark(uid, val) {
+  const row = document.getElementById('row-'+uid);
+  if (!row) return;
+  row.style.background = val==='no' ? '#fff0f0' : val==='yes' ? '#f0fff4' : '';
+  part3UpdateSummary();
+}
+
+function part3UpdateSummary() {
+  const yes = document.querySelectorAll('input[name^="part3-"]:checked[value="yes"]').length;
+  const no  = document.querySelectorAll('input[name^="part3-"]:checked[value="no"]').length;
+  const na  = document.querySelectorAll('input[name^="part3-"]:checked[value="na"]').length;
+  const total = PART3_TOTAL;
+  const done = yes + no + na;
+  const el = document.getElementById('part3-summary');
+  if (!el) return;
+  el.style.display = done > 0 ? 'flex' : 'none';
+  el.innerHTML = `
+    <span style="color:var(--teal);font-weight:600;">✓ ${yes} Pass</span>
+    ${no>0?`<span style="color:var(--red);font-weight:600;">✗ ${no} Fail</span>`:''}
+    ${na>0?`<span style="color:var(--grey-dark);">— ${na} N/A</span>`:''}
+    <span style="color:var(--grey-dark);">${done}/${total} completed</span>
+    ${no>0?`<span style="color:var(--red);font-weight:600;">⚠ ${no} item(s) require attention</span>`:''}`;
+}
+
+function clearPart3(silent) {
+  if (!silent && !confirm('Clear all entries on this form?')) return;
+  document.querySelectorAll('input[name^="part3-"]').forEach(r=>r.checked=false);
+  document.querySelectorAll('[id^="part3-"][id$="-date"]').forEach(el=>el.value='');
+  document.querySelectorAll('[id^="part3-"][id$="-sign"]').forEach(el=>el.value='');
+  document.querySelectorAll('#part3-tbody tr[id]').forEach(tr=>tr.style.background='');
+  const sumEl = document.getElementById('part3-summary');
+  if (sumEl) sumEl.style.display='none';
+}
+
+function part3CollectItems() {
+  const items = {};
+  document.querySelectorAll('input[name^="part3-"]').forEach(r => {
+    if (r.checked) {
+      items[r.name] = {
+        val: r.value,
+        date: document.getElementById(r.name+'-date')?.value||'',
+        sign: document.getElementById(r.name+'-sign')?.value||'',
+      };
+    }
+  });
+  return items;
+}
+
+function part3PassAll(){
+  for(let i=0;i<PART3_TOTAL;i++){const b=document.querySelector('input[name="part3-'+i+'"][value="yes"]');if(b){b.checked=true;part3Mark('part3-'+i,'yes');}}
+  part3UpdateSummary();
+}
+function part3PassSection(startItem,endItem){
+  for(let i=startItem;i<=endItem;i++){const b=document.querySelector('input[name="part3-'+i+'"][value="yes"]');if(b){b.checked=true;part3Mark('part3-'+i,'yes');}}
+  part3UpdateSummary();
+}
+
+async function savePart3() {
+  const vid = document.getElementById('part3-veh')?.value;
+  if (!vid) { alert('Please select a vehicle first.'); return; }
+  const btn = document.getElementById('part3-save-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Saving…'; }
+  const v = fleet.find(x=>x.id===vid)||{};
+  const rec = {
+    id: uid(),
+    vehicleId: vid,
+    fleetNum: v.fleet||'',
+    rego: document.getElementById('part3-rego')?.value||v.rego||'',
+    date: document.getElementById('part3-date')?.value||'',
+    odo: document.getElementById('part3-odo')?.value||'',
+    nextDue: document.getElementById('part3-nextdue')?.value||'',
+    nextOdo: document.getElementById('part3-nextodo')?.value||'',
+    inspector: document.getElementById('part3-inspector')?.value||'',
+    sig: document.getElementById('part3-sig')?.value||'',
+    items: part3CollectItems(),
+    savedAt: new Date().toISOString(),
+  };
+  const yes = Object.values(rec.items).filter(x=>x.val==='yes').length;
+  const no  = Object.values(rec.items).filter(x=>x.val==='no').length;
+  rec.summary = `${yes} pass, ${no} fail`;
+
+  try {
+    if (connected) {
+      if (!CFG.L_PART3) throw new Error('WorkshopPart3 list not yet configured for this site — ask Daniel to set it up.');
+      const f = part3ToSp(rec);
+      const c = await createItem(CFG.L_PART3, f);
+      rec.spId = String(c.id);
+      // Auto-flow next due date/km into the vehicle's own Part 3 fields
+      if (v.spId && (rec.nextDue || rec.nextOdo)) {
+        v.part3Date = rec.nextDue || v.part3Date;
+        v.part3Km = rec.nextOdo || v.part3Km;
+        await updateItem(CFG.L_FLEET, v.spId, vToSp(v));
+      }
+    }
+    part3History.unshift(rec);
+    const msg = document.getElementById('part3-savedmsg');
+    if (msg) { msg.textContent = connected ? '✓ Saved to SharePoint — vehicle Part 3 due date updated' : '✓ Saved locally'; msg.style.display='block'; setTimeout(()=>msg.style.display='none',2500); }
+    setTimeout(()=>{closeModal('m-part3');renderPart3();renderService();renderDash();},1500);
+  } catch(e) {
+    showSt('err','Part 3 inspection save failed: '+e.message);
+  }
+  if (btn) { btn.disabled=false; btn.textContent='💾 Save inspection'; }
+}
+
+function part3ToSp(r) {
+  return {
+    Title: `${r.fleetNum||r.rego||'Vehicle'} — ${r.date||''}`,
+    VehicleId: r.vehicleId,
+    FleetNum: r.fleetNum,
+    Rego: r.rego,
+    InspDate: r.date||null,
+    Odo: r.odo?String(r.odo):'',
+    NextDue: r.nextDue||null,
+    NextOdo: r.nextOdo?String(r.nextOdo):'',
+    Inspector: r.inspector,
+    Sig: r.sig||'',
+    Summary: r.summary,
+    Items: JSON.stringify(r.items),
+  };
+}
+
+function spToPart3(x) {
+  const f = x.fields||{};
+  let items = {};
+  try { items = JSON.parse(f.Items||'{}'); } catch(e) {}
+  return {
+    id: String(x.id), spId: String(x.id),
+    vehicleId: f.VehicleId||'', fleetNum: f.FleetNum||'', rego: f.Rego||'',
+    date: (f.InspDate||'').slice(0,10), odo: f.Odo||'', nextDue: (f.NextDue||'').slice(0,10), nextOdo: f.NextOdo||'',
+    inspector: f.Inspector||'', sig: f.Sig||'', summary: f.Summary||'', items,
+  };
+}
+
+function part3LoadRecord(id) {
+  const r = part3History.find(x=>x.id===id||x.spId===id);
+  if (!r) return;
+  const sel = document.getElementById('part3-veh');
+  if (sel) { sel.value = r.vehicleId; }
+  if (document.getElementById('part3-rego')) document.getElementById('part3-rego').value=r.rego||'';
+  if (document.getElementById('part3-date')) document.getElementById('part3-date').value=r.date||'';
+  if (document.getElementById('part3-odo')) document.getElementById('part3-odo').value=r.odo||'';
+  if (document.getElementById('part3-nextdue')) document.getElementById('part3-nextdue').value=r.nextDue||'';
+  if (document.getElementById('part3-nextodo')) document.getElementById('part3-nextodo').value=r.nextOdo||'';
+  if (document.getElementById('part3-inspector')) document.getElementById('part3-inspector').value=r.inspector||'';
+  if (document.getElementById('part3-sig')) document.getElementById('part3-sig').value=r.sig||'';
+  clearPart3(true);
+  Object.entries(r.items||{}).forEach(([uidKey,data])=>{
+    const radio = document.querySelector(`input[name="${uidKey}"][value="${data.val}"]`);
+    if (radio) { radio.checked=true; part3Mark(uidKey,data.val); }
+    const dateEl=document.getElementById(uidKey+'-date'); if(dateEl) dateEl.value=data.date||'';
+    const signEl=document.getElementById(uidKey+'-sign'); if(signEl) signEl.value=data.sign||'';
+  });
+  part3UpdateSummary();
+}
+
+function printPart3() {
+  const v=fleet.find(x=>x.id===document.getElementById('part3-veh')?.value)||{};
+  const rego=document.getElementById('part3-rego')?.value||'';
+  const date=document.getElementById('part3-date')?.value||'';
+  const odo=document.getElementById('part3-odo')?.value||'';
+  const nextDue=document.getElementById('part3-nextdue')?.value||'';
+  const nextOdo=document.getElementById('part3-nextodo')?.value||'';
+  const inspector=document.getElementById('part3-inspector')?.value||'';
+  const sig=document.getElementById('part3-sig')?.value||'';
+  const yes=document.querySelectorAll('input[name^="part3-"]:checked[value="yes"]').length;
+  const no=document.querySelectorAll('input[name^="part3-"]:checked[value="no"]').length;
+  const w=window.open('','_blank');
+  let rows='';
+  document.querySelectorAll('#part3-tbody tr').forEach(tr=>{
+    const secTd=tr.querySelector('td[colspan="6"]');
+    if(secTd){
+      const bg=secTd.style.background||'#1a2744';
+      rows+=`<tr><td colspan="6" style="background:${bg};color:white;padding:5px 8px;font-size:9px;font-weight:700;">${secTd.textContent.trim()}</td></tr>`;
+      return;
+    }
+    const tds=tr.querySelectorAll('td');
+    if(!tds.length)return;
+    const uidKey=tr.id.replace('row-','');
+    const checked=document.querySelector(`input[name="${uidKey}"]:checked`);
+    const val=checked?.value||'';
+    const rectDate=document.getElementById(uidKey+'-date')?.value||'';
+    const rectSign=document.getElementById(uidKey+'-sign')?.value||'';
+    const bg=val==='yes'?'#e8f7ee':val==='no'?'#fdecea':'';
+    rows+=`<tr style="background:${bg};">
+      <td style="padding:3px 6px;border:1px solid #ccc;font-size:9px;width:42%;">${tds[0]?.textContent.trim()||''}</td>
+      <td style="text-align:center;border:1px solid #ccc;width:7%;">${val==='yes'?'✓':''}</td>
+      <td style="text-align:center;border:1px solid #ccc;width:7%;">${val==='no'?'✗':''}</td>
+      <td style="text-align:center;border:1px solid #ccc;width:7%;">${val==='na'?'—':''}</td>
+      <td style="padding:3px 6px;border:1px solid #ccc;font-size:9px;width:15%;">${rectDate?new Date(rectDate).toLocaleDateString('en-AU'):''}</td>
+      <td style="padding:3px 6px;border:1px solid #ccc;font-size:9px;width:22%;">${rectSign}</td>
+    </tr>`;
+  });
+  w.document.write(`<!DOCTYPE html><html><head><title>Part 3 — ${v.fleet||''} ${rego} ${date}</title>
+  <style>body{font-family:Arial,sans-serif;font-size:10px;padding:10px;}h2{font-size:12px;margin:0 0 3px;}
+  .meta{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border:1px solid #ccc;padding:8px;margin:6px 0 8px;}
+  .mf{display:flex;flex-direction:column;gap:2px;}.ml{font-size:8px;font-weight:700;text-transform:uppercase;color:#555;}.mv{font-size:10px;border-bottom:1px solid #999;padding:1px 0;}
+  table{width:100%;border-collapse:collapse;}
+  .summary{padding:6px 10px;background:#f4f5f7;border:1px solid #ccc;margin-bottom:8px;font-size:10px;}
+  .footer{border:1px solid #ccc;padding:8px;margin-top:8px;display:flex;gap:20px;flex-wrap:wrap;}
+  .sf{display:flex;flex-direction:column;gap:3px;}.sl{font-size:8px;font-weight:700;text-transform:uppercase;color:#555;}.sv{border-bottom:1px solid #333;min-width:180px;padding:2px 0;font-size:10px;}
+  .note{font-size:8px;color:#888;font-style:italic;margin-top:6px;}@media print{button{display:none;}}</style></head>
+  <body>
+  <h2>MMS 2.4.2.4 — VEHICLE SAFETY INSPECTION CHECKLIST (Part 3)</h2>
+  <div style="font-size:9px;color:#666;">Moonee Valley Bus Lines · 6 Tullamarine Park Road, Tullamarine VIC 3043</div>
+  <div style="font-size:8px;color:#888;margin-top:2px;">To be undertaken at maximum intervals of not more than twelve months or 100,000km, whichever occurs first.</div>
   <div class="meta">
     <div class="mf"><div class="ml">Registration</div><div class="mv">${rego||'—'}</div></div>
     <div class="mf"><div class="ml">Date</div><div class="mv">${date?new Date(date).toLocaleDateString('en-AU'):'—'}</div></div>
@@ -6812,6 +7184,7 @@ function openVehicleTimeline(vehicleId) {
     ...jobCards.filter(x=>x.vehicleId===vehicleId).map(x=>({date:x.dateIn,type:'jobcard',icon:'🔧',title:`Job Card ${x.jobNum}`,desc:x.desc,status:x.status,id:x.id,fn:'editJobCard'})),
     ...defects.filter(x=>x.vehicleId===vehicleId).map(x=>({date:x.dateReported,type:'defect',icon:'⚠️',title:`Defect ${x.refNum}`,desc:x.desc,status:x.status,id:x.id,fn:'editDefect'})),
     ...maintHistory.filter(x=>x.vehicleId===vehicleId).map(x=>({date:x.date,type:'maint',icon:'📒',title:'Maintenance',desc:x.desc,status:'',id:x.id,fn:'editMaint'})),
+    ...part3History.filter(x=>x.vehicleId===vehicleId).map(x=>({date:x.date,type:'part3',icon:'🔧',title:'Part 3 Inspection',desc:x.summary,status:'',id:x.id,fn:'openPart3Modal'})),
     ...vsiHistory.filter(x=>x.vehicleId===vehicleId).map(x=>({date:x.date,type:'vsi',icon:'✅',title:'Safety Inspection',desc:x.summary,status:'',id:x.id,fn:'openVsiModal'})),
     ...accidents.filter(x=>x.vehicleId===vehicleId).map(x=>({date:(x.dateTime||'').slice(0,10),type:'accident',icon:'🚨',title:`Accident ${x.refNum}`,desc:x.desc,status:x.fault,id:x.id,fn:'editAccident'})),
   ].filter(x=>x.date).sort((a,b)=>b.date.localeCompare(a.date));
@@ -9647,7 +10020,150 @@ init();
     </div>
   </div>
 </div>
-<!-- VEHICLE TIMELINE MODAL -->
+<!-- PART 3 INSPECTION MODAL -->
+<div class="mbg" id="m-part3">
+  <div class="modal xl" style="max-height:92vh;overflow-y:auto;border-radius:10px;">
+    <div class="mh" style="position:sticky;top:0;background:white;z-index:10;">
+      <span class="mt" id="mpart3-title">New Part 3 Inspection</span>
+      <button onclick="part3PassAll()" style="background:var(--green);color:white;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-right:8px;">✓ Pass all items</button>
+      <button class="mx" onclick="closeModal('m-part3')">&#215;</button>
+    </div>
+    <div class="mb" style="padding:0;">
+
+      <!-- Header -->
+      <div style="background:var(--navy);color:white;padding:10px 18px;">
+        <div style="font-size:13px;font-weight:700;">MMS 2.4.2.4 — VEHICLE SAFETY INSPECTION CHECKLIST — PART 3</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">Supplements normal service &amp; manufacturer spec · Every 12 months or 100,000km, whichever first · Moonee Valley Bus Lines</div>
+      </div>
+
+      <!-- Meta fields -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px;background:#f8fafb;border-bottom:1px solid var(--grey-b);">
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Vehicle</label>
+          <select id="part3-veh" onchange="part3LoadVehicle()" style="border:1px solid var(--grey-b);border-radius:4px;padding:5px 8px;font-size:13px;font-family:inherit;"></select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Registration</label>
+          <input id="part3-rego" placeholder="Auto-filled" style="border:1px solid var(--grey-b);border-radius:4px;padding:5px 8px;font-size:13px;font-family:inherit;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Inspection Date</label>
+          <input id="part3-date" type="date" onchange="part3RecalcDue()" style="border:1px solid var(--grey-b);border-radius:4px;padding:5px 8px;font-size:13px;font-family:inherit;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Odometer (km)</label>
+          <input id="part3-odo" type="number" placeholder="Reading" onchange="part3RecalcDue()" style="border:1px solid var(--grey-b);border-radius:4px;padding:5px 8px;font-size:13px;font-family:inherit;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Next Due Date <span style="font-weight:400;text-transform:none;color:var(--grey-dark);">(auto: +12mo)</span></label>
+          <input id="part3-nextdue" type="date" style="border:1px solid var(--grey-b);border-radius:4px;padding:5px 8px;font-size:13px;font-family:inherit;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Next Due Odometer <span style="font-weight:400;text-transform:none;color:var(--grey-dark);">(auto: +100,000km)</span></label>
+          <input id="part3-nextodo" type="number" placeholder="e.g. 578395" style="border:1px solid var(--grey-b);border-radius:4px;padding:5px 8px;font-size:13px;font-family:inherit;">
+        </div>
+      </div>
+
+      <!-- Status summary -->
+      <div id="part3-summary" style="display:none;padding:8px 14px;font-size:12px;background:#f0fff4;border-bottom:1px solid var(--grey-b);display:flex;gap:16px;flex-wrap:wrap;"></div>
+
+      <!-- Checklist table -->
+      <div style="overflow-x:auto;">
+        <table class="vsi-table">
+          <thead>
+            <tr>
+              <th style="width:42%;">ITEM</th>
+              <th class="c" style="width:7%;">Yes</th>
+              <th class="c" style="width:7%;">No</th>
+              <th class="c" style="width:7%;">N/A</th>
+              <th style="width:15%;">Rectified Date</th>
+              <th style="width:22%;">Signed</th>
+            </tr>
+          </thead>
+          <tbody id="part3-tbody">
+            <tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">BRAKES</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="part3PassSection(0,2)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
+<tr id="row-part3-0">
+  <td style="width:42%;">Brake Equipment for Assembly &amp; Wear</td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-0" value="yes" onchange="part3Mark('part3-0','yes')"> Yes</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-0" value="no" onchange="part3Mark('part3-0','no')"> No</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-0" value="na" onchange="part3Mark('part3-0','na')"> N/A</label></div></td>
+  <td style="width:15%;"><input type="date" id="part3-0-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+  <td style="width:22%;"><input type="text" id="part3-0-sign" placeholder="Signature" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+</tr>
+<tr id="row-part3-1">
+  <td style="width:42%;">Brake Drums/Discs for Condition</td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-1" value="yes" onchange="part3Mark('part3-1','yes')"> Yes</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-1" value="no" onchange="part3Mark('part3-1','no')"> No</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-1" value="na" onchange="part3Mark('part3-1','na')"> N/A</label></div></td>
+  <td style="width:15%;"><input type="date" id="part3-1-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+  <td style="width:22%;"><input type="text" id="part3-1-sign" placeholder="Signature" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+</tr>
+<tr id="row-part3-2">
+  <td style="width:42%;">Air System for Contamination</td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-2" value="yes" onchange="part3Mark('part3-2','yes')"> Yes</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-2" value="no" onchange="part3Mark('part3-2','no')"> No</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-2" value="na" onchange="part3Mark('part3-2','na')"> N/A</label></div></td>
+  <td style="width:15%;"><input type="date" id="part3-2-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+  <td style="width:22%;"><input type="text" id="part3-2-sign" placeholder="Signature" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+</tr>
+<tr><td colspan="5" style="background:var(--navy);color:white;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;">GENERAL</td><td style="background:var(--navy);padding:4px 8px;text-align:right;"><button onclick="part3PassSection(3,6)" style="background:var(--green);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">✓ Pass all</button></td></tr>
+<tr id="row-part3-3">
+  <td style="width:42%;">Gearbox Housing for Security &amp; Condition</td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-3" value="yes" onchange="part3Mark('part3-3','yes')"> Yes</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-3" value="no" onchange="part3Mark('part3-3','no')"> No</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-3" value="na" onchange="part3Mark('part3-3','na')"> N/A</label></div></td>
+  <td style="width:15%;"><input type="date" id="part3-3-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+  <td style="width:22%;"><input type="text" id="part3-3-sign" placeholder="Signature" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+</tr>
+<tr id="row-part3-4">
+  <td style="width:42%;">Engine Mountings for Condition</td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-4" value="yes" onchange="part3Mark('part3-4','yes')"> Yes</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-4" value="no" onchange="part3Mark('part3-4','no')"> No</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-4" value="na" onchange="part3Mark('part3-4','na')"> N/A</label></div></td>
+  <td style="width:15%;"><input type="date" id="part3-4-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+  <td style="width:22%;"><input type="text" id="part3-4-sign" placeholder="Signature" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+</tr>
+<tr id="row-part3-5">
+  <td style="width:42%;">Chassis Rails &amp; Cross Members for Condition &amp; Cracks</td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-5" value="yes" onchange="part3Mark('part3-5','yes')"> Yes</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-5" value="no" onchange="part3Mark('part3-5','no')"> No</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-5" value="na" onchange="part3Mark('part3-5','na')"> N/A</label></div></td>
+  <td style="width:15%;"><input type="date" id="part3-5-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+  <td style="width:22%;"><input type="text" id="part3-5-sign" placeholder="Signature" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+</tr>
+<tr id="row-part3-6">
+  <td style="width:42%;">Road Test</td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-6" value="yes" onchange="part3Mark('part3-6','yes')"> Yes</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-6" value="no" onchange="part3Mark('part3-6','no')"> No</label></div></td>
+  <td class="c" style="width:7%;"><div class="vsi-radio"><label><input type="radio" name="part3-6" value="na" onchange="part3Mark('part3-6','na')"> N/A</label></div></td>
+  <td style="width:15%;"><input type="date" id="part3-6-date" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+  <td style="width:22%;"><input type="text" id="part3-6-sign" placeholder="Signature" style="border:1px solid var(--grey-b);border-radius:3px;padding:3px 5px;font-size:11px;font-family:inherit;width:100%;"></td>
+</tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Inspector / Signature -->
+      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end;padding:14px 18px;border-top:1px solid var(--grey-b);">
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Inspector Name</label>
+          <input id="part3-inspector" placeholder="Full name" style="border:none;border-bottom:2px solid var(--navy);width:200px;padding:4px 2px;font-size:13px;font-family:inherit;outline:none;background:transparent;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;">Signature</label>
+          <input id="part3-sig" placeholder="Signature" style="border:none;border-bottom:2px solid var(--navy);width:200px;padding:4px 2px;font-size:13px;font-family:inherit;outline:none;background:transparent;">
+        </div>
+        <span id="part3-savedmsg" style="color:var(--teal);font-weight:600;font-size:13px;display:none;">✓ Saved</span>
+      </div>
+    </div>
+    <div class="mf" style="position:sticky;bottom:0;background:white;border-top:1px solid var(--grey-b);display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn bs" onclick="closeModal('m-part3')">Cancel</button>
+      <button class="btn bprint" onclick="printPart3()">🖨 Print / PDF</button>
+      <button class="btn bs" onclick="clearPart3()">🗑 Clear form</button>
+      <button class="btn bp" id="part3-save-btn" onclick="savePart3()" style="margin-left:auto;">💾 Save inspection</button>
+    </div>
+  </div>
+</div>
 <div class="mbg" id="m-timeline">
   <div class="modal wide">
     <div class="mh"><span class="mt" id="timeline-title">Service History</span><button class="mx" onclick="closeModal('m-timeline')">&#215;</button></div>
