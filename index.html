@@ -3207,7 +3207,7 @@ function spToAcc(x){const f=x.fields||{};
   };
 }
 
-function vToSp(v){const d=s=>s&&s.trim()?s:null;const m=fleetFieldMap();return{Title:v.fleet,Rego:v.rego||'',RegoExpiry:d(v.regoExp),[m.Year]:v.year||'',[m.Make]:v.make||'',VIN:v.vin||'',[m.EngineNum]:v.engineNo||'',[m.TransSerial]:v.transSerial||'',Capacity:v.capacity||'',[m.Owner]:v.owner||'',[m.Odo]:v.odo?String(v.odo):'',[m.OdoDate]:d(v.odoDate),[m.SvcDate]:d(v.svcDate),[m.SvcKm]:v.svcKm?String(v.svcKm):'',Notes:v.notes||''};}
+function vToSp(v){const d=s=>s&&s.trim()?s:null;const m=fleetFieldMap();const svcKmNum=v.svcKm?Number(String(v.svcKm).replace(/[^0-9.-]/g,'')):null;return{Title:v.fleet,Rego:v.rego||'',RegoExpiry:d(v.regoExp),[m.Year]:v.year||'',[m.Make]:v.make||'',VIN:v.vin||'',[m.EngineNum]:v.engineNo||'',[m.TransSerial]:v.transSerial||'',Capacity:v.capacity||'',[m.Owner]:v.owner||'',[m.Odo]:v.odo?String(v.odo):'',[m.OdoDate]:d(v.odoDate),[m.SvcDate]:d(v.svcDate),[m.SvcKm]:(svcKmNum!==null&&!isNaN(svcKmNum))?svcKmNum:null,Notes:v.notes||''};}
 function tToSp(t){const m=taskFieldMap();const f={Title:t.desc,VehicleId:t.vehicleId,Priority:t.priority,[m.Status]:t.status,Technician:t.tech,DateLogged:t.dateLogged||null,[m.DateDue]:t.dateDone||null,[m.Odo]:t.odo?String(t.odo):'',Notes:JSON.stringify({text:t.notes||'',docsUploaded:!!t.docsUploaded})};if(t.photos?.length)f.TaskPhotos=JSON.stringify(t.photos);return f;}
 
 
