@@ -3164,7 +3164,13 @@ const FLEET_FIELD_MAP = {
 function fleetFieldMap(){ return FLEET_FIELD_MAP[_activeSite] || FLEET_FIELD_MAP.default; }
 
 function spToV(x){const f=x.fields||{};return{id:String(x.id),spId:String(x.id),fleet:f.Title||'',rego:f.Rego||'',regoExp:f.RegoExpiry||'',year:f.Year||f.YearOfManufacture||'',make:f.Make||f.MakeModel||'',vin:f.VIN||'',engineNo:f.EngineNum||f.EngineNumber||'',transSerial:f.TransSerial||f.TranmissionSerialNo||f.TransmissionSerialNo||'',capacity:f.Capacity||'',owner:f.Owner||f.CompanyId||'',odo:String(f.Odo||f.CurrentOdometer||''),odoDate:(f.OdoDate||f.OdometerDate||'').slice(0,10),svcDate:(f.SvcDate||f.NextServiceDate||'').slice(0,10),svcKm:String(f.SvcKm||f.NextServiceKm||''),notes:f.Notes||''};}
-function spToT(x){const f=x.fields||{};let photos=[];try{photos=JSON.parse(f.TaskPhotos||'[]');}catch(e){}let notes='',docsUploaded=false;try{const n=JSON.parse(f.Notes||'{}');if(typeof n==='object'&&!Array.isArray(n)&&n.text!==undefined){notes=n.text||'';docsUploaded=!!n.docsUploaded;}else{notes=f.Notes||'';}}catch(e){notes=f.Notes||'';}return{id:String(x.id),spId:String(x.id),vehicleId:f.VehicleId||'',desc:f.Title||'',priority:f.Priority||'Normal',status:f.Status||'Open',dateLogged:(f.DateLogged||'').slice(0,10),dateDone:(f.DateDue||'').slice(0,10),tech:f.Technician||'',odo:f.Odo||'',notes,docsUploaded,photos};}
+const TASK_FIELD_MAP = {
+  default: {Status:'Status', DateDue:'DateDue', Odo:'Odo'},
+  viclink:  {Status:'TaskStatus', DateDue:'DateCompleted', Odo:'OdometerAtJob'},
+};
+function taskFieldMap(){ return TASK_FIELD_MAP[_activeSite] || TASK_FIELD_MAP.default; }
+
+function spToT(x){const f=x.fields||{};let photos=[];try{photos=JSON.parse(f.TaskPhotos||'[]');}catch(e){}let notes='',docsUploaded=false;try{const n=JSON.parse(f.Notes||'{}');if(typeof n==='object'&&!Array.isArray(n)&&n.text!==undefined){notes=n.text||'';docsUploaded=!!n.docsUploaded;}else{notes=f.Notes||'';}}catch(e){notes=f.Notes||'';}return{id:String(x.id),spId:String(x.id),vehicleId:f.VehicleId||'',desc:f.Title||'',priority:f.Priority||'Normal',status:f.Status||f.TaskStatus||'Open',dateLogged:(f.DateLogged||'').slice(0,10),dateDone:(f.DateDue||f.DateCompleted||'').slice(0,10),tech:f.Technician||'',odo:f.Odo||f.OdometerAtJob||'',notes,docsUploaded,photos};}
 function spToP(x){const f=x.fields||{};let notes='',docsUploaded=false;try{const n=JSON.parse(f.Notes||'{}');notes=n.text||'';docsUploaded=!!n.docsUploaded;}catch(e){notes=f.Notes||'';}let photos=[];try{if(f.PartPhotos)photos=JSON.parse(f.PartPhotos);}catch(e){}return{id:String(x.id),spId:String(x.id),vehicleId:f.VehicleId||'',desc:f.Title||'',supplier:f.Supplier||'',invoice:f.InvoiceNum||'',orderDate:(f.OrderDate||'').slice(0,10),eta:(f.ETA||'').slice(0,10),cost:f.Cost||'',status:f.Status||'On order',task:'',notes,docsUploaded,photos};}
 function spToJ(x){const f=x.fields||{};
   function tryParse(s,d){try{return JSON.parse(s||'');}catch(e){return d;}}
@@ -3199,7 +3205,7 @@ function spToAcc(x){const f=x.fields||{};
 }
 
 function vToSp(v){const d=s=>s&&s.trim()?s:null;const m=fleetFieldMap();return{Title:v.fleet,Rego:v.rego||'',RegoExpiry:d(v.regoExp),[m.Year]:v.year||'',[m.Make]:v.make||'',VIN:v.vin||'',[m.EngineNum]:v.engineNo||'',[m.TransSerial]:v.transSerial||'',Capacity:v.capacity||'',[m.Owner]:v.owner||'',[m.Odo]:v.odo?String(v.odo):'',[m.OdoDate]:d(v.odoDate),[m.SvcDate]:d(v.svcDate),[m.SvcKm]:v.svcKm?String(v.svcKm):'',Notes:v.notes||''};}
-function tToSp(t){const f={Title:t.desc,VehicleId:t.vehicleId,Priority:t.priority,Status:t.status,Technician:t.tech,DateLogged:t.dateLogged||null,DateDue:t.dateDone||null,Odo:t.odo?String(t.odo):'',Notes:JSON.stringify({text:t.notes||'',docsUploaded:!!t.docsUploaded})};if(t.photos?.length)f.TaskPhotos=JSON.stringify(t.photos);return f;}
+function tToSp(t){const m=taskFieldMap();const f={Title:t.desc,VehicleId:t.vehicleId,Priority:t.priority,[m.Status]:t.status,Technician:t.tech,DateLogged:t.dateLogged||null,[m.DateDue]:t.dateDone||null,[m.Odo]:t.odo?String(t.odo):'',Notes:JSON.stringify({text:t.notes||'',docsUploaded:!!t.docsUploaded})};if(t.photos?.length)f.TaskPhotos=JSON.stringify(t.photos);return f;}
 
 
 // ══════════════════════════════════════════════════════════════════════════════
