@@ -2856,8 +2856,26 @@ const SITE_CONFIGS = {
   },
   // Takura — add when site is ready
   'takura': null,
-  // O'Riley — add when site is ready
-  'oriley': null,
+  // O'Riley — separate SharePoint site
+  'oriley': {
+    SITE_URL:    "https://mvbus.sharepoint.com/sites/O'RileyServiceDesk",
+    L_FLEET:     '1bdb9e8d-f824-4147-9473-f24115e91127',
+    L_TASKS:     '54acfa2d-4125-4464-b9a0-8f6d0ff5061b',
+    L_PARTS:     'f8810dca-67bf-46c8-bb77-5f87c1656e8a',
+    L_JOBS:      '82765a33-3cbe-4153-8b68-1468d43040f6',
+    L_DEFECTS:   '7e9eb886-d98f-4d4a-97fb-5dad813315e7',
+    L_ACC:       '2700eadc-2849-4302-83ea-73038df139af',
+    L_COS:       'faac6f27-1570-4921-ad93-a6ef37952652',
+    L_NOTES:     'a00b0647-06e9-48ea-90fa-db1a3291ee20',
+    L_REPAIRNOTES: '0b70b9b9-bf13-48f5-8705-2a352715e493',
+    L_VSI:       'd26cb9e8-89fa-447d-889b-6260f8a303eb',
+    L_MAINT:     'a880a59a-d1e3-434d-b361-c51c0b59843f',
+    L_USERS:     '147e003e-abda-45be-9da6-c122febfd6f8',
+    L_PRETRIP:   '176788d2-6b1c-41da-88ec-f50d7cceb982',
+    L_CAT:       '852de034-f1ec-4603-8fc4-90fa97c3a13c',
+    L_ACCQUOTES: 'c685f0dc-5472-45e9-bcf7-c17c4eb0d6f0',
+    L_CAL:       '1808c64b-36ed-4bd3-b6ec-8aaa10c546a6',
+  },
 };
 
 // Determine which site config to use based on logged-in user's email domain/company
@@ -3163,6 +3181,7 @@ async function loadAll(){
 const FLEET_FIELD_MAP = {
   default: {Year:'Year', Make:'Make', EngineNum:'EngineNum', TransSerial:'TransSerial', Owner:'Owner', Odo:'Odo', OdoDate:'OdoDate', SvcDate:'SvcDate', SvcKm:'SvcKm'},
   viclink:  {Year:'YearOfManufacture', Make:'MakeModel', EngineNum:'EngineNumber', TransSerial:'TranmissionSerialNo', Owner:'CompanyId', Odo:'CurrentOdometer', OdoDate:'OdometerDate', SvcDate:'NextServiceDate', SvcKm:'NextServiceKm'},
+  oriley:   {Year:'YearOfManufacture', Make:'MakeModel', EngineNum:'EngineNumber', TransSerial:'TranmissionSerialNo', Owner:'CompanyId', Odo:'CurrentOdometer', OdoDate:'OdometerDate', SvcDate:'NextServiceDate', SvcKm:'NextServiceKm'},
 };
 function fleetFieldMap(){ return FLEET_FIELD_MAP[_activeSite] || FLEET_FIELD_MAP.default; }
 
@@ -3170,6 +3189,7 @@ function spToV(x){const f=x.fields||{};return{id:String(x.id),spId:String(x.id),
 const TASK_FIELD_MAP = {
   default: {Status:'Status', DateDue:'DateDue', Odo:'Odo'},
   viclink:  {Status:'TaskStatus', DateDue:'DateCompleted', Odo:'OdometerAtJob'},
+  oriley:   {Status:'TaskStatus', DateDue:'DateCompleted', Odo:'OdometerAtJob'},
 };
 function taskFieldMap(){ return TASK_FIELD_MAP[_activeSite] || TASK_FIELD_MAP.default; }
 
