@@ -2837,22 +2837,22 @@ const SITE_CONFIGS = {
   // VicLink — separate SharePoint site
   'viclink': {
     SITE_URL:    'https://mvbus.sharepoint.com/sites/VicLink-ServiceDesk',
-    L_FLEET:     '8abff81b-eaa5-440c-a4ce-ad7e6079ae87',
-    L_TASKS:     '', // not yet created
-    L_PARTS:     '', // not yet created
-    L_JOBS:      '92f954e1-f221-4b13-b649-b34c56aaa94c',
-    L_DEFECTS:   '1ae53494-3414-4522-89c9-cc120cf89430',
-    L_ACC:       '75578888-7162-4380-b59f-527731d16d88',
-    L_COS:       '', // not yet created
-    L_NOTES:     'ea99a1f3-84de-4d6e-8c19-e90ac214c855',
-    L_REPAIRNOTES: '995f7557-a39a-49d7-86e9-264caf087240',
-    L_VSI:       'bd5bf886-41b5-4c10-b42b-61e716211983',
-    L_MAINT:     '4407b576-0000-4ab7-814b-47fb6db78f58',
-    L_USERS:     'd812eb3d-bc88-4e47-8880-91d9018fc51e',
-    L_PRETRIP:   'b18fdec6-1718-42dd-a030-13033c6f35b6',
-    L_CAT:       '78f8993a-c221-45f7-a694-1f877ffef942',
-    L_ACCQUOTES: '71a8c358-9e70-4e9d-ba10-3c9828ba41f4',
-    L_CAL:       '945ebf6a-4fba-49cb-9556-befa67bc837d',
+    L_FLEET:     'cb7d6f3f-8a8c-4277-850b-1dd42fd841d8',
+    L_TASKS:     '416cebe7-388f-4eef-9115-d26f1ea5be11',
+    L_PARTS:     '988fe1a9-856d-4284-82b0-60601c19572c',
+    L_JOBS:      '3f093b1b-8469-4357-8e1e-4ff3c5aee68f',
+    L_DEFECTS:   'f4ed88ac-c43d-4710-9f0e-8a9138436a9f',
+    L_ACC:       '43f25dc4-377d-4703-8338-fb50470ee15d',
+    L_COS:       '8e3d29d3-d84f-47b2-91f2-2e7ec576874d',
+    L_NOTES:     '723d0013-6e27-49a4-8fd2-dc2cd6ec3d45',
+    L_REPAIRNOTES: '0d34eb05-c89c-4b3a-b052-bb5062c3e254',
+    L_VSI:       '157b68b6-561f-403f-b7f8-63cc2e510f18',
+    L_MAINT:     '7a22b2ad-b7cd-401d-b9ed-37416a4e71d5',
+    L_USERS:     '06d1c94e-7a49-468a-8d41-6e94b09eda4d',
+    L_PRETRIP:   'b7cce0b5-a3f3-46d7-90e4-73fefeb79cbe',
+    L_CAT:       '3f379254-5c81-4be5-acec-ab5edd4aa9ea',
+    L_ACCQUOTES: '74b214dc-e27b-45a5-ab11-c053ac715175',
+    L_CAL:       '4d5cdf16-0b0a-4c64-a013-f790502c7fc0',
   },
   // Takura — add when site is ready
   'takura': null,
@@ -2933,9 +2933,15 @@ function applySiteConfig(email, companyFilter) {
   const config = getSiteConfig(email, companyFilter);
   if (!config) return;
   Object.assign(CFG, config);
+  // Keep _activeSite in sync so field-name mapping (e.g. fleetFieldMap) matches the real site
+  const e = (email||'').toLowerCase(), c = (companyFilter||'').toLowerCase();
+  if (c.includes('viclink') || e.includes('viclink')) _activeSite = 'viclink';
+  else if (c.includes('takura') || e.includes('takura')) _activeSite = SITE_CONFIGS['takura'] ? 'takura' : 'default';
+  else if (c.includes('oriley') || c.includes("o'riley") || e.includes('oriley')) _activeSite = SITE_CONFIGS['oriley'] ? 'oriley' : 'default';
+  else _activeSite = 'default';
   // Clear cached site IDs so correct site is used
   Object.keys(_siteIdCache).forEach(k => delete _siteIdCache[k]);
-  console.log('Site config applied:', CFG.SITE_URL);
+  console.log('Site config applied:', CFG.SITE_URL, '| active site key:', _activeSite);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3075,10 +3081,11 @@ async function loadAll(){
   showSt('info','Loading from SharePoint…');
   console.log('loadAll: using site', CFG.SITE_URL);
   const safe = async (fn) => { try { return await fn(); } catch(e) { console.warn('List load warning:', e.message); return []; } };
+  const safeFleet = async (fn) => { try { return await fn(); } catch(e) { console.error('Fleet load FAILED:', e.message); showSt('err','Fleet failed to load: '+e.message); return []; } };
   try{
     const[ci,fi,ti,pi,ji,di,ai,ni,rni,vsii,mhi,cati,aqi,cali]=await Promise.all([
       safe(()=>listItems(CFG.L_COS)),
-      safe(()=>listItems(CFG.L_FLEET)),
+      safeFleet(()=>listItems(CFG.L_FLEET)),
       safe(()=>listItems(CFG.L_TASKS)),
       safe(()=>listItems(CFG.L_PARTS)),
       safe(()=>listItems(CFG.L_JOBS)),
@@ -3148,7 +3155,15 @@ async function loadAll(){
 // ══════════════════════════════════════════════════════════════════════════════
 // SP MAPPERS
 // ══════════════════════════════════════════════════════════════════════════════
-function spToV(x){const f=x.fields||{};return{id:String(x.id),spId:String(x.id),fleet:f.Title||'',rego:f.Rego||'',regoExp:f.RegoExpiry||'',year:f.Year||'',make:f.Make||'',vin:f.VIN||'',engineNo:f.EngineNum||'',transSerial:f.TransSerial||'',capacity:f.Capacity||'',owner:f.Owner||'',odo:String(f.Odo||''),odoDate:(f.OdoDate||'').slice(0,10),svcDate:(f.SvcDate||'').slice(0,10),svcKm:String(f.SvcKm||''),notes:f.Notes||''};}
+// Field name differences per site (SharePoint locks internal names after list creation,
+// so when a list is recreated by hand the columns can end up with different internal names).
+const FLEET_FIELD_MAP = {
+  default: {Year:'Year', Make:'Make', EngineNum:'EngineNum', TransSerial:'TransSerial', Owner:'Owner', Odo:'Odo', OdoDate:'OdoDate', SvcDate:'SvcDate', SvcKm:'SvcKm'},
+  viclink:  {Year:'YearOfManufacture', Make:'MakeModel', EngineNum:'EngineNumber', TransSerial:'TranmissionSerialNo', Owner:'CompanyId', Odo:'CurrentOdometer', OdoDate:'OdometerDate', SvcDate:'NextServiceDate', SvcKm:'NextServiceKm'},
+};
+function fleetFieldMap(){ return FLEET_FIELD_MAP[_activeSite] || FLEET_FIELD_MAP.default; }
+
+function spToV(x){const f=x.fields||{};return{id:String(x.id),spId:String(x.id),fleet:f.Title||'',rego:f.Rego||'',regoExp:f.RegoExpiry||'',year:f.Year||f.YearOfManufacture||'',make:f.Make||f.MakeModel||'',vin:f.VIN||'',engineNo:f.EngineNum||f.EngineNumber||'',transSerial:f.TransSerial||f.TranmissionSerialNo||f.TransmissionSerialNo||'',capacity:f.Capacity||'',owner:f.Owner||f.CompanyId||'',odo:String(f.Odo||f.CurrentOdometer||''),odoDate:(f.OdoDate||f.OdometerDate||'').slice(0,10),svcDate:(f.SvcDate||f.NextServiceDate||'').slice(0,10),svcKm:String(f.SvcKm||f.NextServiceKm||''),notes:f.Notes||''};}
 function spToT(x){const f=x.fields||{};let photos=[];try{photos=JSON.parse(f.TaskPhotos||'[]');}catch(e){}let notes='',docsUploaded=false;try{const n=JSON.parse(f.Notes||'{}');if(typeof n==='object'&&!Array.isArray(n)&&n.text!==undefined){notes=n.text||'';docsUploaded=!!n.docsUploaded;}else{notes=f.Notes||'';}}catch(e){notes=f.Notes||'';}return{id:String(x.id),spId:String(x.id),vehicleId:f.VehicleId||'',desc:f.Title||'',priority:f.Priority||'Normal',status:f.Status||'Open',dateLogged:(f.DateLogged||'').slice(0,10),dateDone:(f.DateDue||'').slice(0,10),tech:f.Technician||'',odo:f.Odo||'',notes,docsUploaded,photos};}
 function spToP(x){const f=x.fields||{};let notes='',docsUploaded=false;try{const n=JSON.parse(f.Notes||'{}');notes=n.text||'';docsUploaded=!!n.docsUploaded;}catch(e){notes=f.Notes||'';}let photos=[];try{if(f.PartPhotos)photos=JSON.parse(f.PartPhotos);}catch(e){}return{id:String(x.id),spId:String(x.id),vehicleId:f.VehicleId||'',desc:f.Title||'',supplier:f.Supplier||'',invoice:f.InvoiceNum||'',orderDate:(f.OrderDate||'').slice(0,10),eta:(f.ETA||'').slice(0,10),cost:f.Cost||'',status:f.Status||'On order',task:'',notes,docsUploaded,photos};}
 function spToJ(x){const f=x.fields||{};
@@ -3183,7 +3198,7 @@ function spToAcc(x){const f=x.fields||{};
   };
 }
 
-function vToSp(v){const d=s=>s&&s.trim()?s:null;return{Title:v.fleet,Rego:v.rego||'',RegoExpiry:d(v.regoExp),Year:v.year||'',Make:v.make||'',VIN:v.vin||'',EngineNum:v.engineNo||'',TransSerial:v.transSerial||'',Capacity:v.capacity||'',Owner:v.owner||'',Odo:v.odo?String(v.odo):'',OdoDate:d(v.odoDate),SvcDate:d(v.svcDate),SvcKm:v.svcKm?String(v.svcKm):'',Notes:v.notes||''};}
+function vToSp(v){const d=s=>s&&s.trim()?s:null;const m=fleetFieldMap();return{Title:v.fleet,Rego:v.rego||'',RegoExpiry:d(v.regoExp),[m.Year]:v.year||'',[m.Make]:v.make||'',VIN:v.vin||'',[m.EngineNum]:v.engineNo||'',[m.TransSerial]:v.transSerial||'',Capacity:v.capacity||'',[m.Owner]:v.owner||'',[m.Odo]:v.odo?String(v.odo):'',[m.OdoDate]:d(v.odoDate),[m.SvcDate]:d(v.svcDate),[m.SvcKm]:v.svcKm?String(v.svcKm):'',Notes:v.notes||''};}
 function tToSp(t){const f={Title:t.desc,VehicleId:t.vehicleId,Priority:t.priority,Status:t.status,Technician:t.tech,DateLogged:t.dateLogged||null,DateDue:t.dateDone||null,Odo:t.odo?String(t.odo):'',Notes:JSON.stringify({text:t.notes||'',docsUploaded:!!t.docsUploaded})};if(t.photos?.length)f.TaskPhotos=JSON.stringify(t.photos);return f;}
 
 
@@ -8497,11 +8512,21 @@ function printQR() {
 // ─── QR SCAN ACTION MENU ─────────────────────────────────────────────────────
 let _qrActionVehicleId = null;
 
-function showQRActionMenu(vehicleId) {
+function showQRActionMenu(vehicleId, _retried) {
+  if (fleet.length === 0 && !_retried) {
+    // Fleet may have failed to load silently (safe() swallows fetch errors) - retry once
+    console.warn('QR menu: fleet is empty, retrying loadAll() before giving up…');
+    loadAll().then(() => showQRActionMenu(vehicleId, true));
+    return;
+  }
   const v = fleet.find(x => x.id === vehicleId);
   if (!v) {
     console.warn('QR vehicle lookup failed. Looking for id:', vehicleId, '| Active site:', CFG.SITE_URL, '| Fleet size:', fleet.length, '| Fleet ids:', fleet.map(x=>x.id));
-    alert('Vehicle not found on this site (' + (_activeSite||'default') + '). If this vehicle belongs to a different customer site, switch sites first, or re-print its QR code while viewing the correct site.');
+    if (fleet.length === 0) {
+      alert('Could not load fleet data from SharePoint. Check your connection, then reopen the app and try scanning again.');
+    } else {
+      alert('Vehicle not found on this site (' + (_activeSite||'default') + '). If this vehicle belongs to a different customer site, switch sites first, or re-print its QR code while viewing the correct site.');
+    }
     return;
   }
   _qrActionVehicleId = vehicleId;
