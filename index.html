@@ -3138,7 +3138,7 @@ async function loadAll(){
     fleet=fi.map(spToV).sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet));
     tasks=ti.map(spToT); parts=pi.map(spToP); jobCards=ji.map(spToJ); defects=di.map(spToDef); accidents=ai.map(spToAcc); notes=ni.map(spToNo); repairNotes=rni.map(spToRn);
     vsiHistory=vsii.map(spToVsi).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    maintHistory=mhi.map(spToMh).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    maintHistory=mhi.map(spToMh).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     catalogue=cati.map(spToCat).sort((a,b)=>(a.category||'').localeCompare(b.category||''));
     accQuotes=aqi.map(spToAq).sort((a,b)=>(b.qDate||'').localeCompare(a.qDate||''));
     calEvents=(cali||[]).map(spToCal);
@@ -3173,7 +3173,7 @@ async function loadAll(){
       notes=ni2.map(spToNo||((x)=>x));
       repairNotes=rni2.map(spToRn||((x)=>x));
       vsiHistory=vsii2.map(spToVsi).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-      maintHistory=mhi2.map(spToMh||((x)=>x)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+      maintHistory=mhi2.map(spToMh||((x)=>x)).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
       accQuotes=aqi2.map(spToAq).sort((a,b)=>(b.qDate||'').localeCompare(a.qDate||''));
       calEvents=cali2.map(spToCal);
       catalogue=[];
@@ -5942,7 +5942,7 @@ function spToMh(x){const f=x.fields||{};
     date:(f.MaintDate||'').slice(0,10),desc:f.Title||'',odo:f.Odo||'',
     by:f.CarriedOutBy||''};}
 
-function renderMaintHistory(){if(isMobile()){renderMobCards("mob-maint-cards",maintHistory.filter(m=>canSeeVehicle(m.vehicleId)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')),mobMaintCard,"No maintenance history");return;}
+function renderMaintHistory(){if(isMobile()){renderMobCards("mob-maint-cards",maintHistory.filter(m=>canSeeVehicle(m.vehicleId)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')),mobMaintCard,"No maintenance history");return;}
   const vf=document.getElementById('mh-fveh');
   if(vf){
     const cur=vf.value;
@@ -5953,7 +5953,7 @@ function renderMaintHistory(){if(isMobile()){renderMobCards("mob-maint-cards",ma
   const vid=document.getElementById('mh-fveh')?.value||'';
   const srch=(document.getElementById('mh-search')?.value||'').toLowerCase();
   const rows=maintHistory.filter(m=>{if(!canSeeVehicle(m.vehicleId))return false;if(vid&&m.vehicleId!==vid)return false;if(srch){const v=fleet.find(x=>x.id===m.vehicleId)||{};const hay=[m.desc,m.by,v.fleet,v.rego,m.date,m.odo].join(' ').toLowerCase();if(!hay.includes(srch))return false;}return true;})
-    .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   document.getElementById('mh-tbody').innerHTML=rows.length?rows.map(m=>{
     const v=fleet.find(x=>x.id===m.vehicleId)||{};
     if(isMob())return mobileCard(m.id,
@@ -6005,7 +6005,7 @@ async function saveMaint(){
     }
     const i=maintHistory.findIndex(x=>x.id===id||x.spId===spId);
     if(i>=0)maintHistory[i]=m;else maintHistory.push(m);
-    maintHistory.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    maintHistory.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
     updSaved();closeModal('m-maint');renderMaintHistory();
   }catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save entry';
