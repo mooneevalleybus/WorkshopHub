@@ -967,6 +967,7 @@ select option {
     <div class="sb-items">
       <div class="nt" onclick="showPage('mainthistory',this)"><span class="ni">📒</span> Maintenance History</div>
       <div class="nt" onclick="showPage('vsi',this)"><span class="ni">✅</span> Safety Inspection</div>
+      <div class="nt" onclick="showPage('part3',this)"><span class="ni">🔧</span> Part 3</div>
     </div>
   </div>
 
@@ -1198,17 +1199,6 @@ select option {
     </div>
     <div class="cb tw"><table><thead><tr><th>Fleet #</th><th>Rego</th><th>Company</th><th>Make &amp; model</th><th>Next service</th><th>Days to go</th><th>Odometer</th><th>Service km</th><th>Km to go</th><th>Status</th><th>Part 3 due</th><th>Days to go</th><th>Part 3 status</th><th></th></tr></thead><tbody id="svc-tbody"></tbody></table></div>
   </div>
-
-  <div class="card" style="margin-top:16px;">
-    <div class="ch">
-      <span class="ct">Part 3 Inspections <span style="font-weight:400;color:var(--grey-dark);font-size:12px;">(MMS 2.4.2.4 — 12 months or 100,000km)</span></span>
-      <div class="tb">
-        <select id="part3-hist-veh" onchange="renderPart3()" style="width:180px;"><option value="">All vehicles</option></select>
-        <button class="btn bp" onclick="openPart3Modal()">+ New Part 3 inspection</button>
-      </div>
-    </div>
-    <div class="cb tw"><table><thead><tr><th>Date</th><th>Vehicle</th><th>Result</th><th>Inspector</th><th>Next due</th><th></th></tr></thead><tbody id="part3-tbody-list"></tbody></table></div>
-  </div>
 </div>
 
 <!-- COMPANIES -->
@@ -1412,6 +1402,24 @@ select option {
     <div class="cb tw">
       <table class="mc"><thead><tr><th>Date</th><th>Fleet / Rego</th><th>Summary</th><th>Inspector</th><th>Next Due</th></tr></thead>
         <tbody id="vsi-tbody-list"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PART 3 -->
+<div class="page" id="page-part3"><div id="mob-part3-cards"></div>
+  <div class="card">
+    <div class="ch">
+      <span class="ct">Part 3 Inspections (MMS 2.4.2.4 — every 12 months or 100,000km)</span>
+      <div class="tb">
+        <select id="part3-hist-veh" onchange="renderPart3()" style="width:180px;"><option value="">All vehicles</option></select>
+        <button class="btn bp" onclick="openPart3Modal()">+ New Part 3 inspection</button>
+      </div>
+    </div>
+    <div class="cb tw">
+      <table class="mc"><thead><tr><th>Date</th><th>Fleet / Rego</th><th>Result</th><th>Inspector</th><th>Next Due</th></tr></thead>
+        <tbody id="part3-tbody-list"></tbody>
       </table>
     </div>
   </div>
@@ -3360,7 +3368,8 @@ function renderPage(name){
   else if(name==='defects')renderDefects();
   else if(name==='accident')renderAccidents();
   else if(name==='faultcodes')renderFaultCodes();
-  else if(name==='service'){renderService();renderPart3();}
+  else if(name==='service'){renderService();}
+  else if(name==='part3'){renderPart3();}
   else if(name==='companies')renderCompanies();
   else if(name==='pretrip')renderPreTrip();
   else if(name==='jaltest')renderJaltest();
@@ -5986,7 +5995,7 @@ function part3RecalcDue(){
   if(odo && noEl) noEl.value = String(parseInt(odo)+100000);
 }
 
-function renderPart3(){
+function renderPart3(){if(isMobile()){renderMobCards("mob-part3-cards",part3History.filter(r=>canSeeVehicle(r.vehicleId)),mobPart3Card,"No Part 3 inspections");return;}
   const vf = document.getElementById('part3-hist-veh');
   if (vf) {
     const cur = vf.value;
@@ -8682,6 +8691,7 @@ function mobFleetCard(v){const co=companies.find(x=>x.id===v.owner)||{};const d=
 function mobTaskCard(t){const v=fleet.find(x=>x.id===t.vehicleId)||{};const pc=t.priority==='Urgent'?'#c0392b':t.priority==='High'?'#e07b00':'var(--teal)';const stb=t.status==='Done'?'#e8f7ee':'var(--grey)';const stc=t.status==='Done'?'var(--green)':'var(--grey-dark)';return mobCard("editTask('"+t.id+"')",'<div style="display:flex;justify-content:space-between;gap:8px;"><div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(t.desc||'—')+'</div><div style="font-size:12px;color:var(--grey-dark);">Fleet '+(v.fleet||'?')+' '+(v.rego||'')+'</div></div>'+pill(t.status,stb,stc)+'</div>',(t.priority?pill(t.priority,pc+'18',pc):'')+(t.dateDue?pill('📅 Due '+fd(t.dateDue)):'')+(t.tech?pill('👤 '+t.tech):''));}
 function mobMaintCard(m){const v=fleet.find(x=>x.id===m.vehicleId)||{};return mobCard("editMaint('"+m.id+"')",'<div><div style="font-size:15px;font-weight:700;">Fleet '+(v.fleet||'?')+' — '+(v.rego||'—')+'</div><div style="font-size:13px;color:var(--grey-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(m.desc||'—')+'</div></div>',pill('📅 '+fd(m.date))+(m.odo?pill('📏 '+Number(m.odo).toLocaleString()+' km'):'')+(m.by?pill('👤 '+m.by):''));}
 function mobVsiCard(r){const v=fleet.find(x=>x.id===r.vehicleId)||{};const items=r.items||{};const failed=Object.values(items).filter(x=>(x.val||x)==='no'||x==='fail').length;const sb=failed===0?'#e8f7ee':'#fdecea';const sc=failed===0?'var(--green)':'var(--red)';return mobCard("openVsiModal('"+r.id+"')",'<div style="display:flex;justify-content:space-between;gap:8px;"><div><div style="font-size:15px;font-weight:700;">Fleet '+(v.fleet||r.fleetNum||'?')+' — '+(v.rego||r.rego||'—')+'</div><div style="font-size:13px;color:var(--grey-dark);">'+(r.inspector||'—')+'</div></div>'+pill(failed===0?'✅ Pass':'⚠️ '+failed+' failed',sb,sc)+'</div>',pill('📅 '+fd(r.date))+(r.nextDue?pill('🔜 Next: '+fd(r.nextDue)):''));}
+function mobPart3Card(r){const v=fleet.find(x=>x.id===r.vehicleId)||{};const fail=(r.summary||'').includes('0 fail')||!(r.summary||'').includes('fail')?false:true;const sb=fail?'#fdecea':'#e8f7ee';const sc=fail?'var(--red)':'var(--green)';return mobCard("openPart3Modal('"+r.id+"')",'<div style="display:flex;justify-content:space-between;gap:8px;"><div><div style="font-size:15px;font-weight:700;">Fleet '+(v.fleet||r.fleetNum||'?')+' — '+(v.rego||r.rego||'—')+'</div><div style="font-size:13px;color:var(--grey-dark);">'+(r.inspector||'—')+'</div></div>'+pill(r.summary||'—',sb,sc)+'</div>',pill('📅 '+fd(r.date))+(r.nextDue?pill('🔜 Next: '+fd(r.nextDue)):''));}
 function mobAccidentCard(a){const v=fleet.find(x=>x.id===a.vehicleId)||{};const af=a.atFault==='Yes';return mobCard("editAccident('"+a.id+"')",'<div style="display:flex;justify-content:space-between;gap:8px;"><div style="flex:1;min-width:0;"><div style="font-size:15px;font-weight:700;">'+(a.refNum||'—')+' — Fleet '+(v.fleet||'?')+' '+(v.rego||'')+'</div><div style="font-size:13px;color:var(--grey-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(a.location||a.desc||'—')+'</div></div>'+pill(af?'At fault':'Not at fault',af?'#fdecea':'#e8f7ee',af?'var(--red)':'var(--green)')+'</div>',pill('📅 '+fd((a.dateTime||'').slice(0,10)))+(a.driver?pill('👤 '+a.driver):''),'<button class="btn sm bt" style="width:100%;" onclick="event.stopPropagation();accidentToQuote('+a.id+')">→ Repair Quote</button>');}
 function mobAqCard(q){const v=fleet.find(x=>x.id===q.vehicleId)||{};const stb=q.status==='Paid'?'#e8f7ee':'#fff4e5';const stc=q.status==='Paid'?'var(--green)':'#e07b00';return mobCard("openAqModal('"+q.id+"')",'<div style="display:flex;justify-content:space-between;gap:8px;"><div style="flex:1;min-width:0;"><div style="font-size:15px;font-weight:700;">'+(q.refNum||'—')+' — Fleet '+(v.fleet||'?')+' '+(v.rego||'')+'</div><div style="font-size:13px;color:var(--grey-dark);">'+(q.repairer||'—')+'</div></div>'+pill(q.status||'—',stb,stc)+'</div>',(q.qDate?pill('📅 '+fd(q.qDate)):''));}
 function mobServiceCard(v){const co=companies.find(x=>x.id===v.owner)||{};const d=du(v.svcDate);const sc=d===null?'var(--grey-dark)':d<0?'var(--red)':d<=30?'#e07b00':'var(--green)';const sb=d===null?'var(--grey)':d<0?'#fdecea':d<=30?'#fff4e5':'#e8f7ee';const st=d===null?'No date':d<0?'Overdue '+Math.abs(d)+' days':d===0?'Due today':'Due in '+d+' days';const p3=du(v.part3Date);const p3pill=p3===null?'':pill('🔧 Part 3: '+(p3<0?'Overdue '+Math.abs(p3)+'d':fd(v.part3Date)),p3<0?'#fdecea':p3<=30?'#fff4e5':'#e8f7ee',p3<0?'var(--red)':p3<=30?'#e07b00':'var(--green)');return mobCard("editVehicle('"+v.id+"')",'<div style="display:flex;justify-content:space-between;gap:8px;"><div><div style="font-size:15px;font-weight:700;">Fleet '+(v.fleet||'?')+' — '+(v.rego||'—')+'</div><div style="font-size:13px;color:var(--grey-dark);">'+(v.make||'—')+' · '+(co.name||'—')+'</div></div>'+pill(st,sb,sc)+'</div>',(v.svcDate?pill('📅 '+fd(v.svcDate)):'')+(v.odo?pill('📏 '+Number(v.odo).toLocaleString()+' km'):'')+p3pill);}
