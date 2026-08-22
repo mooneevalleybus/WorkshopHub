@@ -167,6 +167,7 @@ textarea{min-height:72px;resize:vertical;}
 
 /* ── Phone (≤600px) — full mobile layout ────────────────────────────────── */
 @media (max-width:600px) {
+  #global-search-wrap { display: none !important; }
   /* Core layout */
   .main { padding: 8px !important; }
   .card { border-radius: 8px; margin-bottom: 10px; }
@@ -7424,18 +7425,23 @@ function applyRoleUI() {
     badge.style.display = '';
     badge.className = `role-badge role-${currentRole}`;
   }
+  // Same info, visible on mobile where the header badge is hidden for space
+  const mobRoleDisp = document.getElementById('mob-role-display');
+  if (mobRoleDisp) mobRoleDisp.textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
 
-  // Site switcher / role preview — admin-only, shown here (not on token arrival)
-  // because currentRole isn't known until this point. Doing it earlier races
-  // against loadUserRole() finishing, which was silently hiding these on slower
-  // connections (mobile) even for admins.
-  const isAdm = connected && (currentRole==='admin'||_realRole==='admin');
-  const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=isAdm?'flex':'none';
-  const drpw=document.getElementById('role-preview-wrap');if(drpw)drpw.style.display=isAdm?'flex':'none';
-  const dssw=document.getElementById('desk-site-switch-wrap');if(dssw)dssw.style.display=isAdm?'flex':'none';
+  // Site switcher / role preview — shown here (not on token arrival) because
+  // currentRole isn't known until this point. Doing it earlier races against
+  // loadUserRole() finishing, which was silently hiding these on slower
+  // connections (mobile) even for eligible roles.
+  const isAdminRole = connected && (currentRole==='admin'||_realRole==='admin');
+  const SITE_SWITCH_ROLES = ['admin','owner','manager'];
+  const canSwitchSite = connected && (SITE_SWITCH_ROLES.includes(currentRole)||SITE_SWITCH_ROLES.includes(_realRole));
+  const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=isAdminRole?'flex':'none';
+  const drpw=document.getElementById('role-preview-wrap');if(drpw)drpw.style.display=isAdminRole?'flex':'none';
+  const dssw=document.getElementById('desk-site-switch-wrap');if(dssw)dssw.style.display=canSwitchSite?'flex':'none';
   ['mob-site-switch-section','mob-site-mvbl','mob-site-viclink','mob-site-takura','mob-site-oriley'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el)el.style.display=isAdm?(id==='mob-site-switch-section'?'block':'flex'):'none';
+    if(el)el.style.display=canSwitchSite?(id==='mob-site-switch-section'?'block':'flex'):'none';
   });
 
   // Apply report-only restrictions
@@ -11021,6 +11027,10 @@ init();
   <div class="mob-menu-item" id="mob-site-takura" style="display:none;" onclick="switchSite('takura')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">Takura</span></div>
   <div class="mob-menu-item" id="mob-site-oriley" style="display:none;" onclick="switchSite('oriley')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">O'Riley</span></div>
   <div class="mob-menu-section">Account</div>
+  <div class="mob-menu-item" style="cursor:default;">
+    <span class="mob-menu-item-icon">👤</span>
+    <span class="mob-menu-item-label">Signed in as <strong id="mob-role-display">—</strong></span>
+  </div>
   <div class="mob-menu-item" id="mob-role-preview-wrap" style="display:none;flex-direction:column;align-items:flex-start;gap:8px;">
     <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;text-transform:uppercase;">Preview as role</div>
     <select id="mob-role-select" onchange="previewRole(this.value)" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:white;font-size:15px;font-family:inherit;">
