@@ -7295,7 +7295,7 @@ let currentUserEmail = '';
 let currentCompanyFilter = ''; // blank = see all companies
 
 const ROLE_PAGES = {
-  driver:  ['dashboard','pretrip','defects','calendar','todo','odoupdate'],
+  driver:  ['dashboard','pretrip','defects','calendar','odoupdate'],
   office:  ['dashboard','fleet','service','pretrip','defects','accident','accquotes','faultcodes','dashlights','calendar','todo','odoupdate'],
   tech:    ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','catalogue','calendar','todo','odoupdate'],
   manager: ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','accquotes','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','companies','financial','catalogue','calendar','todo','odoupdate'],
@@ -7550,15 +7550,41 @@ function renderFinancial() {
     return true;
   });
 
-  const total = filtered.reduce((s,p)=>s+(parseFloat(p.cost)||0),0);
-  const avg   = filtered.length ? total/filtered.length : 0;
+  // Parts, labour, and other charges logged inside job cards also count as real
+  // costs — include them in the vehicle/month cost breakdown, not just their own
+  // separate table below.
+  const jcPartEntries = [];
+  jobCards.forEach(j=>{
+    if (!canSeeVehicle(j.vehicleId)) return;
+    if (vid && j.vehicleId!==vid) return;
+    if (yr && !(j.dateIn||'').startsWith(yr)) return;
+    (j.parts||[]).forEach(([partNo,desc,qty,price])=>{
+      const qtyNum=parseFloat(qty)||0, priceNum=parseFloat(price)||0;
+      const total=qtyNum*priceNum;
+      if (total>0) jcPartEntries.push({vehicleId:j.vehicleId, cost:total, orderDate:j.dateIn});
+    });
+    (j.labour||[]).forEach(([desc,extra,rate,hours])=>{
+      const rateNum=parseFloat(rate)||0, hoursNum=parseFloat(hours)||0;
+      const total=rateNum*hoursNum;
+      if (total>0) jcPartEntries.push({vehicleId:j.vehicleId, cost:total, orderDate:j.dateIn});
+    });
+    (j.other||[]).forEach(([desc,amount])=>{
+      const amt=parseFloat(amount)||0;
+      if (amt>0) jcPartEntries.push({vehicleId:j.vehicleId, cost:amt, orderDate:j.dateIn});
+    });
+  });
+
+  const combined = [...filtered, ...jcPartEntries];
+
+  const total = combined.reduce((s,p)=>s+(parseFloat(p.cost)||0),0);
+  const avg   = combined.length ? total/combined.length : 0;
   document.getElementById('fin-total-cost').textContent = '$'+total.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('fin-order-count').textContent = filtered.length;
+  document.getElementById('fin-order-count').textContent = combined.length;
   document.getElementById('fin-avg-cost').textContent = '$'+avg.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
 
   // By vehicle
   const byVeh = {};
-  filtered.forEach(p=>{const v=fleet.find(x=>x.id===p.vehicleId);const k=v?`Fleet ${v.fleet}${v.rego?' — '+v.rego:''}`:p.vehicleId||'Unknown';byVeh[k]=(byVeh[k]||0)+(parseFloat(p.cost)||0);});
+  combined.forEach(p=>{const v=fleet.find(x=>x.id===p.vehicleId);const k=v?`Fleet ${v.fleet}${v.rego?' — '+v.rego:''}`:p.vehicleId||'Unknown';byVeh[k]=(byVeh[k]||0)+(parseFloat(p.cost)||0);});
   const sortedVeh = Object.entries(byVeh).sort((a,b)=>b[1]-a[1]);
   const maxVeh = sortedVeh[0]?.[1]||1;
   document.getElementById('fin-by-vehicle').innerHTML = sortedVeh.length
@@ -7576,7 +7602,7 @@ function renderFinancial() {
 
   // By month
   const byMonth = {};
-  filtered.forEach(p=>{const m=(p.orderDate||'').slice(0,7);if(m)byMonth[m]=(byMonth[m]||0)+(parseFloat(p.cost)||0);});
+  combined.forEach(p=>{const m=(p.orderDate||'').slice(0,7);if(m)byMonth[m]=(byMonth[m]||0)+(parseFloat(p.cost)||0);});
   const sortedMonth = Object.entries(byMonth).sort((a,b)=>a[0].localeCompare(b[0]));
   const maxMonth = sortedMonth.reduce((m,[,v])=>Math.max(m,v),1);
   document.getElementById('fin-by-month').innerHTML = sortedMonth.length
