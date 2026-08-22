@@ -1241,6 +1241,8 @@ select option {
         <div id="odo-current" style="font-size:13px;color:var(--grey-dark);margin-bottom:10px;"></div>
         <label style="font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;">New odometer reading (km)</label>
         <input id="odo-new-value" type="number" placeholder="e.g. 480120" style="width:100%;font-size:20px;padding:12px;margin-top:6px;box-sizing:border-box;">
+        <label style="font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;display:block;margin-top:14px;">Date of reading</label>
+        <input id="odo-new-date" type="date" style="width:100%;font-size:15px;padding:10px;margin-top:6px;box-sizing:border-box;">
         <span id="odo-savedmsg" style="color:var(--teal);font-weight:600;font-size:13px;display:none;margin-top:8px;">✓ Saved</span>
         <button class="btn bp" id="odo-save-btn" onclick="saveOdoUpdate()" style="margin-top:14px;width:100%;">💾 Save reading</button>
       </div>
@@ -3731,8 +3733,37 @@ async function saveJobCard(){
   const jcRefNum=id&&jobCards.find(x=>x.id===id)?.jobNum||nextRef('JC',jobCards,'jobNum');
   j.jobNum=jcRefNum;
   if(connected) j.photos=await uploadPhotos(await compressPhotos(j.photos),photoFolder('jobcards',jcRefNum));
-  try{if(connected){const f=jToSp(j);if(spId){await updateItem(CFG.L_JOBS,spId,f);}else{const c=await createItem(CFG.L_JOBS,f);j.spId=String(c.id);j.id=String(c.id);}}const i=jobCards.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)jobCards[i]=j;else{j.docsUploaded=false;}jobCards.push(j);updSaved();haptic('success');closeModal('m-jobcard');renderJobCards();}catch(e){showSt('err','Save failed: '+e.message);}
+  try{if(connected){const f=jToSp(j);if(spId){await updateItem(CFG.L_JOBS,spId,f);}else{const c=await createItem(CFG.L_JOBS,f);j.spId=String(c.id);j.id=String(c.id);}}const i=jobCards.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)jobCards[i]=j;else{j.docsUploaded=false;}jobCards.push(j);
+    if(j.status==='Complete')await autoLogMaintFromJobCard(j);
+    updSaved();haptic('success');closeModal('m-jobcard');renderJobCards();}catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save job card';
+}
+
+// Auto-create a Maintenance History (MMS 2.4.2.5) entry when a job card is marked Complete.
+// Guards against duplicates if the same completed job card gets edited/re-saved later,
+// by tagging the entry with the job card number and checking for an existing match first.
+async function autoLogMaintFromJobCard(j){
+  const tag='[JC-'+j.jobNum+']';
+  if(maintHistory.some(m=>(m.desc||'').includes(tag)))return; // already logged for this job card
+  const v=fleet.find(x=>x.id===j.vehicleId);
+  const workText=[j.desc,j.work].filter(Boolean).join(' — ')||'Job card work';
+  const m={
+    id:uid(),
+    vehicleId:j.vehicleId,
+    date:j.dateOut||j.dateIn||today(),
+    desc:`${tag} ${workText}`.slice(0,255),
+    odo:j.odo||v?.odo||'',
+    by:j.tech||j.auth||'',
+  };
+  try{
+    if(connected){
+      if(!CFG.L_MAINT)return;
+      const c=await createItem(CFG.L_MAINT,mhToSp(m));
+      m.spId=String(c.id);
+    }
+    maintHistory.push(m);
+    maintHistory.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  }catch(e){console.warn('Auto maintenance-history log failed:',e.message);}
 }
 function printJobCard(){const id=g('jc-id');closeModal('m-jobcard');if(id)printJobCardId(id);}
 async function printJobCardId(id){
@@ -6487,6 +6518,8 @@ function renderOdoUpdate(){
   if(curEl)curEl.textContent=v?.odo?`Current: ${Number(v.odo).toLocaleString()} km${v.odoDate?' (as of '+fd(v.odoDate)+')':''}`:'No reading recorded yet';
   const inp=document.getElementById('odo-new-value');
   if(inp)inp.value=v?.odo||'';
+  const dateInp=document.getElementById('odo-new-date');
+  if(dateInp)dateInp.value=today();
   const msg=document.getElementById('odo-savedmsg');
   if(msg)msg.style.display='none';
 }
@@ -6498,13 +6531,14 @@ async function saveOdoUpdate(){
   const newVal=document.getElementById('odo-new-value')?.value;
   if(!newVal||isNaN(parseInt(newVal))){alert('Enter a valid odometer reading.');return;}
   const newNum=parseInt(newVal);
+  const readingDate=document.getElementById('odo-new-date')?.value||today();
   if(v.odo&&newNum<parseInt(v.odo)){
     if(!confirm(`New reading (${newNum.toLocaleString()} km) is lower than the current reading (${Number(v.odo).toLocaleString()} km). Save anyway?`))return;
   }
   const btn=document.getElementById('odo-save-btn');
   if(btn){btn.disabled=true;btn.textContent='Saving…';}
   v.odo=String(newNum);
-  v.odoDate=today();
+  v.odoDate=readingDate;
   try{
     if(connected&&v.spId){await updateItem(CFG.L_FLEET,v.spId,vToSp(v));}
     const msg=document.getElementById('odo-savedmsg');
