@@ -882,6 +882,7 @@ select option {
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
 </head>
 <body>
 <!-- LOGIN OVERLAY -->
@@ -1048,6 +1049,7 @@ select option {
       <button class="mob-action-btn" onclick="openJobCardModal()"><span style="font-size:32px;">🔧</span><span style="font-size:13px;font-weight:700;">Job Card</span></button>
       <button class="mob-action-btn" onclick="openAccidentModal()"><span style="font-size:32px;">🚨</span><span style="font-size:13px;font-weight:700;">Accident</span></button>
     </div>
+    <button onclick="openQRScanner()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--teal);border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:white;font-family:inherit;margin-bottom:10px;">📷 Scan Vehicle QR</button>
     <button onclick="openQuickCapture()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:white;border:2px solid var(--grey-b);border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:var(--navy);font-family:inherit;margin-bottom:16px;">⚡ More quick actions</button>
     <div id="mob-alerts" style="background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:14px;padding:4px 0;"></div>
     <div style="background:white;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:14px;">
@@ -3146,29 +3148,6 @@ function updateAuthUI(on){
   document.getElementById('auth-dot').title=on?'Connected to SharePoint':'Not connected';
   document.getElementById('auth-btn').textContent=on?'Sign out':'Sign in';
   const tsb=document.getElementById('todo-sync-btn');if(tsb)tsb.style.display=on?'inline-block':'none';
-  // Only show role preview for admin - check after role is loaded
-  setTimeout(()=>{
-    const isAdm = connected && (currentRole==='admin'||_realRole==='admin');
-    const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=isAdm?'flex':'none';
-    const drpw=document.getElementById('role-preview-wrap');if(drpw)drpw.style.display=isAdm?'flex':'none';
-    const isAdm2 = connected && (currentRole==='admin'||_realRole==='admin');
-    const dssw=document.getElementById('desk-site-switch-wrap');if(dssw)dssw.style.display=isAdm2?'flex':'none';
-    ['mob-site-switch-section','mob-site-mvbl','mob-site-viclink','mob-site-takura','mob-site-oriley'].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el)el.style.display=isAdm2?'flex':'none';
-    });
-    if(isAdm2){const ss=document.getElementById('mob-site-switch-section');if(ss)ss.style.display='block';}
-  }, 500);
-  const isAdminRole = on && (currentRole==='admin'||_realRole==='admin');
-  // Show site switcher for admin only
-  const isAdmin = isAdminRole;
-  const dssw = document.getElementById('desk-site-switch-wrap');
-  if(dssw) dssw.style.display = isAdmin ? 'flex' : 'none';
-  ['mob-site-switch-section','mob-site-mvbl','mob-site-viclink','mob-site-takura','mob-site-oriley'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.style.display=isAdmin?'flex':'none';
-  });
-  if(isAdmin) document.getElementById('mob-site-switch-section').style.display='block';
   const ls=document.getElementById('login-screen');
   const vis=on?'visible':'hidden';
   if(ls)ls.style.display=on?'none':'flex';
@@ -7446,6 +7425,19 @@ function applyRoleUI() {
     badge.className = `role-badge role-${currentRole}`;
   }
 
+  // Site switcher / role preview — admin-only, shown here (not on token arrival)
+  // because currentRole isn't known until this point. Doing it earlier races
+  // against loadUserRole() finishing, which was silently hiding these on slower
+  // connections (mobile) even for admins.
+  const isAdm = connected && (currentRole==='admin'||_realRole==='admin');
+  const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=isAdm?'flex':'none';
+  const drpw=document.getElementById('role-preview-wrap');if(drpw)drpw.style.display=isAdm?'flex':'none';
+  const dssw=document.getElementById('desk-site-switch-wrap');if(dssw)dssw.style.display=isAdm?'flex':'none';
+  ['mob-site-switch-section','mob-site-mvbl','mob-site-viclink','mob-site-takura','mob-site-oriley'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=isAdm?(id==='mob-site-switch-section'?'block':'flex'):'none';
+  });
+
   // Apply report-only restrictions
   if (reportOnly.includes('defects')) {
     document.querySelectorAll('[onclick*="editDefect"],[onclick*="delDefect"]').forEach(el=>el.style.display='none');
@@ -9426,6 +9418,79 @@ function getSigDataUrl(canvasId) {
 // ─── QR CODE ─────────────────────────────────────────────────────────────────
 let _qrInstance = null;
 
+// ─── IN-APP QR SCANNER (camera) ─────────────────────────────────────────────
+let _qrScanStream = null;
+let _qrScanRAF = null;
+
+function openQRScanner() {
+  const modal = document.getElementById('m-qr-scanner');
+  const video = document.getElementById('qr-scan-video');
+  const status = document.getElementById('qr-scan-status');
+  if (!modal || !video) return;
+  if (typeof jsQR !== 'function') {
+    alert('QR scanner library failed to load — check your internet connection and try again.');
+    return;
+  }
+  status.textContent = 'Point the camera at a vehicle\'s QR code';
+  openModal('m-qr-scanner');
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(stream => {
+      _qrScanStream = stream;
+      video.srcObject = stream;
+      video.setAttribute('playsinline', true);
+      video.play();
+      requestAnimationFrame(scanQRFrame);
+    })
+    .catch(err => {
+      console.warn('Camera access failed:', err.message);
+      status.textContent = 'Camera access denied — enable camera permission for this site in your browser settings.';
+    });
+}
+
+function scanQRFrame() {
+  const video = document.getElementById('qr-scan-video');
+  const canvas = document.getElementById('qr-scan-canvas');
+  if (!video || !canvas || !_qrScanStream) return; // stopped
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+    if (code && code.data) {
+      handleQRScanResult(code.data);
+      return; // stop the loop — handleQRScanResult closes the scanner
+    }
+  }
+  _qrScanRAF = requestAnimationFrame(scanQRFrame);
+}
+
+function handleQRScanResult(text) {
+  let vehicleId = null;
+  try {
+    const url = new URL(text);
+    vehicleId = url.searchParams.get('qrveh') || url.searchParams.get('veh');
+  } catch(e) {
+    // Not a URL — ignore
+  }
+  closeQRScanner();
+  if (vehicleId) {
+    showQRActionMenu(vehicleId);
+  } else {
+    alert('That doesn\'t look like a Fleet Desk vehicle QR code.');
+  }
+}
+
+function closeQRScanner() {
+  closeModal('m-qr-scanner');
+  if (_qrScanRAF) { cancelAnimationFrame(_qrScanRAF); _qrScanRAF = null; }
+  if (_qrScanStream) { _qrScanStream.getTracks().forEach(t => t.stop()); _qrScanStream = null; }
+  const video = document.getElementById('qr-scan-video');
+  if (video) video.srcObject = null;
+}
+
 function showVehicleQR(vehicleId) {
   const v = fleet.find(x => x.id === vehicleId);
   if (!v) return;
@@ -10900,6 +10965,7 @@ init();
   <div style="width:40px;height:4px;background:var(--grey-b);border-radius:2px;margin:12px auto 16px;"></div>
   <div style="padding:0 20px 20px;">
     <div style="font-weight:700;font-size:17px;margin-bottom:16px;">⚡ Quick actions</div>
+    <button onclick="closeQuickCapture();openQRScanner()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--teal);border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;color:white;font-family:inherit;margin-bottom:14px;">📷 Scan Vehicle QR</button>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
       <button class="qc-btn" onclick="closeQuickCapture();openDefectModal()"><span style="font-size:28px;">⚠️</span><span>Report Defect</span></button>
       <button class="qc-btn" onclick="closeQuickCapture();showPage('pretrip',null)"><span style="font-size:28px;">🚦</span><span>Pre-Trip</span></button>
@@ -10985,6 +11051,24 @@ init();
   </div>
 </div>
 <!-- Vehicle QR Code Modal (single QR -> action menu) -->
+<!-- QR SCANNER (in-app camera scan) -->
+<div class="mbg" id="m-qr-scanner">
+  <div class="modal sm" style="background:#000;">
+    <div class="mh" style="border-bottom:1px solid rgba(255,255,255,.15);">
+      <span class="mt" style="color:white;">📷 Scan Vehicle QR</span>
+      <button class="mx" style="color:white;" onclick="closeQRScanner()">&#215;</button>
+    </div>
+    <div class="mb" style="padding:0;position:relative;background:#000;">
+      <video id="qr-scan-video" autoplay playsinline muted style="width:100%;display:block;background:#000;max-height:70vh;"></video>
+      <canvas id="qr-scan-canvas" style="display:none;"></canvas>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+        <div style="width:70%;aspect-ratio:1;border:3px solid rgba(255,255,255,.7);border-radius:16px;box-shadow:0 0 0 2000px rgba(0,0,0,.35);"></div>
+      </div>
+      <div id="qr-scan-status" style="position:absolute;bottom:0;left:0;right:0;padding:14px;text-align:center;color:white;font-size:13px;background:linear-gradient(transparent,rgba(0,0,0,.6));">Point the camera at a vehicle's QR code</div>
+    </div>
+  </div>
+</div>
+
 <div class="mbg" id="m-qr-single">
   <div class="modal sm">
     <div class="mh">
