@@ -948,6 +948,7 @@ select option {
   <div class="sb-group">
     <div class="nt active" onclick="showPage('dashboard',this)"><span class="ni">📊</span> Dashboard</div>
     <div class="nt" onclick="showPage('calendar',this)"><span class="ni">📅</span> Calendar</div>
+    <div class="nt" onclick="showPage('todo',this)"><span class="ni">✅</span> To-Do List</div>
   </div>
 
   <!-- Fleet -->
@@ -957,6 +958,7 @@ select option {
       <div class="nt" onclick="showPage('fleet',this)"><span class="ni">🚌</span> Fleet Register</div>
       <div class="nt" onclick="showPage('service',this)"><span class="ni">📅</span> Service Due</div>
       <div class="nt" onclick="showPage('pretrip',this)"><span class="ni">🚦</span> Pre-Trip</div>
+      <div class="nt" onclick="showPage('odoupdate',this)"><span class="ni">🔢</span> Odometer Update</div>
       <div class="nt" onclick="showPage('defects',this)"><span class="ni">⚠️</span> Defects</div>
     </div>
   </div>
@@ -1198,6 +1200,51 @@ select option {
       </div>
     </div>
     <div class="cb tw"><table><thead><tr><th>Fleet #</th><th>Rego</th><th>Company</th><th>Make &amp; model</th><th>Next service</th><th>Days to go</th><th>Odometer</th><th>Service km</th><th>Km to go</th><th>Status</th><th>Part 3 due</th><th>Days to go</th><th>Part 3 status</th><th></th></tr></thead><tbody id="svc-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- TO-DO LIST -->
+<div class="page" id="page-todo">
+  <div class="card" style="max-width:700px;">
+    <div class="ch">
+      <span class="ct">✅ To-Do List</span>
+      <div class="tb">
+        <label style="font-size:12px;color:var(--grey-dark);display:flex;align-items:center;gap:5px;cursor:pointer;">
+          <input type="checkbox" id="todo-show-done" onchange="renderTodo()"> Show completed
+        </label>
+      </div>
+    </div>
+    <div class="cb">
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <input id="todo-new-text" placeholder="Add a to-do…" style="flex:1;" onkeydown="if(event.key==='Enter')addTodo()">
+        <input id="todo-new-due" type="date" style="width:150px;">
+        <button class="btn bp" onclick="addTodo()">+ Add</button>
+      </div>
+      <div id="todo-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK ODOMETER UPDATE -->
+<div class="page" id="page-odoupdate">
+  <div class="card">
+    <div class="ch">
+      <span class="ct" id="odo-title">🔢 Quick Odometer Update</span>
+      <div class="tb">
+        <input id="odo-search" placeholder="🔍 Search…" oninput="renderOdoUpdate()" style="width:200px;">
+      </div>
+    </div>
+    <div class="cb">
+      <div id="odo-picker" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;"></div>
+      <div id="odo-detail" style="display:none;max-width:360px;">
+        <button class="btn sm bs" onclick="odoClearVehicle()" style="margin-bottom:16px;">&larr; All vehicles</button>
+        <div id="odo-current" style="font-size:13px;color:var(--grey-dark);margin-bottom:10px;"></div>
+        <label style="font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;">New odometer reading (km)</label>
+        <input id="odo-new-value" type="number" placeholder="e.g. 480120" style="width:100%;font-size:20px;padding:12px;margin-top:6px;box-sizing:border-box;">
+        <span id="odo-savedmsg" style="color:var(--teal);font-weight:600;font-size:13px;display:none;margin-top:8px;">✓ Saved</span>
+        <button class="btn bp" id="odo-save-btn" onclick="saveOdoUpdate()" style="margin-top:14px;width:100%;">💾 Save reading</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2862,6 +2909,7 @@ const SITE_CONFIGS = {
     L_ACCQUOTES: '3649f660-a3f0-4c83-821b-57c08864c488',
     L_CAL:       'f01885c4-b570-413c-962e-521e62f2843b',
     L_PART3:     '58ed190c-cdfd-4232-8b5e-8056e18967ed',
+    L_TODO:      '', // create WorkshopTodo list, then set this
   },
   // VicLink — separate SharePoint site
   'viclink': {
@@ -2883,6 +2931,7 @@ const SITE_CONFIGS = {
     L_ACCQUOTES: '74b214dc-e27b-45a5-ab11-c053ac715175',
     L_CAL:       '4d5cdf16-0b0a-4c64-a013-f790502c7fc0',
     L_PART3:     '9a8e1479-cc63-483c-a55b-7689ee52aad2',
+    L_TODO:      '', // create WorkshopTodo list, then set this
   },
   // Takura — add when site is ready
   'takura': null,
@@ -2906,6 +2955,7 @@ const SITE_CONFIGS = {
     L_ACCQUOTES: 'c685f0dc-5472-45e9-bcf7-c17c4eb0d6f0',
     L_CAL:       '1808c64b-36ed-4bd3-b6ec-8aaa10c546a6',
     L_PART3:     'f2d4c5d3-441b-42ef-82a8-3b61110b7d56',
+    L_TODO:      '', // create WorkshopTodo list, then set this
   },
 };
 
@@ -2938,7 +2988,7 @@ async function switchSite(siteKey) {
   if(dd) dd.value = siteKey;
   // Clear all cached data
   fleet=[]; defects=[]; jobCards=[]; tasks=[]; parts=[]; accidents=[];
-  accQuotes=[]; vsiHistory=[]; maintHistory=[]; calEvents=[]; ptHistory=[]; part3History=[];
+  accQuotes=[]; vsiHistory=[]; maintHistory=[]; calEvents=[]; ptHistory=[]; part3History=[]; todos=[];
   companies=[]; notes=[]; repairNotes=[];
   closeMobMenu();
   showSt('info','Loading ' + siteKey.charAt(0).toUpperCase()+siteKey.slice(1)+' data…');
@@ -2977,6 +3027,7 @@ const CFG = {
   L_ACCQUOTES: '3649f660-a3f0-4c83-821b-57c08864c488',
   L_CAL:       'f01885c4-b570-413c-962e-521e62f2843b',
   L_PART3:     '58ed190c-cdfd-4232-8b5e-8056e18967ed',
+  L_TODO:      '', // create WorkshopTodo list, then set this
   SCOPES:    ['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/Files.ReadWrite.All','offline_access','openid','profile'],
   get REDIR(){ return 'https://mooneevalleybus.github.io/WorkshopHub/'; }
 };
@@ -3149,7 +3200,7 @@ async function loadAll(){
   const safe = async (fn) => { try { return await fn(); } catch(e) { console.warn('List load warning:', e.message); return []; } };
   const safeFleet = async (fn) => { try { return await fn(); } catch(e) { console.error('Fleet load FAILED:', e.message); showSt('err','Fleet failed to load: '+e.message); return []; } };
   try{
-    const[ci,fi,ti,pi,ji,di,ai,ni,rni,vsii,mhi,cati,aqi,cali,p3i]=await Promise.all([
+    const[ci,fi,ti,pi,ji,di,ai,ni,rni,vsii,mhi,cati,aqi,cali,p3i,todi]=await Promise.all([
       safe(()=>listItems(CFG.L_COS)),
       safeFleet(()=>listItems(CFG.L_FLEET)),
       safe(()=>listItems(CFG.L_TASKS)),
@@ -3165,6 +3216,7 @@ async function loadAll(){
       safe(()=>listItems(CFG.L_ACCQUOTES)),
       safe(()=>listItems(CFG.L_CAL)),
       safe(()=>CFG.L_PART3?listItems(CFG.L_PART3):[]),
+      safe(()=>CFG.L_TODO?listItems(CFG.L_TODO):[]),
     ]);
     companies=ci.map(x=>({id:String(x.id),spId:String(x.id),name:x.fields?.Title||'',isDefault:x.fields?.IsDefault||false,sortOrder:x.fields?.SortOrder||99})).sort((a,b)=>a.sortOrder-b.sortOrder);
     if(!companies.length)companies=[{id:'mvbl',spId:null,name:'MVBL',isDefault:true}];
@@ -3176,6 +3228,7 @@ async function loadAll(){
     accQuotes=aqi.map(spToAq).sort((a,b)=>(b.qDate||'').localeCompare(a.qDate||''));
     calEvents=(cali||[]).map(spToCal);
     part3History=(p3i||[]).map(spToPart3).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    todos=(todi||[]).map(spToTodo).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
     // Get user role and switch to correct site BEFORE loading data
     await loadUserRole();
     // Now reload all lists from the correct site if site changed
@@ -3183,7 +3236,7 @@ async function loadAll(){
     if(siteChanged){
       console.log('Site switched to', CFG.SITE_URL, '— reloading data');
       const safe2 = async (fn) => { try { return await fn(); } catch(e) { console.warn('List reload warning:', e.message); return []; } };
-      const[fi2,ti2,pi2,ji2,di2,ai2,ni2,rni2,vsii2,mhi2,cati2,aqi2,cali2,p3i2]=await Promise.all([
+      const[fi2,ti2,pi2,ji2,di2,ai2,ni2,rni2,vsii2,mhi2,cati2,aqi2,cali2,p3i2,todi2]=await Promise.all([
         safe2(()=>{console.log('Loading fleet from',CFG.SITE_URL,'list',CFG.L_FLEET);return listItems(CFG.L_FLEET);}),
         safe2(()=>listItems(CFG.L_TASKS)),
         safe2(()=>listItems(CFG.L_PARTS)),
@@ -3198,6 +3251,7 @@ async function loadAll(){
         safe2(()=>CFG.L_ACCQUOTES?listItems(CFG.L_ACCQUOTES):[]),
         safe2(()=>CFG.L_CAL?listItems(CFG.L_CAL):[]),
         safe2(()=>CFG.L_PART3?listItems(CFG.L_PART3):[]),
+        safe2(()=>CFG.L_TODO?listItems(CFG.L_TODO):[]),
       ]);
       fleet=fi2.map(spToV).sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet));
       tasks=ti2.map(spToT);
@@ -3212,6 +3266,7 @@ async function loadAll(){
       accQuotes=aqi2.map(spToAq).sort((a,b)=>(b.qDate||'').localeCompare(a.qDate||''));
       calEvents=cali2.map(spToCal);
       part3History=p3i2.map(spToPart3).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+      todos=(todi2||[]).map(spToTodo).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
       catalogue=[];
     }
     connected=true; updateAuthUI(true); clearSt(); populateAllFilters();
@@ -3378,6 +3433,8 @@ function renderPage(name){
   else if(name==='faultcodes')renderFaultCodes();
   else if(name==='service'){renderService();}
   else if(name==='part3'){renderPart3();}
+  else if(name==='todo'){renderTodo();}
+  else if(name==='odoupdate'){renderOdoUpdate();}
   else if(name==='companies')renderCompanies();
   else if(name==='pretrip')renderPreTrip();
   else if(name==='jaltest')renderJaltest();
@@ -5637,6 +5694,7 @@ async function delAccident(id){
 // ─── VEHICLE SAFETY INSPECTION ───────────────────────────────────────────────
 let vsiHistory = []; // loaded from SharePoint
 let part3History = []; // loaded from SharePoint
+let todos = []; // loaded from SharePoint
 
 function vsiPopulateVehicles() {
   const sel = document.getElementById('vsi-veh');
@@ -6333,6 +6391,128 @@ function printPart3() {
   w.document.close();w.focus();
 }
 
+
+// ─── TO-DO LIST (internal, not synced to Microsoft To Do) ───────────────────
+function spToTodo(x){const f=x.fields||{};return{id:String(x.id),spId:String(x.id),text:f.Title||'',done:!!f.Done,due:(f.DueDate||'').slice(0,10)};}
+function todoToSp(t){return{Title:t.text,Done:!!t.done,DueDate:t.due||null};}
+
+async function addTodo(){
+  const textEl=document.getElementById('todo-new-text'),dueEl=document.getElementById('todo-new-due');
+  const text=(textEl?.value||'').trim();
+  if(!text)return;
+  const t={id:uid(),text,done:false,due:dueEl?.value||''};
+  try{
+    if(connected){
+      if(!CFG.L_TODO)throw new Error('WorkshopTodo list not yet configured for this site.');
+      const c=await createItem(CFG.L_TODO,todoToSp(t));
+      t.spId=String(c.id);
+    }
+    todos.push(t);
+    if(textEl)textEl.value='';
+    if(dueEl)dueEl.value='';
+    renderTodo();
+  }catch(e){showSt('err','Could not add to-do: '+e.message);}
+}
+
+async function toggleTodo(id){
+  const t=todos.find(x=>x.id===id);
+  if(!t)return;
+  t.done=!t.done;
+  renderTodo();
+  if(connected&&t.spId){try{await updateItem(CFG.L_TODO,t.spId,todoToSp(t));}catch(e){showSt('err',e.message);}}
+}
+
+async function deleteTodo(id){
+  const t=todos.find(x=>x.id===id);
+  if(!t)return;
+  if(!confirm('Delete this to-do?'))return;
+  if(connected&&t.spId){try{await deleteItem(CFG.L_TODO,t.spId);}catch(e){showSt('err',e.message);return;}}
+  todos=todos.filter(x=>x.id!==id);
+  renderTodo();
+}
+
+function renderTodo(){
+  const showDone=document.getElementById('todo-show-done')?.checked;
+  const rows=todos.filter(t=>showDone||!t.done)
+    .sort((a,b)=>{if(a.done!==b.done)return a.done?1:-1;return (a.due||'9999').localeCompare(b.due||'9999');});
+  const el=document.getElementById('todo-list');
+  if(!el)return;
+  if(!rows.length){el.innerHTML='<div style="text-align:center;color:var(--grey-dark);padding:28px;">Nothing here — add a to-do above.</div>';return;}
+  el.innerHTML=rows.map(t=>{
+    const overdue=t.due&&!t.done&&t.due<today();
+    const dueLabel=t.due?`<span style="font-size:11px;color:${overdue?'var(--red)':'var(--grey-dark)'};font-weight:${overdue?700:400};margin-left:10px;">${overdue?'⚠ ':''}${fd(t.due)}</span>`:'';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--grey-b);">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo('${t.id}')" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
+      <div style="flex:1;font-size:14px;${t.done?'text-decoration:line-through;color:var(--grey-dark);':''}">${t.text}${dueLabel}</div>
+      <button class="btn sm bd" onclick="deleteTodo('${t.id}')">Del</button>
+    </div>`;
+  }).join('');
+}
+
+// ─── QUICK ODOMETER UPDATE ────────────────────────────────────────────────────
+let odoSelectedVehicle='';
+function odoClearVehicle(){odoSelectedVehicle='';renderOdoUpdate();}
+function odoPickVehicle(vid){odoSelectedVehicle=vid;renderOdoUpdate();}
+
+function renderOdoUpdate(){
+  const vid=odoSelectedVehicle;
+  const srch=(document.getElementById('odo-search')?.value||'').toLowerCase();
+  const picker=document.getElementById('odo-picker');
+  const detail=document.getElementById('odo-detail');
+  const titleEl=document.getElementById('odo-title');
+
+  if(!vid){
+    if(detail)detail.style.display='none';
+    if(picker)picker.style.display='grid';
+    if(titleEl)titleEl.textContent='🔢 Quick Odometer Update';
+    const visible=fleet.filter(v=>canSeeVehicleObj(v)&&(!srch||[v.fleet,v.rego,v.make].join(' ').toLowerCase().includes(srch)))
+      .sort((a,b)=>(parseInt(a.fleet)||0)-(parseInt(b.fleet)||0));
+    if(picker){
+      picker.innerHTML=visible.length?visible.map(v=>`<div onclick="odoPickVehicle('${v.id}')" style="cursor:pointer;border:1px solid var(--grey-b);border-radius:8px;padding:12px;background:white;">
+        <div style="font-size:15px;font-weight:700;color:var(--navy);">Fleet ${v.fleet||'?'}</div>
+        <div style="font-size:12px;color:var(--grey-dark);margin-top:2px;">${v.rego||'—'}</div>
+        <div style="font-size:11px;color:var(--grey-dark);margin-top:8px;border-top:1px solid var(--grey-b);padding-top:6px;">
+          ${v.odo?Number(v.odo).toLocaleString()+' km':'No reading yet'}${v.odoDate?'<br>as of '+fd(v.odoDate):''}
+        </div>
+      </div>`).join('') : '<div style="grid-column:1/-1;text-align:center;color:var(--grey-dark);padding:28px;">No vehicles match your search</div>';
+    }
+    return;
+  }
+
+  if(picker)picker.style.display='none';
+  if(detail)detail.style.display='block';
+  const v=fleet.find(x=>x.id===vid);
+  if(titleEl)titleEl.textContent=`🔢 Fleet ${v?.fleet||'?'}${v?.rego?' — '+v.rego:''}`;
+  const curEl=document.getElementById('odo-current');
+  if(curEl)curEl.textContent=v?.odo?`Current: ${Number(v.odo).toLocaleString()} km${v.odoDate?' (as of '+fd(v.odoDate)+')':''}`:'No reading recorded yet';
+  const inp=document.getElementById('odo-new-value');
+  if(inp)inp.value=v?.odo||'';
+  const msg=document.getElementById('odo-savedmsg');
+  if(msg)msg.style.display='none';
+}
+
+async function saveOdoUpdate(){
+  const vid=odoSelectedVehicle;
+  const v=fleet.find(x=>x.id===vid);
+  if(!v)return;
+  const newVal=document.getElementById('odo-new-value')?.value;
+  if(!newVal||isNaN(parseInt(newVal))){alert('Enter a valid odometer reading.');return;}
+  const newNum=parseInt(newVal);
+  if(v.odo&&newNum<parseInt(v.odo)){
+    if(!confirm(`New reading (${newNum.toLocaleString()} km) is lower than the current reading (${Number(v.odo).toLocaleString()} km). Save anyway?`))return;
+  }
+  const btn=document.getElementById('odo-save-btn');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  v.odo=String(newNum);
+  v.odoDate=today();
+  try{
+    if(connected&&v.spId){await updateItem(CFG.L_FLEET,v.spId,vToSp(v));}
+    const msg=document.getElementById('odo-savedmsg');
+    if(msg){msg.textContent=connected?'✓ Saved':'✓ Saved locally';msg.style.display='block';}
+    setTimeout(()=>{odoClearVehicle();},900);
+  }catch(e){showSt('err','Could not save odometer reading: '+e.message);}
+  if(btn){btn.disabled=false;btn.textContent='💾 Save reading';}
+}
 
 // ─── MAINTENANCE HISTORY (MMS 2.4.2.5) ───────────────────────────────────────
 let maintHistory = [];
@@ -7050,13 +7230,13 @@ let currentUserEmail = '';
 let currentCompanyFilter = ''; // blank = see all companies
 
 const ROLE_PAGES = {
-  driver:  ['dashboard','pretrip','defects','calendar'],
-  office:  ['dashboard','fleet','service','pretrip','defects','accident','accquotes','faultcodes','dashlights','calendar'],
-  tech:    ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','catalogue','calendar'],
-  manager: ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','accquotes','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','companies','financial','catalogue','calendar'],
-  owner:   ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','accquotes','financial','calendar'],
-  operator: ['dashboard','fleet','service','pretrip','defects','vsi','mainthistory','part3','accident','accquotes','financial','calendar'],
-  admin:   ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','accquotes','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','companies','financial','catalogue','calendar','backup'],
+  driver:  ['dashboard','pretrip','defects','calendar','todo','odoupdate'],
+  office:  ['dashboard','fleet','service','pretrip','defects','accident','accquotes','faultcodes','dashlights','calendar','todo','odoupdate'],
+  tech:    ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','catalogue','calendar','todo','odoupdate'],
+  manager: ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','accquotes','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','companies','financial','catalogue','calendar','todo','odoupdate'],
+  owner:   ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','accquotes','financial','calendar','todo','odoupdate'],
+  operator: ['dashboard','fleet','service','pretrip','defects','vsi','mainthistory','part3','accident','accquotes','financial','calendar','todo','odoupdate'],
+  admin:   ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','accquotes','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','companies','financial','catalogue','calendar','todo','odoupdate','backup'],
 };
 
 // Pages drivers/techs can access but only in report/new mode (no edit/delete of existing)
