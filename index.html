@@ -1494,7 +1494,6 @@ select option {
       <span class="ct" id="mh-title">Vehicle Safety Maintenance History Record (MMS 2.4.2.5)</span>
       <div class="tb">
         <input id="mh-search" placeholder="🔍 Search…" oninput="renderMaintHistory()" style="width:200px;">
-        <select id="mh-fveh" onchange="renderMaintHistory()" style="display:none;"><option value="">All vehicles</option></select>
         <button class="btn bp" onclick="openMaintModal()">+ Add entry</button>
         <button class="btn bprint" onclick="printMaintHistory()">🖨 Print / PDF</button>
       </div>
@@ -6348,11 +6347,12 @@ function spToMh(x){const f=x.fields||{};
     date:(f.MaintDate||'').slice(0,10),desc:f.Title||'',odo:f.Odo||'',
     by:f.CarriedOutBy||''};}
 
-function mhClearVehicle(){const vf=document.getElementById('mh-fveh');if(vf)vf.value='';renderMaintHistory();}
-function mhPickVehicle(vid){const vf=document.getElementById('mh-fveh');if(vf)vf.value=vid;renderMaintHistory();}
+let mhSelectedVehicle = '';
+function mhClearVehicle(){mhSelectedVehicle='';renderMaintHistory();}
+function mhPickVehicle(vid){mhSelectedVehicle=vid;renderMaintHistory();}
 
 function renderMaintHistory(){
-  const vid=document.getElementById('mh-fveh')?.value||'';
+  const vid=mhSelectedVehicle;
   const srch=(document.getElementById('mh-search')?.value||'').toLowerCase();
   const picker=document.getElementById('mh-picker');
   const detail=document.getElementById('mh-detail');
@@ -6418,7 +6418,7 @@ function renderMaintHistory(){
 }
 
 function openMaintModal(id){
-  const preselectVeh=id?maintHistory.find(m=>m.id===id)?.vehicleId:(document.getElementById('mh-fveh')?.value||'');
+  const preselectVeh=id?maintHistory.find(m=>m.id===id)?.vehicleId:mhSelectedVehicle;
   vOpts('maint-veh',preselectVeh);
   document.getElementById('mmaint-title').textContent=id?'Edit entry':'Add maintenance entry';
   const m=id?maintHistory.find(x=>x.id===id):{date:today(),vehicleId:preselectVeh};
@@ -6456,7 +6456,7 @@ async function saveMaint(){
 
 // ─── PRINT MAINTENANCE HISTORY ───────────────────────────────────────────────
 function printMaintHistory() {
-  const vid = document.getElementById('mh-fveh')?.value || '';
+  const vid = mhSelectedVehicle;
   const v = fleet.find(x=>x.id===vid);
   const rows = maintHistory.filter(m=>!vid||m.vehicleId===vid)
     .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
