@@ -9430,8 +9430,8 @@ function showVehicleQR(vehicleId) {
   const v = fleet.find(x => x.id === vehicleId);
   if (!v) return;
   
-  // URL that opens app and navigates to this vehicle
-  const appUrl = `${window.location.origin}${window.location.pathname}#vehicle=${encodeURIComponent(vehicleId)}`;
+  // URL that opens the app and shows the QR action menu for this vehicle
+  const appUrl = `${window.location.origin}${window.location.pathname}?qrveh=${encodeURIComponent(vehicleId)}`;
   
   document.getElementById('qr-fleet-label').textContent = 'Fleet ' + (v.fleet||'?');
   document.getElementById('qr-rego-label').textContent = v.rego || '';
@@ -9636,6 +9636,12 @@ function handleQRParams(){
   const params=new URLSearchParams(window.location.search);
   const page=params.get('page');
   const veh=params.get('veh');
+  const qrVeh=params.get('qrveh');
+  if(qrVeh){
+    window.history.replaceState({},'',window.location.pathname);
+    showQRActionMenu(qrVeh);
+    return;
+  }
   if(!page)return;
   // Clean up URL
   window.history.replaceState({},'',window.location.pathname);
