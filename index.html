@@ -954,6 +954,7 @@ select option {
     <div class="nt active" onclick="showPage('dashboard',this)"><span class="ni">📊</span> Dashboard</div>
     <div class="nt" onclick="showPage('calendar',this)"><span class="ni">📅</span> Calendar</div>
     <div class="nt" onclick="showPage('todo',this)"><span class="ni">✅</span> To-Do List</div>
+    <div class="nt" onclick="showPage('tasks',this)"><span class="ni">🔧</span> Vehicle Tasks</div>
   </div>
 
   <!-- Fleet -->
@@ -982,12 +983,12 @@ select option {
   <div class="sb-group collapsed">
     <div class="sb-toggle-label" onclick="toggleSbGroup(this)"><span class="sb-arrow">▼</span> Workshop</div>
     <div class="sb-items">
-      <div class="nt" onclick="showPage('tasks',this)"><span class="ni">🔧</span> Tasks</div>
       <div class="nt" onclick="showPage('jobcards',this)"><span class="ni">📋</span> Job Cards</div>
       <div class="nt" onclick="showPage('parts',this)"><span class="ni">📦</span> Parts &amp; Orders</div>
       <div class="nt" onclick="showPage('notes',this)"><span class="ni">📝</span> Notes</div>
     </div>
   </div>
+
 
   <!-- Accidents -->
   <div class="sb-group collapsed">
@@ -1062,7 +1063,7 @@ select option {
     <div class="card dash-sec" data-roles="office,tech,manager,admin"><div class="ch"><span class="ct">🟡 Due within 30 days</span></div><div class="cb tw" id="dash-ds"></div></div>
     <div class="card dash-sec" data-roles="driver,office,tech,manager,admin"><div class="ch"><span class="ct">⚠️ Open defects</span></div><div class="cb tw" id="dash-defects"></div></div>
     <div class="card dash-sec" data-roles="manager,admin"><div class="ch"><span class="ct">⏳ Parts on order</span></div><div class="cb tw" id="dash-parts"></div></div>
-    <div class="card dash-sec" data-roles="tech,manager,admin"><div class="ch"><span class="ct">🔧 Open tasks</span></div><div class="cb tw" id="dash-tasks"></div></div>
+    <div class="card dash-sec" data-roles="tech,manager,admin"><div class="ch"><span class="ct">🔧 Open vehicle tasks</span></div><div class="cb tw" id="dash-tasks"></div></div>
   </div>
 </div>
 </div><!-- /desk-dashboard -->
@@ -1095,7 +1096,7 @@ select option {
 <div class="page" id="page-tasks"><div id="mob-task-cards"></div>
   <div class="card">
     <div class="ch">
-      <span class="ct">Task log</span>
+      <span class="ct">Vehicle Task Log</span>
       <div class="tb">
         <select id="task-co" onchange="renderTasks()" style="width:145px;"><option value="">All companies</option></select>
         <select id="task-veh" onchange="renderTasks()" style="width:145px;"><option value="">All vehicles</option></select>
@@ -1215,7 +1216,6 @@ select option {
     <div class="ch">
       <span class="ct">✅ To-Do List</span>
       <div class="tb">
-        <select id="todo-fveh" onchange="renderTodo()" style="width:170px;"><option value="">All vehicles</option></select>
         <label style="font-size:12px;color:var(--grey-dark);display:flex;align-items:center;gap:5px;cursor:pointer;">
           <input type="checkbox" id="todo-show-done" onchange="renderTodo()"> Show completed
         </label>
@@ -1224,7 +1224,6 @@ select option {
     <div class="cb">
       <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
         <input id="todo-new-text" placeholder="Add a to-do…" style="flex:1;min-width:180px;" onkeydown="if(event.key==='Enter')addTodo()">
-        <select id="todo-new-veh" style="width:170px;"><option value="">No vehicle</option></select>
         <input id="todo-new-due" type="date" style="width:150px;">
         <button class="btn bp" onclick="addTodo()">+ Add</button>
       </div>
@@ -6475,14 +6474,14 @@ function printPart3() {
 
 
 // ─── TO-DO LIST (internal, not synced to Microsoft To Do) ───────────────────
-function spToTodo(x){const f=x.fields||{};return{id:String(x.id),spId:String(x.id),text:f.Title||'',done:!!f.Done,due:(f.DueDate||'').slice(0,10),vehicleId:f.VehicleId||''};}
-function todoToSp(t){return{Title:t.text,Done:!!t.done,DueDate:t.due||null,VehicleId:t.vehicleId||''};}
+function spToTodo(x){const f=x.fields||{};return{id:String(x.id),spId:String(x.id),text:f.Title||'',done:!!f.Done,due:(f.DueDate||'').slice(0,10)};}
+function todoToSp(t){return{Title:t.text,Done:!!t.done,DueDate:t.due||null};}
 
 async function addTodo(){
-  const textEl=document.getElementById('todo-new-text'),dueEl=document.getElementById('todo-new-due'),vehEl=document.getElementById('todo-new-veh');
+  const textEl=document.getElementById('todo-new-text'),dueEl=document.getElementById('todo-new-due');
   const text=(textEl?.value||'').trim();
   if(!text)return;
-  const t={id:uid(),text,done:false,due:dueEl?.value||'',vehicleId:vehEl?.value||''};
+  const t={id:uid(),text,done:false,due:dueEl?.value||''};
   try{
     if(connected){
       if(!CFG.L_TODO)throw new Error('WorkshopTodo list not yet configured for this site.');
@@ -6492,7 +6491,6 @@ async function addTodo(){
     todos.push(t);
     if(textEl)textEl.value='';
     if(dueEl)dueEl.value='';
-    if(vehEl)vehEl.value='';
     renderTodo();
   }catch(e){showSt('err','Could not add to-do: '+e.message);}
 }
@@ -6515,14 +6513,8 @@ async function deleteTodo(id){
 }
 
 function renderTodo(){
-  const vf=document.getElementById('todo-fveh'),nvf=document.getElementById('todo-new-veh');
-  const vehOptions=fleet.slice().sort((a,b)=>(parseInt(a.fleet)||0)-(parseInt(b.fleet)||0))
-    .map(v=>`<option value="${v.id}">${v.fleet}${v.rego?' — '+v.rego:''}</option>`).join('');
-  if(vf){const cur=vf.value;vf.innerHTML='<option value="">All vehicles</option>'+vehOptions;vf.value=cur;}
-  if(nvf){const cur=nvf.value;nvf.innerHTML='<option value="">No vehicle</option>'+vehOptions;nvf.value=cur;}
-  const filterVeh=vf?.value||'';
   const showDone=document.getElementById('todo-show-done')?.checked;
-  const rows=todos.filter(t=>(showDone||!t.done)&&(!filterVeh||t.vehicleId===filterVeh))
+  const rows=todos.filter(t=>showDone||!t.done)
     .sort((a,b)=>{if(a.done!==b.done)return a.done?1:-1;return (a.due||'9999').localeCompare(b.due||'9999');});
   const el=document.getElementById('todo-list');
   if(!el)return;
@@ -6530,11 +6522,9 @@ function renderTodo(){
   el.innerHTML=rows.map(t=>{
     const overdue=t.due&&!t.done&&t.due<today();
     const dueLabel=t.due?`<span style="font-size:11px;color:${overdue?'var(--red)':'var(--grey-dark)'};font-weight:${overdue?700:400};margin-left:10px;">${overdue?'⚠ ':''}${fd(t.due)}</span>`:'';
-    const v=t.vehicleId?fleet.find(x=>x.id===t.vehicleId):null;
-    const vehLabel=v?`<span style="font-size:11px;background:var(--grey);color:var(--navy);padding:2px 7px;border-radius:6px;margin-left:8px;font-weight:600;">🚌 ${v.fleet}${v.rego?' — '+v.rego:''}</span>`:'';
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--grey-b);">
       <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo('${t.id}')" style="width:18px;height:18px;flex-shrink:0;cursor:pointer;">
-      <div style="flex:1;font-size:14px;${t.done?'text-decoration:line-through;color:var(--grey-dark);':''}">${t.text}${vehLabel}${dueLabel}</div>
+      <div style="flex:1;font-size:14px;${t.done?'text-decoration:line-through;color:var(--grey-dark);':''}">${t.text}${dueLabel}</div>
       <button class="btn sm bd" onclick="deleteTodo('${t.id}')">Del</button>
     </div>`;
   }).join('');
@@ -7562,9 +7552,10 @@ function openVehicleTimeline(vehicleId) {
     ...part3History.filter(x=>x.vehicleId===vehicleId).map(x=>({date:x.date,type:'part3',icon:'🔧',title:'Part 3 Inspection',desc:x.summary,status:'',id:x.id,fn:'openPart3Modal'})),
     ...vsiHistory.filter(x=>x.vehicleId===vehicleId).map(x=>({date:x.date,type:'vsi',icon:'✅',title:'Safety Inspection',desc:x.summary,status:'',id:x.id,fn:'openVsiModal'})),
     ...accidents.filter(x=>x.vehicleId===vehicleId).map(x=>({date:(x.dateTime||'').slice(0,10),type:'accident',icon:'🚨',title:`Accident ${x.refNum}`,desc:x.desc,status:x.fault,id:x.id,fn:'editAccident'})),
+    ...tasks.filter(x=>x.vehicleId===vehicleId).map(x=>({date:x.dateLogged,type:'task',icon:'📋',title:`Vehicle Task (${x.priority})`,desc:x.desc,status:x.status,id:x.id,fn:'editTask'})),
   ].filter(x=>x.date).sort((a,b)=>b.date.localeCompare(a.date));
 
-  const typeColors = {jobcard:'var(--teal)',defect:'var(--amber)',maint:'var(--navy)',vsi:'var(--green)',accident:'var(--red)'};
+  const typeColors = {jobcard:'var(--teal)',defect:'var(--amber)',maint:'var(--navy)',vsi:'var(--green)',accident:'var(--red)',task:'#8e44ad'};
 
   const modal = document.getElementById('m-timeline');
   document.getElementById('timeline-title').textContent = `Fleet ${v.fleet} — ${v.rego} Service History`;
@@ -10939,7 +10930,7 @@ init();
   <div class="mob-menu-item" onclick="mobNav('defects')"><span class="mob-menu-item-icon">⚠️</span><span class="mob-menu-item-label">Defects</span></div>
   <div class="mob-menu-section">Workshop</div>
   <div class="mob-menu-item" onclick="mobNav('jobcards')"><span class="mob-menu-item-icon">🔧</span><span class="mob-menu-item-label">Job Cards</span></div>
-  <div class="mob-menu-item" onclick="mobNav('tasks')"><span class="mob-menu-item-icon">✅</span><span class="mob-menu-item-label">Tasks</span></div>
+  <div class="mob-menu-item" onclick="mobNav('tasks')"><span class="mob-menu-item-icon">✅</span><span class="mob-menu-item-label">Vehicle Tasks</span></div>
   <div class="mob-menu-item" onclick="mobNav('parts')"><span class="mob-menu-item-icon">📦</span><span class="mob-menu-item-label">Parts & Orders</span></div>
   <div class="mob-menu-item" onclick="mobNav('mainthistory')"><span class="mob-menu-item-icon">📋</span><span class="mob-menu-item-label">Maintenance History</span></div>
   <div class="mob-menu-item" onclick="mobNav('vsi')"><span class="mob-menu-item-icon">🔍</span><span class="mob-menu-item-label">Safety Inspection</span></div>
