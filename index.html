@@ -10967,8 +10967,11 @@ init();
 
 <!-- QUICK CAPTURE -->
 <div id="quick-capture-overlay" onclick="closeQuickCapture()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;"></div>
-<div id="quick-capture" style="display:none;position:fixed;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;z-index:501;padding:0 0 env(safe-area-inset-bottom,0);max-height:90vh;overflow-y:auto;">
-  <div style="width:40px;height:4px;background:var(--grey-b);border-radius:2px;margin:12px auto 16px;"></div>
+<div id="quick-capture" onclick="event.stopPropagation()" style="display:none;position:fixed;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;z-index:501;padding:0 0 env(safe-area-inset-bottom,0);max-height:90vh;overflow-y:auto;">
+  <div style="position:sticky;top:0;background:white;z-index:1;display:flex;align-items:center;justify-content:center;padding-top:12px;">
+    <div style="width:40px;height:4px;background:var(--grey-b);border-radius:2px;"></div>
+    <button onclick="closeQuickCapture()" aria-label="Close" style="position:absolute;right:16px;top:8px;width:32px;height:32px;border:none;background:var(--grey);border-radius:50%;font-size:18px;color:var(--navy);line-height:1;cursor:pointer;">&#215;</button>
+  </div>
   <div style="padding:0 20px 20px;">
     <div style="font-weight:700;font-size:17px;margin-bottom:16px;">⚡ Quick actions</div>
     <button onclick="closeQuickCapture();openQRScanner()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--teal);border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;color:white;font-family:inherit;margin-bottom:14px;">📷 Scan Vehicle QR</button>
@@ -11001,6 +11004,7 @@ init();
     <div class="mob-menu-title">Fleet Desk</div>
     <button class="mob-menu-close" onclick="closeMobMenu()">✕</button>
   </div>
+  <div class="mob-menu-item" onclick="mobNav('dashboard')"><span class="mob-menu-item-icon">📊</span><span class="mob-menu-item-label">Dashboard</span></div>
   <div class="mob-menu-section">Fleet</div>
   <div class="mob-menu-item" onclick="mobNav('fleet')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">Fleet Register</span></div>
   <div class="mob-menu-item" onclick="mobNav('service')"><span class="mob-menu-item-icon">📅</span><span class="mob-menu-item-label">Service Due</span></div>
