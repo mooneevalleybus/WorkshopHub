@@ -1491,9 +1491,10 @@ select option {
 <div class="page" id="page-mainthistory"><div id="mob-maint-cards"></div>
   <div class="card">
     <div class="ch">
-      <span class="ct">Vehicle Safety Maintenance History Record (MMS 2.4.2.5)</span>
+      <span class="ct" id="mh-title">Vehicle Safety Maintenance History Record (MMS 2.4.2.5)</span>
       <div class="tb">
-        <input id="mh-search" placeholder="🔍 Search…" oninput="renderMaintHistory()" style="width:200px;"><select id="mh-fveh" onchange="renderMaintHistory()" style="width:180px;"><option value="">All vehicles</option></select>
+        <input id="mh-search" placeholder="🔍 Search…" oninput="renderMaintHistory()" style="width:200px;">
+        <select id="mh-fveh" onchange="renderMaintHistory()" style="display:none;"><option value="">All vehicles</option></select>
         <button class="btn bp" onclick="openMaintModal()">+ Add entry</button>
         <button class="btn bprint" onclick="printMaintHistory()">🖨 Print / PDF</button>
       </div>
@@ -1504,10 +1505,18 @@ select option {
         <strong>Brakes, suspension, steering, chassis, body structural members and stub axles.</strong>
         The operator must retain this record for a period of at least three years after the last entry.
       </div>
-      <div class="tw">
-        <table><thead><tr><th>Date</th><th>Fleet / Rego</th><th>Details of Maintenance / Repair</th><th>Odometer (km)</th><th>Carried Out By</th></tr></thead>
-          <tbody id="mh-tbody"></tbody>
-        </table>
+
+      <!-- Vehicle picker (shown when no vehicle is selected) -->
+      <div id="mh-picker" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;"></div>
+
+      <!-- Vehicle detail view (shown once a vehicle is picked) -->
+      <div id="mh-detail" style="display:none;">
+        <button class="btn sm bs" onclick="mhClearVehicle()" style="margin-bottom:12px;">&larr; All vehicles</button>
+        <div class="tw">
+          <table><thead><tr><th>Date</th><th>Fleet / Rego</th><th>Details of Maintenance / Repair</th><th>Odometer (km)</th><th>Carried Out By</th></tr></thead>
+            <tbody id="mh-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -6339,25 +6348,61 @@ function spToMh(x){const f=x.fields||{};
     date:(f.MaintDate||'').slice(0,10),desc:f.Title||'',odo:f.Odo||'',
     by:f.CarriedOutBy||''};}
 
-function renderMaintHistory(){if(isMobile()){renderMobCards("mob-maint-cards",maintHistory.filter(m=>canSeeVehicle(m.vehicleId)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')),mobMaintCard,"No maintenance history");return;}
-  const vf=document.getElementById('mh-fveh');
-  if(vf){
-    const cur=vf.value;
-    vf.innerHTML='<option value="">All vehicles</option>'+
-      fleet.slice().sort((a,b)=>(parseInt(a.fleet)||0)-(parseInt(b.fleet)||0))
-        .map(v=>`<option value="${v.id}"${v.id===cur?' selected':''}>${v.fleet}${v.rego?' — '+v.rego:''}</option>`).join('');
-  }
+function mhClearVehicle(){const vf=document.getElementById('mh-fveh');if(vf)vf.value='';renderMaintHistory();}
+function mhPickVehicle(vid){const vf=document.getElementById('mh-fveh');if(vf)vf.value=vid;renderMaintHistory();}
+
+function renderMaintHistory(){
   const vid=document.getElementById('mh-fveh')?.value||'';
   const srch=(document.getElementById('mh-search')?.value||'').toLowerCase();
-  const rows=maintHistory.filter(m=>{if(!canSeeVehicle(m.vehicleId))return false;if(vid&&m.vehicleId!==vid)return false;if(srch){const v=fleet.find(x=>x.id===m.vehicleId)||{};const hay=[m.desc,m.by,v.fleet,v.rego,m.date,m.odo].join(' ').toLowerCase();if(!hay.includes(srch))return false;}return true;})
+  const picker=document.getElementById('mh-picker');
+  const detail=document.getElementById('mh-detail');
+  const mobCards=document.getElementById('mob-maint-cards');
+  const titleEl=document.getElementById('mh-title');
+
+  if(!vid){
+    // No vehicle picked yet — show the picker grid instead of a combined table
+    if(detail)detail.style.display='none';
+    if(mobCards)mobCards.style.display='none';
+    if(picker)picker.style.display='grid';
+    if(titleEl)titleEl.textContent='Vehicle Safety Maintenance History Record (MMS 2.4.2.5)';
+    const visible=fleet.filter(v=>canSeeVehicleObj(v)&&(!srch||[v.fleet,v.rego,v.make].join(' ').toLowerCase().includes(srch)))
+      .sort((a,b)=>(parseInt(a.fleet)||0)-(parseInt(b.fleet)||0));
+    if(picker){
+      picker.innerHTML=visible.length?visible.map(v=>{
+        const entries=maintHistory.filter(m=>m.vehicleId===v.id);
+        const last=entries.length?entries.reduce((a,b)=>(a.date||'')>(b.date||'')?a:b):null;
+        return `<div onclick="mhPickVehicle('${v.id}')" style="cursor:pointer;border:1px solid var(--grey-b);border-radius:8px;padding:12px;background:white;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+          <div style="font-size:15px;font-weight:700;color:var(--navy);">Fleet ${v.fleet||'?'}</div>
+          <div style="font-size:12px;color:var(--grey-dark);margin-top:2px;">${v.rego||'—'}</div>
+          <div style="font-size:11px;color:var(--grey-dark);margin-top:8px;border-top:1px solid var(--grey-b);padding-top:6px;">
+            ${entries.length?`${entries.length} entr${entries.length===1?'y':'ies'}<br>Last: ${last?fd(last.date):'—'}`:'No entries yet'}
+          </div>
+        </div>`;
+      }).join('') : '<div style="grid-column:1/-1;text-align:center;color:var(--grey-dark);padding:28px;">No vehicles match your search</div>';
+    }
+    return;
+  }
+
+  // A vehicle is picked — show its history
+  if(picker)picker.style.display='none';
+  const v=fleet.find(x=>x.id===vid);
+  if(titleEl)titleEl.textContent=`Fleet ${v?.fleet||'?'}${v?.rego?' — '+v.rego:''} — Maintenance History`;
+
+  if(isMobile()){
+    if(detail)detail.style.display='none';
+    if(mobCards)mobCards.style.display='block';
+    const items=maintHistory.filter(m=>m.vehicleId===vid&&canSeeVehicle(m.vehicleId)).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    const cardsHtml=items.length?items.map(mobMaintCard).join(''):'<div style="padding:30px;text-align:center;color:var(--grey-dark);">No maintenance history for this vehicle</div>';
+    if(mobCards)mobCards.innerHTML='<button class="btn sm bs" onclick="mhClearVehicle()" style="margin-bottom:10px;">&larr; All vehicles</button>'+cardsHtml;
+    return;
+  }
+  if(mobCards)mobCards.style.display='none';
+  if(detail)detail.style.display='block';
+
+  const rows=maintHistory.filter(m=>{if(m.vehicleId!==vid||!canSeeVehicle(m.vehicleId))return false;if(srch){const hay=[m.desc,m.by,v?.fleet,v?.rego,m.date,m.odo].join(' ').toLowerCase();if(!hay.includes(srch))return false;}return true;})
     .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   document.getElementById('mh-tbody').innerHTML=rows.length?rows.map(m=>{
     const v=fleet.find(x=>x.id===m.vehicleId)||{};
-    if(isMob())return mobileCard(m.id,
-      `${v.fleet||'—'} — ${v.rego||'—'}`,
-      `📅 ${m.date?fd(m.date):'—'} · ${m.odo?Number(m.odo).toLocaleString()+' km':'—'}`,
-      `${m.desc?m.desc.slice(0,70):'—'}`,
-      `editMaint('${m.id}')`, '');
     return `<tr>
       <td class="tdf">${m.date?fd(m.date):'—'}</td>
       <td>${v.fleet||'—'}${v.rego?' — '+v.rego:''}</td>
@@ -6373,9 +6418,10 @@ function renderMaintHistory(){if(isMobile()){renderMobCards("mob-maint-cards",ma
 }
 
 function openMaintModal(id){
-  vOpts('maint-veh',id?maintHistory.find(m=>m.id===id)?.vehicleId:'');
+  const preselectVeh=id?maintHistory.find(m=>m.id===id)?.vehicleId:(document.getElementById('mh-fveh')?.value||'');
+  vOpts('maint-veh',preselectVeh);
   document.getElementById('mmaint-title').textContent=id?'Edit entry':'Add maintenance entry';
-  const m=id?maintHistory.find(x=>x.id===id):{date:today()};
+  const m=id?maintHistory.find(x=>x.id===id):{date:today(),vehicleId:preselectVeh};
   s('maint-id',id||'');s('maint-spid',m.spId||'');s('maint-veh',m.vehicleId||'');
   s('maint-date',m.date||today());s('maint-desc',m.desc||'');
   s('maint-odo',m.odo||'');s('maint-by',m.by||'');
