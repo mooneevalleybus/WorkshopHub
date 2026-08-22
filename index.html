@@ -910,6 +910,11 @@ select option {
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
+    <span id="global-search-wrap" style="position:relative;">
+      <input id="global-search-input" type="text" placeholder="🔍 Search…" oninput="globalSearch(this.value)" onkeydown="if(event.key==='Escape')closeGlobalSearch()"
+        style="font-size:12px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:white;color:#1a2744;width:140px;font-family:inherit;">
+      <div id="global-search-results" style="display:none;position:absolute;top:34px;right:0;width:320px;max-height:420px;overflow-y:auto;background:white;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:600;"></div>
+    </span>
     <span id="role-badge" style="display:none;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;"></span>
     <span id="desk-site-switch-wrap" style="display:none;align-items:center;gap:6px;">
       <span style="font-size:11px;color:rgba(255,255,255,.5);">Site:</span>
@@ -1036,12 +1041,13 @@ select option {
   </div>
   <!-- MOBILE DASHBOARD -->
   <div class="mob-dash" id="mob-dashboard" style="display:none;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
       <button class="mob-action-btn accent" onclick="showPage('pretrip',null)"><span style="font-size:32px;">🚦</span><span style="font-size:13px;font-weight:700;color:white;">Pre-Trip</span></button>
       <button class="mob-action-btn" onclick="openDefectModal()"><span style="font-size:32px;">⚠️</span><span style="font-size:13px;font-weight:700;">Report Defect</span></button>
       <button class="mob-action-btn" onclick="openJobCardModal()"><span style="font-size:32px;">🔧</span><span style="font-size:13px;font-weight:700;">Job Card</span></button>
       <button class="mob-action-btn" onclick="openAccidentModal()"><span style="font-size:32px;">🚨</span><span style="font-size:13px;font-weight:700;">Accident</span></button>
     </div>
+    <button onclick="openQuickCapture()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:white;border:2px solid var(--grey-b);border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:var(--navy);font-family:inherit;margin-bottom:16px;">⚡ More quick actions</button>
     <div id="mob-alerts" style="background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:14px;padding:4px 0;"></div>
     <div style="background:white;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:14px;">
       <div style="padding:14px 16px 10px;font-weight:700;font-size:14px;border-bottom:1px solid var(--grey-b);">Recent activity</div>
@@ -1199,7 +1205,7 @@ select option {
         </select>
       </div>
     </div>
-    <div class="cb tw"><table><thead><tr><th>Fleet #</th><th>Rego</th><th>Company</th><th>Make &amp; model</th><th>Next service</th><th>Days to go</th><th>Odometer</th><th>Service km</th><th>Km to go</th><th>Status</th><th>Part 3 due</th><th>Days to go</th><th>Part 3 status</th><th></th></tr></thead><tbody id="svc-tbody"></tbody></table></div>
+    <div class="cb tw"><table><thead><tr><th>Fleet #</th><th>Rego</th><th>Company</th><th>Make &amp; model</th><th>Next service</th><th>Days to go</th><th>Odometer</th><th>Service km</th><th>Km to go</th><th>Status</th><th>Part 3 due</th><th>Days to go</th><th>Part 3 status</th><th>Rego expiry</th><th>Days to go</th><th>Rego status</th><th></th></tr></thead><tbody id="svc-tbody"></tbody></table></div>
   </div>
 </div>
 
@@ -1280,6 +1286,10 @@ select option {
       </div>
       <p style="margin-top:10px;font-size:12px;color:var(--grey-dark);">Importing will merge the backup into SharePoint — existing items with matching IDs will be updated, and new items will be created. This may take a few minutes for large backups.</p>
       <div id="import-status" style="margin-top:8px;font-size:13px;"></div>
+      <hr style="margin:18px 0;border:none;border-top:1px solid var(--grey-b);">
+      <p style="font-size:13px;color:var(--grey-dark);margin-bottom:10px;">A dated snapshot is uploaded automatically to <strong>Workshop Hub / Backups</strong> on SharePoint once per day for admins/owners who open the app. You can also trigger one manually below.</p>
+      <button class="btn bs" onclick="backupToSharePoint(false)">☁ Backup to SharePoint now</button>
+      <div id="backup-last-status" style="margin-top:8px;font-size:12px;color:var(--grey-dark);"></div>
     </div>
   </div>
 </div>
@@ -1486,6 +1496,7 @@ select option {
         <select id="fin-veh" onchange="renderFinancial()" style="width:180px;"><option value="">All vehicles</option></select>
         <select id="fin-year" onchange="renderFinancial()" style="width:100px;"></select>
         <button class="btn bs" onclick="exportFinancialCSV()">📥 Export CSV</button>
+        <button class="btn bprint" onclick="printFinancialSummary()">🖨 Cost Summary PDF</button>
       </div>
     </div>
     <div class="cb">
@@ -1904,7 +1915,7 @@ select option {
     <div class="mh"><span class="mt" id="mv-title">Add vehicle</span><button class="mx" onclick="closeModal('m-vehicle')">×</button></div>
     <div class="mb">
       <input type="hidden" id="v-id"><input type="hidden" id="v-spid">
-      <div class="fr c4"><div><label>Fleet #</label><input id="v-fleet"></div><div><label>Registration</label><input id="v-rego"></div><div><label>Company</label><select id="v-owner"></select></div><div><label>Rego expiry (DD/MM)</label><input id="v-regoExp" placeholder="31/03"></div></div>
+      <div class="fr c4"><div><label>Fleet #</label><input id="v-fleet"></div><div><label>Registration</label><input id="v-rego"></div><div><label>Company</label><select id="v-owner"></select></div><div><label>Rego expiry</label><input id="v-regoExp" type="date"></div></div>
       <div class="fr c4"><div><label>Year</label><input id="v-year"></div><div><label>Make &amp; model</label><input id="v-make"></div><div><label>VIN</label><input id="v-vin"></div><div><label>Capacity</label><input id="v-capacity"></div></div>
       <div class="fr c2"><div><label>Engine number</label><input id="v-engineNo"></div><div><label>Transmission serial no.</label><input id="v-transSerial"></div></div>
       <div class="fr c4"><div><label>Odometer (km)</label><input id="v-odo" type="number"></div><div><label>Odo date</label><input id="v-odoDate" type="date"></div><div><label>Next service date</label><input id="v-svcDate" type="date"></div><div><label>Next service km</label><input id="v-svcKm" type="number"></div></div>
@@ -3313,7 +3324,7 @@ const FLEET_FIELD_MAP = {
 };
 function fleetFieldMap(){ return FLEET_FIELD_MAP[_activeSite] || FLEET_FIELD_MAP.default; }
 
-function spToV(x){const f=x.fields||{};return{id:String(x.id),spId:String(x.id),fleet:f.Title||'',rego:f.Rego||'',regoExp:f.RegoExpiry||'',year:f.Year||f.YearOfManufacture||'',make:f.Make||f.MakeModel||'',vin:f.VIN||'',engineNo:f.EngineNum||f.EngineNumber||'',transSerial:f.TransSerial||f.TranmissionSerialNo||f.TransmissionSerialNo||'',capacity:f.Capacity||'',owner:f.Owner||f.CompanyId||'',odo:String(f.Odo||f.CurrentOdometer||''),odoDate:(f.OdoDate||f.OdometerDate||'').slice(0,10),svcDate:(f.SvcDate||f.NextServiceDate||'').slice(0,10),svcKm:String(f.SvcKm||f.NextServiceKm||''),part3Date:(f.Part3Date||'').slice(0,10),part3Km:String(f.Part3Km||''),notes:f.Notes||''};}
+function spToV(x){const f=x.fields||{};return{id:String(x.id),spId:String(x.id),fleet:f.Title||'',rego:f.Rego||'',regoExp:(f.RegoExpiry||'').slice(0,10),year:f.Year||f.YearOfManufacture||'',make:f.Make||f.MakeModel||'',vin:f.VIN||'',engineNo:f.EngineNum||f.EngineNumber||'',transSerial:f.TransSerial||f.TranmissionSerialNo||f.TransmissionSerialNo||'',capacity:f.Capacity||'',owner:f.Owner||f.CompanyId||'',odo:String(f.Odo||f.CurrentOdometer||''),odoDate:(f.OdoDate||f.OdometerDate||'').slice(0,10),svcDate:(f.SvcDate||f.NextServiceDate||'').slice(0,10),svcKm:String(f.SvcKm||f.NextServiceKm||''),part3Date:(f.Part3Date||'').slice(0,10),part3Km:String(f.Part3Km||''),notes:f.Notes||''};}
 const TASK_FIELD_MAP = {
   default: {Status:'Status', DateDue:'DateDue', Odo:'Odo'},
   viclink:  {Status:'TaskStatus', DateDue:'DateCompleted', Odo:'OdometerAtJob'},
@@ -3397,6 +3408,14 @@ function part3Badge(v){
   if(w<=30)return'<span class="badge ba">Due soon</span>';
   return'<span class="badge bg">OK</span>';
 }
+function regoDue(v){return du(v.regoExp);}
+function regoBadge(v){
+  const w=regoDue(v);
+  if(w===null)return'<span class="badge bgy">No data</span>';
+  if(w<0)return'<span class="badge br">Expired</span>';
+  if(w<=30)return'<span class="badge ba">Due soon</span>';
+  return'<span class="badge bg">OK</span>';
+}
 function priB(p){const m={Low:'bgy',Normal:'bn',High:'ba',Urgent:'br'};return`<span class="badge ${m[p]||'bgy'}">${p||'—'}</span>`;}
 function stB(s){const m={Open:'br','In progress':'ba',Done:'bg',Complete:'bg'};return`<span class="badge ${m[s]||'bgy'}">${s||'—'}</span>`;}
 function pstB(s){const m={'On order':'ba',Arrived:'bt',Fitted:'bg',Cancelled:'bgy'};return`<span class="badge ${m[s]||'bgy'}">${s||'—'}</span>`;}
@@ -3473,14 +3492,22 @@ function renderPage(name){
   else if(name==='catalogue')renderCatalogue();
   else if(name==='accquotes')renderAccQuotes();
   else if(name==='calendar'){renderCalendar();}
+  else if(name==='backup'){renderBackupStatus();}
+}
+
+function renderBackupStatus(){
+  const el = document.getElementById('backup-last-status');
+  if (!el) return;
+  const last = localStorage.getItem('mvbl_last_autobackup_'+_activeSite);
+  el.textContent = last ? `Last SharePoint backup: ${new Date(last).toLocaleDateString('en-AU')}` : 'No SharePoint backup recorded yet on this device.';
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // DASHBOARD
 // ══════════════════════════════════════════════════════════════════════════════
 function renderDash(){
-  const ov=fleet.filter(v=>{if(!canSeeVehicleObj(v))return false;const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);return(d!==null&&d<0)||(k!==null&&k<0)||(p3!==null&&p3<0);});
-  const ds=fleet.filter(v=>{if(!canSeeVehicleObj(v))return false;const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);if(ov.includes(v))return false;return(d!==null&&d<=30)||(k!==null&&k<=2000)||(p3!==null&&p3<=30);});
+  const ov=fleet.filter(v=>{if(!canSeeVehicleObj(v))return false;const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);const rg=regoDue(v);return(d!==null&&d<0)||(k!==null&&k<0)||(p3!==null&&p3<0)||(rg!==null&&rg<0);});
+  const ds=fleet.filter(v=>{if(!canSeeVehicleObj(v))return false;const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);const rg=regoDue(v);if(ov.includes(v))return false;return(d!==null&&d<=30)||(k!==null&&k<=2000)||(p3!==null&&p3<=30)||(rg!==null&&rg<=30);});
   const opdefs=defects.filter(d=>d.status==='Open'&&canSeeVehicle(d.vehicleId));
   const pp=parts.filter(p=>p.status==='On order'&&canSeeVehicle(p.vehicleId));
   const ot=tasks.filter(t=>t.status!=='Done'&&canSeeVehicle(t.vehicleId));
@@ -3571,7 +3598,7 @@ function renderFleet(){
     <td data-label="Owner">${coBadge(v.owner)}</td>
     <td data-label="Odo">${v.odo?Number(v.odo).toLocaleString()+' km':'—'}</td>
     <td data-label="Service due">${svcBadge(v)}</td>
-    <td data-label="Rego expiry">${v.regoExp||'—'}</td>
+    <td data-label="Rego expiry">${v.regoExp?fd(v.regoExp):'—'} ${v.regoExp?regoBadge(v):''}</td>
     <td class="tda" style="white-space:nowrap"><button class="btn sm bs" onclick="editVehicle('${v.id}')">Edit</button> <button class="btn sm bt" onclick="openVehicleTimeline('${v.id}')">History</button> <button class="btn sm bt" onclick="showVehicleQR('${v.id}')">QR</button> <button class="btn sm bprint" onclick="printVehicleId('${v.id}')">Print</button> <button class="btn sm bd" onclick="delVehicle('${v.id}')">Del</button></td>
   </tr>`)).join('')||emptyR(14,'No vehicles found');
 }
@@ -3755,7 +3782,7 @@ async function saveJobCard(){
   const jcRefNum=id&&jobCards.find(x=>x.id===id)?.jobNum||nextRef('JC',jobCards,'jobNum');
   j.jobNum=jcRefNum;
   if(connected) j.photos=await uploadPhotos(await compressPhotos(j.photos),photoFolder('jobcards',jcRefNum));
-  try{if(connected){const f=jToSp(j);if(spId){await updateItem(CFG.L_JOBS,spId,f);}else{const c=await createItem(CFG.L_JOBS,f);j.spId=String(c.id);j.id=String(c.id);}}const i=jobCards.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)jobCards[i]=j;else{j.docsUploaded=false;}jobCards.push(j);
+  try{if(connected){const f=jToSp(j);if(spId){await updateItem(CFG.L_JOBS,spId,f);}else{const c=await createItem(CFG.L_JOBS,f);j.spId=String(c.id);j.id=String(c.id);}}const i=jobCards.findIndex(x=>x.id===id||x.spId===spId);if(i>=0){jobCards[i]=j;}else{j.docsUploaded=false;jobCards.push(j);}
     if(j.status==='Complete')await autoLogMaintFromJobCard(j);
     updSaved();haptic('success');closeModal('m-jobcard');renderJobCards();}catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save job card';
@@ -4262,18 +4289,20 @@ function renderService(){
   const cf=currentCompanyFilter||(document.getElementById('svc-co')?.value||'');
   const f=document.getElementById('svc-filter')?.value||'all';
   let rows=fleet.filter(v=>canSeeVehicleObj(v)&&(!cf||v.owner===cf)).sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet));
-  if(f==='overdue')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);return(d!==null&&d<0)||(k!==null&&k<0)||(p3!==null&&p3<0);});
-  else if(f==='30')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);return(d!==null&&d<=30)||(k!==null&&k<=0)||(p3!==null&&p3<=30);});
-  else if(f==='60')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);return(d!==null&&d<=60)||(k!==null&&k<=3000)||(p3!==null&&p3<=60);});
-  else if(f==='90')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);return(d!==null&&d<=90)||(k!==null&&k<=5000)||(p3!==null&&p3<=90);});
+  if(f==='overdue')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);const rg=regoDue(v);return(d!==null&&d<0)||(k!==null&&k<0)||(p3!==null&&p3<0)||(rg!==null&&rg<0);});
+  else if(f==='30')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);const rg=regoDue(v);return(d!==null&&d<=30)||(k!==null&&k<=0)||(p3!==null&&p3<=30)||(rg!==null&&rg<=30);});
+  else if(f==='60')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);const rg=regoDue(v);return(d!==null&&d<=60)||(k!==null&&k<=3000)||(p3!==null&&p3<=60)||(rg!==null&&rg<=60);});
+  else if(f==='90')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);const rg=regoDue(v);return(d!==null&&d<=90)||(k!==null&&k<=5000)||(p3!==null&&p3<=90)||(rg!==null&&rg<=90);});
   document.getElementById('svc-tbody').innerHTML=rows.map(v=>{
     const d=du(v.svcDate),kl=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;
     const ds=d===null?'—':d<0?`<span style="color:var(--red);font-weight:600">${d}d</span>`:`${d}d`;
     const ks=kl===null?'—':kl<0?`<span style="color:var(--red);font-weight:600">${kl.toLocaleString()}</span>`:`${kl.toLocaleString()} km`;
     const p3d=du(v.part3Date);
     const p3ds=p3d===null?'—':p3d<0?`<span style="color:var(--red);font-weight:600">${p3d}d</span>`:`${p3d}d`;
-    return`<tr><td class="tdf">${v.fleet}</td><td>${v.rego||'—'}</td><td>${coBadge(v.owner)}</td><td>${v.make||'—'}</td><td>${fd(v.svcDate)}</td><td>${ds}</td><td>${v.odo?Number(v.odo).toLocaleString()+' km':'—'}</td><td>${v.svcKm?Number(v.svcKm).toLocaleString()+' km':'—'}</td><td>${ks}</td><td>${svcBadge(v)}</td><td>${v.part3Date?fd(v.part3Date):'—'}</td><td>${p3ds}</td><td>${part3Badge(v)}</td><td>${!currentCompanyFilter?`<button class="btn sm bs" onclick="editVehicle('${v.id}')">Update</button>`:''}</td></tr>`;
-  }).join('')||emptyR(14,'No vehicles match this filter');
+    const rgd=regoDue(v);
+    const rgds=rgd===null?'—':rgd<0?`<span style="color:var(--red);font-weight:600">${rgd}d</span>`:`${rgd}d`;
+    return`<tr><td class="tdf">${v.fleet}</td><td>${v.rego||'—'}</td><td>${coBadge(v.owner)}</td><td>${v.make||'—'}</td><td>${fd(v.svcDate)}</td><td>${ds}</td><td>${v.odo?Number(v.odo).toLocaleString()+' km':'—'}</td><td>${v.svcKm?Number(v.svcKm).toLocaleString()+' km':'—'}</td><td>${ks}</td><td>${svcBadge(v)}</td><td>${v.part3Date?fd(v.part3Date):'—'}</td><td>${p3ds}</td><td>${part3Badge(v)}</td><td>${v.regoExp?fd(v.regoExp):'—'}</td><td>${rgds}</td><td>${regoBadge(v)}</td><td>${!currentCompanyFilter?`<button class="btn sm bs" onclick="editVehicle('${v.id}')">Update</button>`:''}</td></tr>`;
+  }).join('')||emptyR(17,'No vehicles match this filter');
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -5280,7 +5309,7 @@ function printVehicleId(id){
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>Vehicle Record ${v.fleet}</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h1{font-size:16px;color:#1a2744;border-bottom:2px solid #1a7f7a;padding-bottom:6px;}table{width:100%;border-collapse:collapse;margin-bottom:12px;}td,th{border:1px solid #ccc;padding:5px 7px;text-align:left;}th{background:#f4f5f7;font-weight:600;}.sect{font-weight:700;color:#1a2744;margin:10px 0 4px;font-size:13px;border-bottom:1px solid #e2e4e9;padding-bottom:3px;}.box{border:1px solid #ccc;padding:6px;min-height:40px;margin-bottom:8px;white-space:pre-wrap;font-size:12px;}.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}.photos img{width:100%;height:90px;object-fit:cover;border:1px solid #ccc;}@media print{button{display:none;}}</style></head><body>
   <h1>Vehicle Record — Fleet #${v.fleet||'—'}</h1>
-  <table><tr><th>Fleet #</th><td>${v.fleet||'—'}</td><th>Registration</th><td>${v.rego||'—'}</td><th>Rego expiry</th><td>${v.regoExp||'—'}</td></tr>
+  <table><tr><th>Fleet #</th><td>${v.fleet||'—'}</td><th>Registration</th><td>${v.rego||'—'}</td><th>Rego expiry</th><td>${v.regoExp?fd(v.regoExp):'—'}</td></tr>
   <tr><th>Make</th><td>${v.make||'—'}</td><th>Year</th><td>${v.year||'—'}</td><th>Capacity</th><td>${v.capacity||'—'}</td></tr>
   <tr><th>VIN</th><td>${v.vin||'—'}</td><th>Engine number</th><td>${v.engineNo||'—'}</td><th>Transmission serial</th><td>${v.transSerial||'—'}</td></tr>
   <tr><th>Company</th><td colspan="5">${coName(v.owner)}</td></tr></table>
@@ -6832,6 +6861,45 @@ async function ensureFolder(folderPath) {
   return parentId;
 }
 
+// ─── AUTOMATIC BACKUP TO SHAREPOINT ─────────────────────────────────────────
+// Writes a dated JSON snapshot into Workshop Hub / Backups on SharePoint —
+// once per day per site, triggered silently for admin/owner on login, plus a
+// manual button on the Backup & Restore page.
+async function backupToSharePoint(silent) {
+  if (!connected) { if(!silent) alert('Not connected to SharePoint.'); return; }
+  try {
+    const data = {
+      exportedAt: new Date().toISOString(),
+      source: 'Fleet Desk',
+      version: 1,
+      companies, fleet, tasks, parts, jobCards, defects, accidents, notes, repairNotes, vsiHistory, maintHistory,
+      jaltest: jaltestEntries || [],
+      pretrip: ptHistory || [],
+    };
+    const json = JSON.stringify(data, null, 2);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    const dateStr = new Date().toISOString().slice(0,10);
+    const fileName = `backup-${_activeSite}-${dateStr}.json`;
+    await uploadFileToLibrary('Backups', fileName, `data:application/json;base64,${b64}`);
+    localStorage.setItem('mvbl_last_autobackup_'+_activeSite, dateStr);
+    const el = document.getElementById('backup-last-status');
+    if (el) el.textContent = `Last SharePoint backup: ${new Date().toLocaleString('en-AU')} (${fileName})`;
+    if (!silent) alert('Backup uploaded to SharePoint — Workshop Hub / Backups / '+fileName);
+  } catch(e) {
+    console.warn('Auto-backup failed:', e.message);
+    if (!silent) alert('Backup failed: '+e.message);
+  }
+}
+
+function maybeAutoBackupToday() {
+  if (!connected) return;
+  if (!['admin','owner'].includes(currentRole)) return;
+  const dateStr = new Date().toISOString().slice(0,10);
+  const last = localStorage.getItem('mvbl_last_autobackup_'+_activeSite);
+  if (last === dateStr) return;
+  backupToSharePoint(true).catch(()=>{});
+}
+
 async function uploadFileToLibrary(folderPath, fileName, base64Data) {
   // Ensure the folder exists and get its ID
   const did = await getDriveId();
@@ -7347,6 +7415,7 @@ async function loadUserRole() {
     currentRole = 'driver'; // default to most restrictive, not admin
   }
   applyRoleUI();
+  maybeAutoBackupToday();
 }
 
 function applyRoleUI() {
@@ -7647,6 +7716,89 @@ function exportFinancialCSV() {
   const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download=`MVBL-Parts-Costs-${yr||'all'}.csv`;a.click();
+}
+
+function printFinancialSummary() {
+  const vid = document.getElementById('fin-veh')?.value||'';
+  const yr  = document.getElementById('fin-year')?.value||new Date().getFullYear().toString();
+
+  // Same combined cost dataset as the on-screen report: standalone parts orders
+  // plus parts/labour/other logged inside job cards.
+  const entries = [];
+  parts.filter(p=>canSeeVehicle(p.vehicleId)&&(!vid||p.vehicleId===vid)&&(!yr||(p.orderDate||'').startsWith(yr)))
+    .forEach(p=>entries.push({vehicleId:p.vehicleId, date:p.orderDate, desc:p.desc||'Part order', cat:'Parts order', cost:parseFloat(p.cost)||0}));
+  jobCards.forEach(j=>{
+    if (!canSeeVehicle(j.vehicleId)) return;
+    if (vid && j.vehicleId!==vid) return;
+    if (yr && !(j.dateIn||'').startsWith(yr)) return;
+    (j.parts||[]).forEach(([partNo,desc,qty,price])=>{
+      const total=(parseFloat(qty)||0)*(parseFloat(price)||0);
+      if (total>0) entries.push({vehicleId:j.vehicleId, date:j.dateIn, desc:desc||partNo||'Part', cat:'Job card — parts', cost:total});
+    });
+    (j.labour||[]).forEach(([desc,extra,rate,hours])=>{
+      const total=(parseFloat(rate)||0)*(parseFloat(hours)||0);
+      if (total>0) entries.push({vehicleId:j.vehicleId, date:j.dateIn, desc:desc||'Labour', cat:'Job card — labour', cost:total});
+    });
+    (j.other||[]).forEach(([desc,amount])=>{
+      const amt=parseFloat(amount)||0;
+      if (amt>0) entries.push({vehicleId:j.vehicleId, date:j.dateIn, desc:desc||'Other', cat:'Job card — other', cost:amt});
+    });
+  });
+
+  const byVeh = {};
+  entries.forEach(e=>{(byVeh[e.vehicleId||'']=byVeh[e.vehicleId||'']||[]).push(e);});
+  const vehIds = Object.keys(byVeh).sort((a,b)=>{
+    const va=fleet.find(x=>x.id===a),vb=fleet.find(x=>x.id===b);
+    return (parseInt(va?.fleet)||0)-(parseInt(vb?.fleet)||0);
+  });
+  const grandTotal = entries.reduce((s,e)=>s+e.cost,0);
+
+  const siteNames = {default:'Moonee Valley Bus Lines', viclink:'VicLink', oriley:"O'Riley Coaches", takura:'Takura Transit'};
+  const siteLabel = siteNames[_activeSite] || 'Moonee Valley Bus Lines';
+  const vehLabel = vid ? (()=>{const v=fleet.find(x=>x.id===vid);return v?`Fleet ${v.fleet}${v.rego?' — '+v.rego:''}`:'Selected vehicle';})() : 'All vehicles';
+
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Cost Summary — ${siteLabel} — ${yr}</title>
+  <style>
+    body{font-family:Arial,sans-serif;font-size:11px;padding:16px;color:#111;}
+    h2{font-size:16px;margin:0 0 2px;color:#1a2744;}
+    .sub{font-size:10px;color:#666;margin:0 0 10px;}
+    .info{border:1px solid #ccc;padding:8px 12px;background:#f4f5f7;margin-bottom:14px;font-size:10px;}
+    h3{font-size:12px;color:#1a2744;background:#eef1f4;padding:5px 8px;margin:16px 0 4px;}
+    table{width:100%;border-collapse:collapse;margin-bottom:6px;}
+    th{background:#1a2744;color:white;padding:5px 8px;text-align:left;font-size:10px;border:1px solid #999;}
+    td{padding:4px 8px;border:1px solid #ccc;font-size:10px;vertical-align:top;}
+    tr:nth-child(even) td{background:#f8fafb;}
+    .subtot{font-weight:700;background:#eef1f4;}
+    .subtot td{background:#eef1f4;}
+    .grand{font-size:13px;font-weight:700;color:#1a2744;text-align:right;margin-top:14px;padding-top:8px;border-top:2px solid #1a2744;}
+    .footer{font-size:9px;color:#888;font-style:italic;margin-top:8px;}
+    @media print{button{display:none;}}
+  </style></head><body>
+  <h2>Cost Summary — ${siteLabel}</h2>
+  <p class="sub">Moonee Valley Bus Lines · 6 Tullamarine Park Road, Tullamarine VIC 3043 · Printed ${new Date().toLocaleDateString('en-AU')}</p>
+  <div class="info">
+    <strong>Vehicle:</strong> ${vehLabel} &nbsp;&nbsp;·&nbsp;&nbsp; <strong>Period:</strong> ${yr} &nbsp;&nbsp;·&nbsp;&nbsp; <strong>Entries:</strong> ${entries.length}
+    &nbsp;&nbsp;·&nbsp;&nbsp; Includes standalone parts orders and parts/labour/other charges logged on job cards.
+  </div>
+  ${vehIds.length ? vehIds.map(vidKey=>{
+    const v=fleet.find(x=>x.id===vidKey)||{};
+    const rows=byVeh[vidKey].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    const subtotal=rows.reduce((s,e)=>s+e.cost,0);
+    return `<h3>Fleet ${v.fleet||'?'}${v.rego?' — '+v.rego:''}${v.make?' — '+v.make:''}</h3>
+    <table>
+      <thead><tr><th style="width:85px;">Date</th><th style="width:140px;">Category</th><th>Description</th><th style="width:90px;">Cost</th></tr></thead>
+      <tbody>
+        ${rows.map(e=>`<tr><td>${e.date?fd(e.date):'—'}</td><td>${e.cat}</td><td>${e.desc}</td><td style="text-align:right;">$${e.cost.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>`).join('')}
+        <tr class="subtot"><td colspan="3" style="text-align:right;">Subtotal</td><td style="text-align:right;">$${subtotal.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+      </tbody>
+    </table>`;
+  }).join('') : '<p style="text-align:center;color:#999;padding:20px;">No cost entries found for this period.</p>'}
+  <div class="grand">Grand total: $${grandTotal.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+  <p class="footer">Generated by Fleet Desk — figures exclude GST unless otherwise noted on source records.</p>
+  <button onclick="window.print()" style="padding:6px 14px;margin-top:12px;">Print / Save as PDF</button>
+  </body></html>`);
+  w.document.close(); w.focus();
 }
 
 // ─── QR CODES ─────────────────────────────────────────────────────────────────
@@ -8609,7 +8761,7 @@ function spToCal(x) {
 }
 
 function calColor(type) {
-  return {Service:'#1e8a50', Inspection:'#1a7f7a', 'Part 3':'#7c3aed', Task:'#8e44ad', Defect:'#c0392b', Custom:'#2980b9'}[type] || '#2980b9';
+  return {Service:'#1e8a50', Inspection:'#1a7f7a', 'Part 3':'#7c3aed', Rego:'#d63384', Task:'#8e44ad', Defect:'#c0392b', Custom:'#2980b9'}[type] || '#2980b9';
 }
 
 function buildAutoEvents() {
@@ -8633,6 +8785,16 @@ function buildAutoEvents() {
       id:'part3-'+v.id, date:v.part3Date, endDate:'', source:'auto', colour,
       title:'Part 3 inspection — Fleet '+(v.fleet||'?')+(v.rego?' '+v.rego:''),
       type:'Part 3', vehicleId:v.id, fleet:v.fleet, linkedId:v.id,
+    });
+  });
+
+  fleet.filter(v => canSeeVehicle(v.id) && v.regoExp).forEach(v => {
+    const daysLeft = Math.round((new Date(v.regoExp) - new Date(nowStr)) / 86400000);
+    const colour = daysLeft < 0 ? '#c0392b' : daysLeft <= 30 ? '#e07b00' : '#1e8a50';
+    auto.push({
+      id:'rego-'+v.id, date:v.regoExp, endDate:'', source:'auto', colour,
+      title:'Rego expiry — Fleet '+(v.fleet||'?')+(v.rego?' '+v.rego:''),
+      type:'Rego', vehicleId:v.id, fleet:v.fleet, linkedId:v.id,
     });
   });
 
@@ -9141,10 +9303,65 @@ function closeHdrDropdowns() {
     if (el) el.style.display = 'none';
   });
 }
+
+// ─── GLOBAL SEARCH ────────────────────────────────────────────────────────────
+function closeGlobalSearch() {
+  const el = document.getElementById('global-search-results');
+  if (el) el.style.display = 'none';
+}
+function globalSearch(qRaw) {
+  const q = (qRaw||'').trim().toLowerCase();
+  const box = document.getElementById('global-search-results');
+  if (!box) return;
+  if (q.length < 2) { box.style.display='none'; return; }
+
+  const hits = [];
+  const push = (icon, label, sub, action) => hits.push({icon, label, sub, action});
+
+  fleet.filter(v=>canSeeVehicleObj(v)).forEach(v=>{
+    const hay=[v.fleet,v.rego,v.make].join(' ').toLowerCase();
+    if (hay.includes(q)) push('🚌', `Fleet ${v.fleet||'?'}${v.rego?' — '+v.rego:''}`, v.make||'', `editVehicle('${v.id}')`);
+  });
+  jobCards.filter(j=>canSeeVehicle(j.vehicleId)).forEach(j=>{
+    const hay=[j.jobNum,j.desc,j.work].join(' ').toLowerCase();
+    if (hay.includes(q)) { const v=fleet.find(x=>x.id===j.vehicleId)||{}; push('🔧', `Job Card ${j.jobNum||''}`, `Fleet ${v.fleet||'?'} — ${(j.desc||'').slice(0,50)}`, `showPage('jobcards',document.querySelector('.nt[onclick*="jobcards"]'));setTimeout(()=>openJobCardModal('${j.id}'),200)`); }
+  });
+  defects.filter(d=>canSeeVehicle(d.vehicleId)).forEach(d=>{
+    const hay=[d.desc,d.refNum].join(' ').toLowerCase();
+    if (hay.includes(q)) { const v=fleet.find(x=>x.id===d.vehicleId)||{}; push('⚠️', `Defect — Fleet ${v.fleet||'?'}`, (d.desc||'').slice(0,60), `showPage('defects',document.querySelector('.nt[onclick*="defects"]'));setTimeout(()=>openDefectModal('${d.id}'),200)`); }
+  });
+  accidents.filter(a=>canSeeVehicle(a.vehicleId)).forEach(a=>{
+    const hay=[a.desc,a.refNum].join(' ').toLowerCase();
+    if (hay.includes(q)) { const v=fleet.find(x=>x.id===a.vehicleId)||{}; push('🚨', `Accident — Fleet ${v.fleet||'?'}`, (a.desc||'').slice(0,60), `showPage('accident',document.querySelector('.nt[onclick*="accident"]'));setTimeout(()=>openAccidentModal('${a.id}'),200)`); }
+  });
+  tasks.filter(t=>canSeeVehicle(t.vehicleId)).forEach(t=>{
+    const hay=(t.desc||'').toLowerCase();
+    if (hay.includes(q)) { const v=fleet.find(x=>x.id===t.vehicleId)||{}; push('📋', `Task — Fleet ${v.fleet||'?'}`, (t.desc||'').slice(0,60), `showPage('tasks',document.querySelector('.nt[onclick*="tasks"]'))`); }
+  });
+  maintHistory.filter(m=>canSeeVehicle(m.vehicleId)).forEach(m=>{
+    const hay=(m.desc||'').toLowerCase();
+    if (hay.includes(q)) { const v=fleet.find(x=>x.id===m.vehicleId)||{}; push('📒', `Maintenance — Fleet ${v.fleet||'?'}`, (m.desc||'').slice(0,60), `mhPickVehicle('${m.vehicleId}');showPage('mainthistory',document.querySelector('.nt[onclick*="mainthistory"]'))`); }
+  });
+
+  box.style.display = 'block';
+  if (!hits.length) { box.innerHTML = '<div style="padding:16px;text-align:center;color:var(--grey-dark);font-size:13px;">No matches</div>'; return; }
+  box.innerHTML = hits.slice(0,10).map(h => `
+    <div onclick="${h.action.replace(/"/g,'&quot;')};closeGlobalSearch();document.getElementById('global-search-input').value='';" style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--grey-b);" onmouseover="this.style.background='var(--grey)'" onmouseout="this.style.background='white'">
+      <span style="font-size:18px;">${h.icon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--navy);">${h.label}</div>
+        ${h.sub?`<div style="font-size:11px;color:var(--grey-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${h.sub}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
 // Close dropdowns when clicking outside
 document.addEventListener('click', e => {
   if (!e.target.closest('#desk-site-switch-wrap') && !e.target.closest('#role-preview-wrap')) {
     closeHdrDropdowns();
+  }
+  if (!e.target.closest('#global-search-wrap')) {
+    closeGlobalSearch();
   }
 });
 
