@@ -2123,7 +2123,7 @@ select option {
       <div class="fr c3">
         <div><label>Vehicle</label><select id="def-veh"></select></div>
         <div><label>Severity</label><select id="def-sev"><option>Minor</option><option>Major</option><option>Safety critical</option></select></div>
-        <div><label>Status</label><select id="def-st"><option>Open</option><option>Cleared</option></select></div>
+        <div><label>Status</label><select id="def-st-modal"><option>Open</option><option>Cleared</option></select></div>
       </div>
       <div class="fr c3">
         <div><label>Reported by</label><input id="def-rep"></div>
@@ -3937,7 +3937,7 @@ async function openDefectModal(id){
   vOpts('def-veh',id?defects.find(d=>d.id===id)?.vehicleId:'');
   document.getElementById('mdef-title').textContent=id?'Edit defect':'Log defect';
   const d=id?defects.find(x=>x.id===id):{dateReported:today(),status:'Open',severity:'Minor',refNum:nextRef('DEF',defects,'refNum')};
-  s('def-id',id||'');s('def-spid',d.spId||'');s('def-veh',d.vehicleId||'');s('def-sev',d.severity||'Minor');s('def-desc',d.desc||'');s('def-rep',d.reportedBy||'');s('def-drep',d.dateReported||'');s('def-odo',d.odo||'');s('def-st',d.status||'Open');s('def-dclear',d.dateCleared||'');s('def-clear',d.clearedBy||'');s('def-rect',d.rectification||'');s('def-notes',d.notes||'');
+  s('def-id',id||'');s('def-spid',d.spId||'');s('def-veh',d.vehicleId||'');s('def-sev',d.severity||'Minor');s('def-desc',d.desc||'');s('def-rep',d.reportedBy||'');s('def-drep',d.dateReported||'');s('def-odo',d.odo||'');s('def-st-modal',d.status||'Open');s('def-dclear',d.dateCleared||'');s('def-clear',d.clearedBy||'');s('def-rect',d.rectification||'');s('def-notes',d.notes||'');
   await loadPhotosFromUrls('def-photos','def-photo-input',d.photos||[]);
   setDocs('def-docs-uploaded',d.docsUploaded||false);
   showSpFolderLink('def-sp-link','defects',d.refNum||'');
@@ -3955,7 +3955,7 @@ async function saveDefect(){
     try{photos=await uploadPhotos(rawPhotos,photoFolder('defects',refNum));}
     catch(e){console.error('Photo upload skipped:',e.message);alert('Photos failed to upload — please retry adding them. The rest of this defect will still save.');photos=rawPhotos.filter(p=>p&&p.startsWith('http'));}
   }
-  const d={id,spId,refNum,vehicleId:g('def-veh'),severity:g('def-sev'),desc:g('def-desc'),reportedBy:g('def-rep'),dateReported:g('def-drep'),odo:g('def-odo'),status:g('def-st'),clearedBy:g('def-clear'),dateCleared:g('def-dclear'),rectification:g('def-rect'),notes:g('def-notes'),photos,docsUploaded:!!(id&&defects.find(x=>x.id===id)?.docsUploaded)};
+  const d={id,spId,refNum,vehicleId:g('def-veh'),severity:g('def-sev'),desc:g('def-desc'),reportedBy:g('def-rep'),dateReported:g('def-drep'),odo:g('def-odo'),status:g('def-st-modal'),clearedBy:g('def-clear'),dateCleared:g('def-dclear'),rectification:g('def-rect'),notes:g('def-notes'),photos,docsUploaded:!!(id&&defects.find(x=>x.id===id)?.docsUploaded)};
   try{if(connected){const f=defToSp(d);if(spId){await updateItem(CFG.L_DEFECTS,spId,f);}else{const c=await createItem(CFG.L_DEFECTS,f);d.spId=String(c.id);d.id=String(c.id);}}const i=defects.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)defects[i]=d;else defects.push(d);updSaved();haptic('success');closeModal('m-defect');renderDefects();syncDefectToTodo(d).catch(()=>{});}catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save defect';
 }
