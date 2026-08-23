@@ -9415,6 +9415,11 @@ function clearSig(canvasId) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
+function viewPhoto(url) {
+  if (!url) return;
+  window.open(url, '_blank');
+}
+
 function getSigDataUrl(canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return '';
