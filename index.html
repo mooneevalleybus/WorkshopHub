@@ -4272,6 +4272,7 @@ function renderService(){
   else if(f==='30')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);const rg=regoDue(v);return(d!==null&&d<=30)||(k!==null&&k<=0)||(p3!==null&&p3<=30)||(rg!==null&&rg<=30);});
   else if(f==='60')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);const rg=regoDue(v);return(d!==null&&d<=60)||(k!==null&&k<=3000)||(p3!==null&&p3<=60)||(rg!==null&&rg<=60);});
   else if(f==='90')rows=rows.filter(v=>{const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;const p3=part3Due(v);const rg=regoDue(v);return(d!==null&&d<=90)||(k!==null&&k<=5000)||(p3!==null&&p3<=90)||(rg!==null&&rg<=90);});
+  if(isMobile()){renderMobCards("mob-service-cards",rows,mobServiceCard,"No vehicles match this filter");return;}
   document.getElementById('svc-tbody').innerHTML=rows.map(v=>{
     const d=du(v.svcDate),kl=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;
     const ds=d===null?'—':d<0?`<span style="color:var(--red);font-weight:600">${d}d</span>`:`${d}d`;
@@ -8430,16 +8431,19 @@ async function saveAccQuote() {
   const excess = parseFloat(document.getElementById('aq-excess')?.value)||0;
   const grandTotal = totalEx * 1.10 - excess;
 
-  // Upload attachments
+  // Upload attachments — file into the SAME folder as the linked accident's
+  // photos/report, not a separate claim-number folder, so everything for one
+  // accident lives in one place.
   let attachments = aqGetAttachments();
   if (connected && attachments.some(a=>a.data&&!a.url)) {
-    const refNum = document.getElementById('aq-claim').value || ('AQ-'+id.slice(-6));
+    const linkedAcc = accidents.find(x=>x.id===g('aq-accref'));
+    const refNum = linkedAcc?.refNum || document.getElementById('aq-claim').value || ('AQ-'+id.slice(-6));
     for (let i=0;i<attachments.length;i++) {
       const a=attachments[i];
       if(a.data && !a.url) {
         try {
           const ext=a.name.split('.').pop();
-          const r=await uploadFileToLibrary(`Accidents/${refNum}`,`${a.name}`,a.data);
+          const r=await uploadFileToLibrary(photoFolder('accidents',refNum),`${a.name}`,a.data);
           attachments[i]={name:a.name,size:a.size,type:a.type,url:r.webUrl};
         } catch(e){console.warn('Attachment upload failed:',e.message);}
       }
@@ -9871,7 +9875,7 @@ async function submitPreTrip(){
   if(v&&odo){v.odo=odo;v.odoDate=dt?dt.slice(0,10):today();
     if(connected&&v.spId){try{await updateItem(CFG.L_FLEET,v.spId,vToSp(v));}catch(e){console.error(e);}}}
   const record={id:uid(),dt,vId,vFleet:v?.fleet||'?',vRego:v?.rego||'',driver,odo,notes:g('pt-notes'),
-    items:{...ptState},signature:ptSig,failCount:failedItems.length,
+    items:{...ptState},signature:getSigDataUrl('pt-sig-canvas'),failCount:failedItems.length,
     passCount:allItems.filter(i=>ptState[i.id]==='pass').length,
     defectRefs:defectsRaised.map(d=>d.refNum)};
   ptHistory.unshift(record);
@@ -9898,7 +9902,7 @@ function renderPtHistory(){
   tbody.innerHTML=ptHistory.slice(0,30).map(r=>{
     const fail=r.failCount||0,pass=r.passCount||0;
     const badge=fail===0?'<span class="badge bg">All passed</span>':`<span class="badge br">${fail} failed</span>`;
-    return`<tr><td>${fmtDate(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><td class="tdf">${r.vFleet||'?'}${r.vRego?' — '+r.vRego:''}</td><td>${r.driver||'—'}</td><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><td>${badge} <span style="font-size:11px;color:var(--grey-dark)">${pass}/${pass+fail}</span></td><td style="font-size:12px;">${r.defectRefs?.length?r.defectRefs.join(', '):'—'}</td><td><button class="btn sm bs" onclick="deletePtRecord('${r.id}')">Delete</button></td></tr>`;
+    return`<tr><td>${fmtDate(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><td class="tdf">${r.vFleet||'?'}${r.vRego?' — '+r.vRego:''}</td><td>${r.driver||'—'}</td><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><td>${badge} <span style="font-size:11px;color:var(--grey-dark)">${pass}/${pass+fail}</span></td><td style="font-size:12px;">${r.defectRefs?.length?r.defectRefs.join(', '):'—'}</td><td><button class="btn sm bt" onclick="viewPtRecord('${r.id}')">View</button> <button class="btn sm bs" onclick="deletePtRecord('${r.id}')">Delete</button></td></tr>`;
   }).join('');
 }
 function deletePtRecord(id){
