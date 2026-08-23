@@ -1289,7 +1289,7 @@ select option {
       <p style="margin-top:10px;font-size:12px;color:var(--grey-dark);">Importing will merge the backup into SharePoint — existing items with matching IDs will be updated, and new items will be created. This may take a few minutes for large backups.</p>
       <div id="import-status" style="margin-top:8px;font-size:13px;"></div>
       <hr style="margin:18px 0;border:none;border-top:1px solid var(--grey-b);">
-      <p style="font-size:13px;color:var(--grey-dark);margin-bottom:10px;">A dated snapshot is uploaded automatically to <strong>Workshop Hub / Backups</strong> on SharePoint once per day for admins/owners who open the app. You can also trigger one manually below.</p>
+      <p style="font-size:13px;color:var(--grey-dark);margin-bottom:10px;">A dated snapshot is uploaded automatically to <strong>Shared Documents / Backups</strong> on SharePoint once per day for admins/owners who open the app. You can also trigger one manually below.</p>
       <button class="btn bs" onclick="backupToSharePoint(false)">☁ Backup to SharePoint now</button>
       <div id="backup-last-status" style="margin-top:8px;font-size:12px;color:var(--grey-dark);"></div>
     </div>
@@ -3641,7 +3641,7 @@ async function saveTask(){
   let taskPhotos=taskPhotosRaw;
   if(connected&&taskPhotosRaw.some(p=>p&&!p.startsWith('http'))){
     try{taskPhotos=await uploadPhotos(taskPhotosRaw,photoFolder('tasks',taskRef));}
-    catch(e){console.error('Photo upload skipped:',e.message);taskPhotos=taskPhotosRaw;}
+    catch(e){console.error('Photo upload skipped:',e.message);alert('Photos failed to upload — please retry adding them. The rest of this task will still save.');taskPhotos=taskPhotosRaw.filter(p=>p&&p.startsWith('http'));}
   }
   const t={id,spId,vehicleId:g('t-veh'),desc:g('t-desc'),priority:g('t-pri'),status:g('t-st'),dateLogged:g('t-dlog'),dateDone:g('t-ddone'),tech:g('t-tech'),odo:g('t-odo'),notes:g('t-notes'),photos:taskPhotos,docsUploaded:getDocs('t-docs-uploaded')};
   try{if(connected){const f=tToSp(t);if(spId){await updateItem(CFG.L_TASKS,spId,f);}else{const c=await createItem(CFG.L_TASKS,f);t.spId=String(c.id);t.id=String(c.id);}}const i=tasks.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)tasks[i]=t;else tasks.push(t);updSaved();haptic('success');closeModal('m-task');renderTasks();syncTaskToTodo(t).catch(()=>{});}catch(e){showSt('err','Save failed: '+e.message);}
@@ -3678,7 +3678,7 @@ async function savePart(){
   let partPhotos=partPhotosRaw;
   if(connected&&partPhotosRaw.some(p=>p&&!p.startsWith('http'))){
     try{partPhotos=await uploadPhotos(partPhotosRaw,photoFolder('parts',partRef));}
-    catch(e){console.error('Photo upload skipped:',e.message);partPhotos=partPhotosRaw;}
+    catch(e){console.error('Photo upload skipped:',e.message);alert('Photos failed to upload — please retry adding them. The rest of this part order will still save.');partPhotos=partPhotosRaw.filter(p=>p&&p.startsWith('http'));}
   }
   const p={id,spId,vehicleId:g('p-veh'),desc:g('p-desc'),supplier:g('p-sup'),invoice:g('p-inv'),orderDate:g('p-ord'),eta:g('p-eta'),cost:g('p-cost'),status:g('p-st'),task:g('p-task'),notes:g('p-notes'),photos:partPhotos,docsUploaded:getDocs('p-docs-uploaded')};
   try{if(connected){const f=pToSp(p);if(spId){await updateItem(CFG.L_PARTS,spId,f);}else{const c=await createItem(CFG.L_PARTS,f);p.spId=String(c.id);p.id=String(c.id);}}const i=parts.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)parts[i]=p;else parts.push(p);updSaved();closeModal('m-part');renderParts();}catch(e){showSt('err','Save failed: '+e.message);}
@@ -3953,7 +3953,7 @@ async function saveDefect(){
   let photos=rawPhotos;
   if(connected&&rawPhotos.some(p=>p&&!p.startsWith('http'))){
     try{photos=await uploadPhotos(rawPhotos,photoFolder('defects',refNum));}
-    catch(e){console.error('Photo upload skipped:',e.message);photos=rawPhotos;}
+    catch(e){console.error('Photo upload skipped:',e.message);alert('Photos failed to upload — please retry adding them. The rest of this defect will still save.');photos=rawPhotos.filter(p=>p&&p.startsWith('http'));}
   }
   const d={id,spId,refNum,vehicleId:g('def-veh'),severity:g('def-sev'),desc:g('def-desc'),reportedBy:g('def-rep'),dateReported:g('def-drep'),odo:g('def-odo'),status:g('def-st'),clearedBy:g('def-clear'),dateCleared:g('def-dclear'),rectification:g('def-rect'),notes:g('def-notes'),photos,docsUploaded:!!(id&&defects.find(x=>x.id===id)?.docsUploaded)};
   try{if(connected){const f=defToSp(d);if(spId){await updateItem(CFG.L_DEFECTS,spId,f);}else{const c=await createItem(CFG.L_DEFECTS,f);d.spId=String(c.id);d.id=String(c.id);}}const i=defects.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)defects[i]=d;else defects.push(d);updSaved();haptic('success');closeModal('m-defect');renderDefects();syncDefectToTodo(d).catch(()=>{});}catch(e){showSt('err','Save failed: '+e.message);}
@@ -5380,7 +5380,7 @@ async function saveNote(){
   let notePhotos=notePhotosRaw;
   if(connected&&notePhotosRaw.some(p=>p&&!p.startsWith('http'))){
     try{notePhotos=await uploadPhotos(notePhotosRaw,photoFolder('notes',noteRef));}
-    catch(e){console.error('Photo upload skipped:',e.message);notePhotos=notePhotosRaw;}
+    catch(e){console.error('Photo upload skipped:',e.message);alert('Photos failed to upload — please retry adding them. The rest of this note will still save.');notePhotos=notePhotosRaw.filter(p=>p&&p.startsWith('http'));}
   }
   const n={id,spId,vehicleId:g('note-veh'),date:g('note-date'),title:g('note-title'),body:g('note-body'),photos:notePhotos,docsUploaded:getDocs('note-docs-uploaded')};
   try{
@@ -5469,7 +5469,7 @@ async function saveRepairNote(){
   let rnPhotos=rnPhotosRaw;
   if(connected&&rnPhotosRaw.some(p=>p&&!p.startsWith('http'))){
     try{rnPhotos=await uploadPhotos(rnPhotosRaw,photoFolder('repairnotes',rnRef));}
-    catch(e){console.error('Photo upload skipped:',e.message);rnPhotos=rnPhotosRaw;}
+    catch(e){console.error('Photo upload skipped:',e.message);alert('Photos failed to upload — please retry adding them. The rest of this repair note will still save.');rnPhotos=rnPhotosRaw.filter(p=>p&&p.startsWith('http'));}
   }
   const n={id,spId,vehicleId:g('rn-veh'),date:g('rn-date'),heading:g('rn-heading'),fault:g('rn-fault'),repair:g('rn-repair'),photos:rnPhotos,docsUploaded:getDocs('rn-docs-uploaded')};
   if(!n.vehicleId){alert('Please select a vehicle.');btn.disabled=false;btn.textContent='Save repair note';return;}
@@ -6765,7 +6765,9 @@ let driveId = null;
 const driveCache = {};
 
 async function getDriveId(libName) {
-  // Default to Shared Documents — all files stored here for consistency
+  // Default to Shared Documents — the site's single document library.
+  // (A separate "Workshop Hub" library was created early on but never
+  // actually used by any upload path — removed to avoid confusion.)
   const key = libName || 'Shared Documents';
   if (driveCache[key]) return driveCache[key];
   const sid = await getSiteId();
@@ -6833,7 +6835,7 @@ async function ensureFolder(folderPath) {
 }
 
 // ─── AUTOMATIC BACKUP TO SHAREPOINT ─────────────────────────────────────────
-// Writes a dated JSON snapshot into Workshop Hub / Backups on SharePoint —
+// Writes a dated JSON snapshot into Shared Documents / Backups on SharePoint —
 // once per day per site, triggered silently for admin/owner on login, plus a
 // manual button on the Backup & Restore page.
 async function backupToSharePoint(silent) {
@@ -6855,7 +6857,7 @@ async function backupToSharePoint(silent) {
     localStorage.setItem('mvbl_last_autobackup_'+_activeSite, dateStr);
     const el = document.getElementById('backup-last-status');
     if (el) el.textContent = `Last SharePoint backup: ${new Date().toLocaleString('en-AU')} (${fileName})`;
-    if (!silent) alert('Backup uploaded to SharePoint — Workshop Hub / Backups / '+fileName);
+    if (!silent) alert('Backup uploaded to SharePoint — Shared Documents / Backups / '+fileName);
   } catch(e) {
     console.warn('Auto-backup failed:', e.message);
     if (!silent) alert('Backup failed: '+e.message);
@@ -6923,6 +6925,7 @@ async function uploadPhotos(photos, folderPath) {
   const needsUpload = photos.filter(p => p && !p.startsWith('http'));
   if (!needsUpload.length) return photos.filter(Boolean); // all already URLs
   const urls = [];
+  let failedCount = 0;
   for (let i = 0; i < photos.length; i++) {
     const p = photos[i];
     if (!p) continue;
@@ -6933,9 +6936,17 @@ async function uploadPhotos(photos, folderPath) {
       const result = await uploadFileToLibrary(folderPath, fileName, p);
       urls.push(result.webUrl);
     } catch(e) {
+      // Never fall back to storing raw base64 image data directly in the record —
+      // SharePoint's Photos field is a small text field and a full image's worth
+      // of base64 will silently blow past its limit, turning one failed photo
+      // upload into a failed save of the entire record. Drop the photo instead
+      // and tell the user clearly so they can retry just that one.
       console.error('Photo upload error:', e.message);
-      urls.push(p); // keep base64 as fallback
+      failedCount++;
     }
+  }
+  if (failedCount > 0) {
+    alert(`${failedCount} photo${failedCount>1?'s':''} failed to upload and ${failedCount>1?'were':'was'} not saved. The rest of this record will still save — please retry adding the missing photo${failedCount>1?'s':''}.`);
   }
   return urls;
 }
@@ -6956,7 +6967,7 @@ async function fetchPhotoAsBlob(url) {
     const afterSite = decoded.slice(siteIdx + SITE.length);
     
     // Identify which library the file is in and get the right drive ID
-    let filePath = null, driveKey = 'Workshop Hub';
+    let filePath = null, driveKey = 'Shared Documents';
     for (const {folder, driveKey: dk} of LIBRARY_MAP) {
       if (afterSite.startsWith(folder)) {
         filePath = afterSite.slice(folder.length);
@@ -7153,7 +7164,7 @@ async function renderInlinePhotos(containerEl) {
 // ─── SHAREPOINT FOLDER LINK ───────────────────────────────────────────────────
 function spFolderUrl(module, refNum) {
   const sitePath = '/sites/Workshop-MooneeValleyBusLines';
-  // Files are stored in the "Workshop Hub" document library
+  // Files are stored in the site's default "Shared Documents" library
   const folderMap = {
     defects:     'Defects',
     jobcards:    'Job Cards',
@@ -7167,9 +7178,9 @@ function spFolderUrl(module, refNum) {
   };
   const folderName = folderMap[module] || module;
   const folderPath = refNum
-    ? `${sitePath}/Workshop Hub/${folderName}/${refNum}`
-    : `${sitePath}/Workshop Hub/${folderName}`;
-  return `${CFG.SITE_URL}/Workshop%20Hub/Forms/AllItems.aspx?id=${encodeURIComponent(folderPath)}&viewid=fbcb9a93-941e-44a7-97c8-921944a2138d`;
+    ? `${sitePath}/Shared Documents/${folderName}/${refNum}`
+    : `${sitePath}/Shared Documents/${folderName}`;
+  return `${CFG.SITE_URL}/Shared%20Documents/Forms/AllItems.aspx?id=${encodeURIComponent(folderPath)}&viewid=fbcb9a93-941e-44a7-97c8-921944a2138d`;
 }
 
 function showSpFolderLink(elId, module, refNum) {
@@ -9873,7 +9884,7 @@ async function submitPreTrip(){
       desc:'Pre-trip fail: '+item.label+(noteText?' — '+noteText:''),
       reportedBy:driver,dateReported:dt?dt.slice(0,10):today(),odo,status:'Open',
       clearedBy:'',dateCleared:'',rectification:'',
-      notes:'Auto-raised from pre-trip inspection on '+(dt?fmtDate(dt.slice(0,10)):today())+' by '+driver+'.'};
+      notes:'Auto-raised from pre-trip inspection on '+(dt?fd(dt.slice(0,10)):today())+' by '+driver+'.'};
     defects.push(d);defectsRaised.push(d);
     if(connected){try{const c=await createItem(CFG.L_DEFECTS,defToSp(d));d.spId=String(c.id);d.id=String(c.id);}catch(e){console.error(e);}}
   }
@@ -9907,7 +9918,7 @@ function renderPtHistory(){
   tbody.innerHTML=ptHistory.slice(0,30).map(r=>{
     const fail=r.failCount||0,pass=r.passCount||0;
     const badge=fail===0?'<span class="badge bg">All passed</span>':`<span class="badge br">${fail} failed</span>`;
-    return`<tr><td>${fmtDate(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><td class="tdf">${r.vFleet||'?'}${r.vRego?' — '+r.vRego:''}</td><td>${r.driver||'—'}</td><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><td>${badge} <span style="font-size:11px;color:var(--grey-dark)">${pass}/${pass+fail}</span></td><td style="font-size:12px;">${r.defectRefs?.length?r.defectRefs.join(', '):'—'}</td><td><button class="btn sm bt" onclick="viewPtRecord('${r.id}')">View</button> <button class="btn sm bs" onclick="deletePtRecord('${r.id}')">Delete</button></td></tr>`;
+    return`<tr><td>${fd(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><td class="tdf">${r.vFleet||'?'}${r.vRego?' — '+r.vRego:''}</td><td>${r.driver||'—'}</td><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><td>${badge} <span style="font-size:11px;color:var(--grey-dark)">${pass}/${pass+fail}</span></td><td style="font-size:12px;">${r.defectRefs?.length?r.defectRefs.join(', '):'—'}</td><td><button class="btn sm bt" onclick="viewPtRecord('${r.id}')">View</button> <button class="btn sm bs" onclick="deletePtRecord('${r.id}')">Delete</button></td></tr>`;
   }).join('');
 }
 function deletePtRecord(id){
