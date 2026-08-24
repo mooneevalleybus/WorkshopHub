@@ -3350,7 +3350,7 @@ function spToAcc(x){const f=x.fields||{};
   };
 }
 
-function vToSp(v){const d=s=>s&&s.trim()?s:null;const m=fleetFieldMap();const svcKmNum=v.svcKm?Number(String(v.svcKm).replace(/[^0-9.-]/g,'')):null;const part3KmNum=v.part3Km?Number(String(v.part3Km).replace(/[^0-9.-]/g,'')):null;return{Title:v.fleet,Rego:v.rego||'',RegoExpiry:d(v.regoExp),[m.Year]:v.year||'',[m.Make]:v.make||'',VIN:v.vin||'',[m.EngineNum]:v.engineNo||'',[m.TransSerial]:v.transSerial||'',Capacity:v.capacity||'',[m.Owner]:v.owner||'',[m.Odo]:v.odo?String(v.odo):'',[m.OdoDate]:d(v.odoDate),[m.SvcDate]:d(v.svcDate),[m.SvcKm]:(svcKmNum!==null&&!isNaN(svcKmNum))?svcKmNum:null,Part3Date:d(v.part3Date),Part3Km:(part3KmNum!==null&&!isNaN(part3KmNum))?part3KmNum:null,Notes:v.notes||''};}
+function vToSp(v){const d=s=>s&&s.trim()?s:null;const dt=s=>s&&s.trim()?s+'T00:00:00':null;const m=fleetFieldMap();const svcKmNum=v.svcKm?Number(String(v.svcKm).replace(/[^0-9.-]/g,'')):null;const part3KmNum=v.part3Km?Number(String(v.part3Km).replace(/[^0-9.-]/g,'')):null;return{Title:v.fleet,Rego:v.rego||'',RegoExpiry:d(v.regoExp),[m.Year]:v.year||'',[m.Make]:v.make||'',VIN:v.vin||'',[m.EngineNum]:v.engineNo||'',[m.TransSerial]:v.transSerial||'',Capacity:v.capacity||'',[m.Owner]:v.owner||'',[m.Odo]:v.odo?String(v.odo):'',[m.OdoDate]:d(v.odoDate),[m.SvcDate]:d(v.svcDate),[m.SvcKm]:(svcKmNum!==null&&!isNaN(svcKmNum))?svcKmNum:null,Part3Date:dt(v.part3Date),Part3Km:(part3KmNum!==null&&!isNaN(part3KmNum))?part3KmNum:null,Notes:v.notes||''};}
 function tToSp(t){const m=taskFieldMap();const f={Title:t.desc,VehicleId:t.vehicleId,Priority:t.priority,[m.Status]:t.status,Technician:t.tech,DateLogged:t.dateLogged||null,[m.DateDue]:t.dateDone||null,[m.Odo]:t.odo?String(t.odo):'',Notes:JSON.stringify({text:t.notes||'',docsUploaded:!!t.docsUploaded})};if(t.photos?.length)f.TaskPhotos=JSON.stringify(t.photos);return f;}
 
 
@@ -6339,9 +6339,13 @@ function part3ToSp(r) {
     VehicleId: r.vehicleId,
     FleetNum: r.fleetNum,
     Rego: r.rego,
-    InspDate: r.date||null,
+    // InspDate/NextDue are genuine SharePoint DateTime columns — sending a bare
+    // "YYYY-MM-DD" string can be silently dropped by Graph API. Append a naive
+    // time (no timezone/Z) so the date portion round-trips correctly rather
+    // than shifting a day under UTC conversion.
+    InspDate: r.date?r.date+'T00:00:00':null,
     Odo: r.odo?String(r.odo):'',
-    NextDue: r.nextDue||null,
+    NextDue: r.nextDue?r.nextDue+'T00:00:00':null,
     NextOdo: r.nextOdo?String(r.nextOdo):'',
     Inspector: r.inspector,
     Sig: r.sig||'',
