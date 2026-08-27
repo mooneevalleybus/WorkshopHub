@@ -3536,7 +3536,8 @@ function renderDash(){
     driver:['defects'],
     office:['defects','duesoon','fleet'],
     tech:['overdue','duesoon','defects','tasks','fleet'],
-    manager:['overdue','duesoon','defects','parts','tasks','fleet'],
+    manager:['overdue','duesoon','defects','tasks','fleet'],
+    owner:['overdue','duesoon','defects','tasks','fleet'],
     admin:['overdue','duesoon','defects','parts','tasks','fleet'],
   };
   document.getElementById('dash-tiles').innerHTML=(roleTiles[role]||roleTiles.admin).map(k=>allTiles[k]).join('');
@@ -3547,7 +3548,7 @@ function renderDash(){
   const isMobile=window.innerWidth<=600;
   const cards=(rows,empty)=>rows.length?`<div class="dash-cards">${rows.join('')}</div>`:`<div style="text-align:center;padding:20px;color:var(--grey-dark);font-size:13px;">${empty}</div>`;
   const tbl=(rows,cols,empty)=>isMobile?cards(rows.map(r=>{const tmp=document.createElement('table');tmp.innerHTML='<tbody><tr>'+r+'</tr></tbody>';const tds=[...tmp.querySelectorAll('td')];const vals=tds.map(td=>td.innerHTML);return`<div class="dash-card">${cols.map((c,i)=>c&&vals[i]?`<div class="dc-row"><span class="dc-lbl">${c}</span><span class="dc-val">${vals[i]}</span></div>`:(vals[i]||'')).join('')}</div>`;}),empty):rows.length?`<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r}</tr>`).join('')}</tbody></table>`:`<div style="text-align:center;padding:20px;color:var(--grey-dark);font-size:13px;">${empty}</div>`;
-  if(['office','tech','manager','admin'].includes(role)){
+  if(['office','tech','manager','owner','admin'].includes(role)){
     document.getElementById('dash-ov').innerHTML=tbl(ov.map(v=>`<td class="tdf">${v.fleet}</td><td>${v.rego||'--'}</td><td>${coName(v.owner)}</td><td>${dueReasonsHtml(v,'overdue')}</td><td><button class="btn sm bs" onclick="editVehicle('${v.id}')">Update</button></td>`),(["Fleet","Rego","Company","Overdue for",""]),"No overdue services");
     document.getElementById('dash-ds').innerHTML=tbl(ds.map(v=>`<td class="tdf">${v.fleet}</td><td>${v.rego||'--'}</td><td>${coName(v.owner)}</td><td>${dueReasonsHtml(v,'soon')}</td>`),(["Fleet","Rego","Company","Due soon"]),"Nothing due in 30 days");
     document.getElementById('dash-tasks').innerHTML=tbl(ot.slice(0,8).map(t=>{const v=fleet.find(x=>x.id===t.vehicleId)||{};return`<td class="tdf">${v.fleet||'?'}</td><td style="max-width:200px;white-space:normal">${t.desc}</td><td>${priB(t.priority)}</td><td>${stB(t.status)}</td>`;}),(["Fleet","Task","Priority","Status"]),"No open tasks");
@@ -3555,7 +3556,7 @@ function renderDash(){
   if(['manager','admin'].includes(role)){
     document.getElementById('dash-parts').innerHTML=tbl(pp.slice(0,8).map(p=>{const v=fleet.find(x=>x.id===p.vehicleId)||{};return`<td class="tdf">${v.fleet||'?'}</td><td style="max-width:200px;white-space:normal">${p.desc}</td><td>${p.supplier||'--'}</td><td>${fd(p.eta)}</td>`;}),(["Fleet","Part","Supplier","ETA"]),"No parts on order");
   }
-  if(['driver','office','tech','manager','admin'].includes(role)){
+  if(['driver','office','tech','manager','owner','admin'].includes(role)){
     document.getElementById('dash-defects').innerHTML=tbl(opdefs.slice(0,8).map(d=>{const v=fleet.find(x=>x.id===d.vehicleId)||{};return`<td class="tdf">${v.fleet||'?'}</td><td style="max-width:200px;white-space:normal">${d.desc}</td><td>${sevB(d.severity)}</td><td>${fd(d.dateReported)}</td>`;}),(["Fleet","Defect","Severity","Reported"]),"No open defects");
   }
   const qa=document.getElementById('dash-quick');
@@ -7491,7 +7492,12 @@ function applyRoleUI() {
   // connections (mobile) even for eligible roles.
   const isAdminRole = connected && (currentRole==='admin'||_realRole==='admin');
   const SITE_SWITCH_ROLES = ['admin','owner','manager'];
-  const canSwitchSite = connected && (SITE_SWITCH_ROLES.includes(currentRole)||SITE_SWITCH_ROLES.includes(_realRole));
+  // Site-switching must be restricted to MVBL's own internal staff — a
+  // customer's own Owner/Manager account (e.g. O'Riley's) shares the same
+  // role label but has a CompanyFilter set to their one company, and must
+  // never be able to browse other customers' or MVBL's own data.
+  const isInternalUnrestricted = !currentCompanyFilter && !_realCompanyFilter;
+  const canSwitchSite = connected && isInternalUnrestricted && (SITE_SWITCH_ROLES.includes(currentRole)||SITE_SWITCH_ROLES.includes(_realRole));
   const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=isAdminRole?'flex':'none';
   const drpw=document.getElementById('role-preview-wrap');if(drpw)drpw.style.display=isAdminRole?'flex':'none';
   const dssw=document.getElementById('desk-site-switch-wrap');if(dssw)dssw.style.display=canSwitchSite?'flex':'none';
