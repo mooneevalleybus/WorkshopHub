@@ -1062,11 +1062,11 @@ select option {
   <div class="tiles" id="dash-tiles"></div>
   <div id="dash-quick"></div>
   <div id="dash-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-    <div class="card dash-sec" data-roles="tech,manager,admin"><div class="ch"><span class="ct">🔴 Overdue services</span></div><div class="cb tw" id="dash-ov"></div></div>
-    <div class="card dash-sec" data-roles="office,tech,manager,admin"><div class="ch"><span class="ct">🟡 Due within 30 days</span></div><div class="cb tw" id="dash-ds"></div></div>
-    <div class="card dash-sec" data-roles="driver,office,tech,manager,admin"><div class="ch"><span class="ct">⚠️ Open defects</span></div><div class="cb tw" id="dash-defects"></div></div>
+    <div class="card dash-sec" data-roles="tech,manager,owner,admin"><div class="ch"><span class="ct">🔴 Overdue services</span></div><div class="cb tw" id="dash-ov"></div></div>
+    <div class="card dash-sec" data-roles="office,tech,manager,owner,admin"><div class="ch"><span class="ct">🟡 Due within 30 days</span></div><div class="cb tw" id="dash-ds"></div></div>
+    <div class="card dash-sec" data-roles="driver,office,tech,manager,owner,admin"><div class="ch"><span class="ct">⚠️ Open defects</span></div><div class="cb tw" id="dash-defects"></div></div>
     <div class="card dash-sec" data-roles="manager,admin"><div class="ch"><span class="ct">⏳ Parts on order</span></div><div class="cb tw" id="dash-parts"></div></div>
-    <div class="card dash-sec" data-roles="tech,manager,admin"><div class="ch"><span class="ct">🔧 Open vehicle tasks</span></div><div class="cb tw" id="dash-tasks"></div></div>
+    <div class="card dash-sec" data-roles="tech,manager,owner,admin"><div class="ch"><span class="ct">🔧 Open vehicle tasks</span></div><div class="cb tw" id="dash-tasks"></div></div>
   </div>
 </div>
 </div><!-- /desk-dashboard -->
@@ -8680,14 +8680,6 @@ function taskCompleteCheckbox(t) {
 
 // ─── COMPANY FILTER ───────────────────────────────────────────────────────────
 // Returns true if a vehicle should be visible to the current user
-function canSeeVehicle(vehicleId) {
-  if (!currentCompanyFilter) return true; // blank = see all
-  const v = fleet.find(x=>x.id===vehicleId);
-  if (!v) return false;
-  const co = companies.find(x=>x.id===v.owner);
-  return (co?.name||'') === currentCompanyFilter;
-}
-
 function canSeeVehicleObj(v) {
   if (!currentCompanyFilter) return true;
   const cf = currentCompanyFilter.toLowerCase();
