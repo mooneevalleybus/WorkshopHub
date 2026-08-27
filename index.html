@@ -1105,6 +1105,7 @@ select option {
         <select id="task-veh" onchange="renderTasks()" style="width:145px;"><option value="">All vehicles</option></select>
         <select id="task-st" onchange="renderTasks()" style="width:120px;"><option value="">All statuses</option><option>Open</option><option>In progress</option><option>Done</option></select>
         <label style="font-size:12px;color:var(--grey-dark);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;"><input type="checkbox" id="task-show-done" onchange="renderTasks()"> Show completed</label>
+        <select id="task-sort" onchange="renderTasks()" style="width:130px;"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
         <button class="btn bp" onclick="openTaskModal()">+ Log task</button>
       </div>
     </div>
@@ -1122,6 +1123,7 @@ select option {
         <select id="parts-veh" onchange="renderParts()" style="width:145px;"><option value="">All vehicles</option></select>
         <select id="parts-st" onchange="renderParts()" style="width:120px;"><option value="">All statuses</option><option>On order</option><option>Arrived</option><option>Fitted</option></select>
         <label style="font-size:12px;color:var(--grey-dark);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;"><input type="checkbox" id="parts-show-done" onchange="renderParts()"> Show completed</label>
+        <select id="parts-sort" onchange="renderParts()" style="width:130px;"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
         <button class="btn bp" onclick="openPartModal()">+ Add part</button>
       </div>
     </div>
@@ -1139,6 +1141,7 @@ select option {
         <select id="jc-fveh" onchange="renderJobCards()" style="width:145px;"><option value="">All vehicles</option></select>
         <select id="jc-st" onchange="renderJobCards()" style="width:120px;"><option value="">All statuses</option><option>Open</option><option>In progress</option><option>Complete</option></select>
         <label style="font-size:12px;color:var(--grey-dark);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;"><input type="checkbox" id="jc-show-done" onchange="renderJobCards()"> Show completed</label>
+        <select id="jc-sort" onchange="renderJobCards()" style="width:130px;"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
         <button class="btn bp" onclick="openJobCardModal()">+ New job card</button>
       </div>
     </div>
@@ -1156,6 +1159,7 @@ select option {
         <select id="def-fveh" onchange="renderDefects()" style="width:145px;"><option value="">All vehicles</option></select>
         <select id="def-st" onchange="renderDefects()" style="width:130px;"><option value="">All statuses</option><option>Open</option><option>Cleared</option></select>
         <label style="font-size:12px;color:var(--grey-dark);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;"><input type="checkbox" id="def-show-done" onchange="renderDefects()"> Show cleared</label>
+        <select id="def-sort" onchange="renderDefects()" style="width:130px;"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
         <button class="btn bp" onclick="openDefectModal()">+ Log defect</button>
       </div>
     </div>
@@ -1562,6 +1566,7 @@ select option {
       <span class="ct" id="mh-title">Vehicle Safety Maintenance History Record (MMS 2.4.2.5)</span>
       <div class="tb">
         <input id="mh-search" placeholder="🔍 Search…" oninput="renderMaintHistory()" style="width:200px;">
+        <select id="mh-sort" onchange="renderMaintHistory()" style="width:130px;"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
         <button class="btn bp" onclick="openMaintModal()">+ Add entry</button>
         <button class="btn bprint" onclick="printMaintHistory()">🖨 Print / PDF</button>
       </div>
@@ -1732,6 +1737,7 @@ select option {
           <option>Paid</option>
         </select>
         <label style="font-size:12px;color:var(--grey-dark);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;"><input type="checkbox" id="aq-show-done" onchange="renderAccQuotes()"> Show paid</label>
+        <select id="aq-sort" onchange="renderAccQuotes()" style="width:130px;"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
         <button class="btn bp" onclick="openAqModal()">+ New quote</button>
       </div>
     </div>
@@ -3401,6 +3407,28 @@ function regoBadge(v){
   return'<span class="badge bg">OK</span>';
 }
 function priB(p){const m={Low:'bgy',Normal:'bn',High:'ba',Urgent:'br'};return`<span class="badge ${m[p]||'bgy'}">${p||'—'}</span>`;}
+// Which of Service/Part 3/Rego is actually overdue or due-soon for a vehicle —
+// used by the dashboard widgets so a vehicle isn't shown as "OK" just because
+// its regular Service date is fine while its Part 3 or Rego is the real issue.
+function dueReasons(v,mode){ // mode: 'overdue' or 'soon'
+  const reasons=[];
+  const d=du(v.svcDate),k=v.svcKm&&v.odo?parseInt(v.svcKm)-parseInt(v.odo):null;
+  const svcHit = mode==='overdue' ? ((d!==null&&d<0)||(k!==null&&k<0)) : ((d!==null&&d>=0&&d<=30)||(k!==null&&k>=0&&k<=2000));
+  if(svcHit)reasons.push({label:'Service',detail:d!==null&&d<0?'':d!==null?fd(v.svcDate):(k!==null?k.toLocaleString()+' km left':'')});
+  const p3=part3Due(v);
+  const p3Hit = mode==='overdue' ? (p3!==null&&p3<0) : (p3!==null&&p3>=0&&p3<=30);
+  if(p3Hit)reasons.push({label:'Part 3',detail:v.part3Date?fd(v.part3Date):''});
+  const rg=regoDue(v);
+  const rgHit = mode==='overdue' ? (rg!==null&&rg<0) : (rg!==null&&rg>=0&&rg<=30);
+  if(rgHit)reasons.push({label:'Rego',detail:v.regoExp?fd(v.regoExp):''});
+  return reasons;
+}
+function dueReasonsHtml(v,mode){
+  const r=dueReasons(v,mode);
+  if(!r.length)return'<span class="badge bgy">—</span>';
+  const cls=mode==='overdue'?'br':'ba';
+  return r.map(x=>`<span class="badge ${cls}" title="${x.detail}">${x.label}</span>`).join(' ');
+}
 function stB(s){const m={Open:'br','In progress':'ba',Done:'bg',Complete:'bg'};return`<span class="badge ${m[s]||'bgy'}">${s||'—'}</span>`;}
 function pstB(s){const m={'On order':'ba',Arrived:'bt',Fitted:'bg',Cancelled:'bgy'};return`<span class="badge ${m[s]||'bgy'}">${s||'—'}</span>`;}
 function sevB(s){const m={Minor:'bn',Major:'ba','Safety critical':'br'};return`<span class="badge ${m[s]||'bgy'}">${s||'—'}</span>`;}
@@ -3520,8 +3548,8 @@ function renderDash(){
   const cards=(rows,empty)=>rows.length?`<div class="dash-cards">${rows.join('')}</div>`:`<div style="text-align:center;padding:20px;color:var(--grey-dark);font-size:13px;">${empty}</div>`;
   const tbl=(rows,cols,empty)=>isMobile?cards(rows.map(r=>{const tmp=document.createElement('table');tmp.innerHTML='<tbody><tr>'+r+'</tr></tbody>';const tds=[...tmp.querySelectorAll('td')];const vals=tds.map(td=>td.innerHTML);return`<div class="dash-card">${cols.map((c,i)=>c&&vals[i]?`<div class="dc-row"><span class="dc-lbl">${c}</span><span class="dc-val">${vals[i]}</span></div>`:(vals[i]||'')).join('')}</div>`;}),empty):rows.length?`<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r}</tr>`).join('')}</tbody></table>`:`<div style="text-align:center;padding:20px;color:var(--grey-dark);font-size:13px;">${empty}</div>`;
   if(['office','tech','manager','admin'].includes(role)){
-    document.getElementById('dash-ov').innerHTML=tbl(ov.map(v=>`<td class="tdf">${v.fleet}</td><td>${v.rego||'--'}</td><td>${coName(v.owner)}</td><td>${svcBadge(v)}</td><td><button class="btn sm bs" onclick="editVehicle('${v.id}')">Update</button></td>`),(["Fleet","Rego","Company","Status",""]),"No overdue services");
-    document.getElementById('dash-ds').innerHTML=tbl(ds.map(v=>`<td class="tdf">${v.fleet}</td><td>${v.rego||'--'}</td><td>${coName(v.owner)}</td><td>${fd(v.svcDate)}</td>`),(["Fleet","Rego","Company","Next service"]),"Nothing due in 30 days");
+    document.getElementById('dash-ov').innerHTML=tbl(ov.map(v=>`<td class="tdf">${v.fleet}</td><td>${v.rego||'--'}</td><td>${coName(v.owner)}</td><td>${dueReasonsHtml(v,'overdue')}</td><td><button class="btn sm bs" onclick="editVehicle('${v.id}')">Update</button></td>`),(["Fleet","Rego","Company","Overdue for",""]),"No overdue services");
+    document.getElementById('dash-ds').innerHTML=tbl(ds.map(v=>`<td class="tdf">${v.fleet}</td><td>${v.rego||'--'}</td><td>${coName(v.owner)}</td><td>${dueReasonsHtml(v,'soon')}</td>`),(["Fleet","Rego","Company","Due soon"]),"Nothing due in 30 days");
     document.getElementById('dash-tasks').innerHTML=tbl(ot.slice(0,8).map(t=>{const v=fleet.find(x=>x.id===t.vehicleId)||{};return`<td class="tdf">${v.fleet||'?'}</td><td style="max-width:200px;white-space:normal">${t.desc}</td><td>${priB(t.priority)}</td><td>${stB(t.status)}</td>`;}),(["Fleet","Task","Priority","Status"]),"No open tasks");
   }
   if(['manager','admin'].includes(role)){
@@ -3622,7 +3650,7 @@ function renderTasks(){
   vFilter('task-veh',cf);
   const vf=document.getElementById('task-veh')?.value||'';
   const sf=document.getElementById('task-st')?.value||'';
-  const rows=tasks.filter(t=>{if(!canSeeVehicle(t.vehicleId))return false;const v=fleet.find(x=>x.id===t.vehicleId);if(sf)return(!cf||(v&&v.owner===cf))&&(!vf||t.vehicleId===vf)&&t.status===sf;if(!showDone&&t.status==='Done')return false;return(!cf||(v&&v.owner===cf))&&(!vf||t.vehicleId===vf);}).sort((a,b)=>{const p={Urgent:0,High:1,Normal:2,Low:3};return(p[a.priority]??2)-(p[b.priority]??2);});
+  const rows=tasks.filter(t=>{if(!canSeeVehicle(t.vehicleId))return false;const v=fleet.find(x=>x.id===t.vehicleId);if(sf)return(!cf||(v&&v.owner===cf))&&(!vf||t.vehicleId===vf)&&t.status===sf;if(!showDone&&t.status==='Done')return false;return(!cf||(v&&v.owner===cf))&&(!vf||t.vehicleId===vf);}).sort((a,b)=>{const dir=document.getElementById('task-sort')?.value==='old'?1:-1;const dc=(a.dateLogged||'').localeCompare(b.dateLogged||'')*dir;if(dc!==0)return dc;const p={Urgent:0,High:1,Normal:2,Low:3};return(p[a.priority]??2)-(p[b.priority]??2);});
   document.getElementById('tasks-tbody').innerHTML=rows.map(t=>{const v=fleet.find(x=>x.id===t.vehicleId)||{};if(isMob())return mobileCard(t.id,`${v.fleet||'?'} — ${v.rego||'—'}`,t.desc,`${priB(t.priority)} ${stB(t.status)}`,`editTask('${t.id}')`,'');return`<tr><td class="tdf">${v.fleet||'?'}</td><td>${v.rego||'—'}</td><td>${coBadge(v.owner)}</td><td>${t.desc}</td><td>${priB(t.priority)}</td><td>${stB(t.status)}</td><td>${fd(t.dateLogged)}</td><td>${t.dateDone?fd(t.dateDone):'—'}</td><td>${t.tech||'—'}</td><td style="max-width:180px;white-space:normal">${t.notes||'—'}</td><td>${taskCompleteCheckbox(t)}</td><td class="tda" style="white-space:nowrap">${docsCheckbox(t.id)} <button class="btn sm bs" onclick="editTask('${t.id}')">Edit</button> <button class="btn sm bd" onclick="delTask('${t.id}')">Del</button></td></tr>`;}).join('')||emptyR(11,'No tasks. <a href="#" onclick="openTaskModal();return false">Log the first one.</a>');
 }
 async function openTaskModal(id){
@@ -3662,7 +3690,7 @@ function renderParts(){
   const cf=document.getElementById('parts-co')?.value||'';vFilter('parts-veh',cf);
   const vf=document.getElementById('parts-veh')?.value||'',sf=document.getElementById('parts-st')?.value||'';
   const showDone=document.getElementById('parts-show-done')?.checked;
-  const rows=parts.filter(p=>{if(!canSeeVehicle(p.vehicleId))return false;const v=fleet.find(x=>x.id===p.vehicleId);if(sf)return(!cf||(v&&v.owner===cf))&&(!vf||p.vehicleId===vf)&&p.status===sf;if(!showDone&&(p.status==='Fitted'||p.status==='Cancelled'))return false;return(!cf||(v&&v.owner===cf))&&(!vf||p.vehicleId===vf);}).sort((a,b)=>new Date(b.orderDate)-new Date(a.orderDate));
+  const rows=parts.filter(p=>{if(!canSeeVehicle(p.vehicleId))return false;const v=fleet.find(x=>x.id===p.vehicleId);if(sf)return(!cf||(v&&v.owner===cf))&&(!vf||p.vehicleId===vf)&&p.status===sf;if(!showDone&&(p.status==='Fitted'||p.status==='Cancelled'))return false;return(!cf||(v&&v.owner===cf))&&(!vf||p.vehicleId===vf);}).sort((a,b)=>{const dir=document.getElementById('parts-sort')?.value==='old'?1:-1;return(new Date(b.orderDate)-new Date(a.orderDate))*-dir;});
   document.getElementById('parts-tbody').innerHTML=rows.map(p=>{const v=fleet.find(x=>x.id===p.vehicleId)||{};if(isMob())return mobileCard(p.id,`${v.fleet||'?'} — ${v.rego||'—'}`,p.desc,`${p.supplier||'—'} · ETA ${fd(p.eta)||'—'}`,`editPart('${p.id}')`,`${docsCheckbox(p.id)}`);return`<tr><td class="tdf">${v.fleet||'?'}</td><td>${v.rego||'—'}</td><td>${coBadge(v.owner)}</td><td>${p.desc}</td><td>${p.supplier||'—'}</td><td>${fd(p.orderDate)}</td><td>${fd(p.eta)||'—'}</td><td>${p.cost?'$'+parseFloat(p.cost).toFixed(2):'—'}</td><td>${pstB(p.status)}</td><td style="max-width:140px;white-space:normal">${p.task||'—'}</td><td data-label="Docs">${docsCheckbox(p.id)}</td><td class="tda" style="white-space:nowrap"><button class="btn sm bs" onclick="editPart('${p.id}')">Edit</button> <button class="btn sm bd" onclick="delPart('${p.id}')">Del</button></td></tr>`;}).join('')||emptyR(11,'No parts. <a href="#" onclick="openPartModal();return false">Add the first one.</a>');
 }
 async function openPartModal(id){
@@ -3701,7 +3729,7 @@ function renderJobCards(){
   if(isMobile()){renderMobCards("mob-jc-cards",jobCards.filter(j=>canSeeVehicle(j.vehicleId)&&(showDone||j.status!=='Complete')),mobJobCard,"No open job cards");return;}
   const cf=document.getElementById('jc-co')?.value||'';vFilter('jc-veh',cf);
   const vf=document.getElementById('jc-fveh')?.value||'',sf=document.getElementById('jc-st')?.value||'';
-  const rows=jobCards.filter(j=>{if(!canSeeVehicle(j.vehicleId))return false;const v=fleet.find(x=>x.id===j.vehicleId);if(sf)return(!cf||(v&&v.owner===cf))&&(!vf||j.vehicleId===vf)&&j.status===sf;if(!showDone&&j.status==='Complete')return false;return(!cf||(v&&v.owner===cf))&&(!vf||j.vehicleId===vf);}).sort((a,b)=>new Date(b.dateIn)-new Date(a.dateIn));
+  const rows=jobCards.filter(j=>{if(!canSeeVehicle(j.vehicleId))return false;const v=fleet.find(x=>x.id===j.vehicleId);if(sf)return(!cf||(v&&v.owner===cf))&&(!vf||j.vehicleId===vf)&&j.status===sf;if(!showDone&&j.status==='Complete')return false;return(!cf||(v&&v.owner===cf))&&(!vf||j.vehicleId===vf);}).sort((a,b)=>{const dir=document.getElementById('jc-sort')?.value==='old'?1:-1;return(new Date(b.dateIn)-new Date(a.dateIn))*-dir;});
   document.getElementById('jc-tbody').innerHTML=rows.map(j=>{const v=fleet.find(x=>x.id===j.vehicleId)||{};if(isMob())return mobileCard(j.id,
   `${j.jobNum||'—'} · Fleet ${v.fleet||'?'} — ${v.rego||'—'}`,
   `${stB(j.status)} · 📅 ${fd(j.dateIn)||'—'}`,
@@ -3937,7 +3965,7 @@ function renderDefects(){
   if(isMobile()){renderMobCards("mob-defect-cards",defects.filter(d=>canSeeVehicle(d.vehicleId)&&(showDone||d.status!=='Cleared')),mobDefectCard,"No open defects");return;}
   const cf=document.getElementById('def-co')?.value||'';vFilter('def-veh',cf);
   const vf=document.getElementById('def-fveh')?.value||'',sf=document.getElementById('def-st')?.value||'';
-  const rows=defects.filter(d=>{if(!canSeeVehicle(d.vehicleId))return false;const v=fleet.find(x=>x.id===d.vehicleId);if(sf)return(!cf||(v&&v.owner===cf))&&(!vf||d.vehicleId===vf)&&d.status===sf;if(!showDone&&d.status==='Cleared')return false;return(!cf||(v&&v.owner===cf))&&(!vf||d.vehicleId===vf);}).sort((a,b)=>new Date(b.dateReported)-new Date(a.dateReported));
+  const rows=defects.filter(d=>{if(!canSeeVehicle(d.vehicleId))return false;const v=fleet.find(x=>x.id===d.vehicleId);if(sf)return(!cf||(v&&v.owner===cf))&&(!vf||d.vehicleId===vf)&&d.status===sf;if(!showDone&&d.status==='Cleared')return false;return(!cf||(v&&v.owner===cf))&&(!vf||d.vehicleId===vf);}).sort((a,b)=>{const dir=document.getElementById('def-sort')?.value==='old'?1:-1;return(new Date(b.dateReported)-new Date(a.dateReported))*-dir;});
   document.getElementById('def-tbody').innerHTML=rows.map(d=>{const v=fleet.find(x=>x.id===d.vehicleId)||{};const cls=d.status==='Open'?'defect-open':d.status==='Cleared'?'defect-cleared':'';if(isMob())return mobileCard(d.id,
   `${d.refNum||'—'} · Fleet ${v.fleet||'?'} — ${v.rego||'—'}`,
   `${sevB(d.severity)} ${stB(d.status)} · ${fd(d.dateReported)}`,
@@ -6652,7 +6680,7 @@ function renderMaintHistory(){
   if(isMobile()){
     if(detail)detail.style.display='none';
     if(mobCards)mobCards.style.display='block';
-    const items=maintHistory.filter(m=>m.vehicleId===vid&&canSeeVehicle(m.vehicleId)).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    const items=maintHistory.filter(m=>m.vehicleId===vid&&canSeeVehicle(m.vehicleId)).sort((a,b)=>{const dir=document.getElementById('mh-sort')?.value==='old'?1:-1;return(a.date||'').localeCompare(b.date||'')*dir;});
     const cardsHtml=items.length?items.map(mobMaintCard).join(''):'<div style="padding:30px;text-align:center;color:var(--grey-dark);">No maintenance history for this vehicle</div>';
     if(mobCards)mobCards.innerHTML='<button class="btn sm bs" onclick="mhClearVehicle()" style="margin-bottom:10px;">&larr; All vehicles</button>'+cardsHtml;
     return;
@@ -6661,7 +6689,7 @@ function renderMaintHistory(){
   if(detail)detail.style.display='block';
 
   const rows=maintHistory.filter(m=>{if(m.vehicleId!==vid||!canSeeVehicle(m.vehicleId))return false;if(srch){const hay=[m.desc,m.by,v?.fleet,v?.rego,m.date,m.odo].join(' ').toLowerCase();if(!hay.includes(srch))return false;}return true;})
-    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    .sort((a,b)=>{const dir=document.getElementById('mh-sort')?.value==='old'?1:-1;return(a.date||'').localeCompare(b.date||'')*dir;});
   document.getElementById('mh-tbody').innerHTML=rows.length?rows.map(m=>{
     const v=fleet.find(x=>x.id===m.vehicleId)||{};
     return `<tr>
@@ -8248,7 +8276,7 @@ function renderAccQuotes(){
   const st  = document.getElementById('aq-fst')?.value || '';
   const rows = accQuotes
     .filter(q=>{if(!canSeeVehicle(q.vehicleId))return false;if(st)return(!vid||q.vehicleId===vid)&&q.status===st;if(!showDone&&q.status==='Paid')return false;return(!vid||q.vehicleId===vid);})
-    .sort((a,b)=>(b.qDate||'').localeCompare(a.qDate||''));
+    .sort((a,b)=>{const dir=document.getElementById('aq-sort')?.value==='old'?1:-1;return(b.qDate||'').localeCompare(a.qDate||'')*-dir;});
 
   document.getElementById('aq-tbody').innerHTML = rows.length
     ? rows.map(q => {
