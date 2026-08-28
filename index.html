@@ -9565,8 +9565,12 @@ function showVehicleQR(vehicleId) {
   const v = fleet.find(x => x.id === vehicleId);
   if (!v) return;
   
-  // URL that opens the app and shows the QR action menu for this vehicle
-  const appUrl = `${window.location.origin}${window.location.pathname}?qrveh=${encodeURIComponent(vehicleId)}`;
+  // URL that opens the app and shows the QR action menu for this vehicle —
+  // includes which SITE this vehicle belongs to, since each site has its own
+  // separate vehicle list with independently-numbered IDs. Without this, a
+  // vehicle ID from one site can coincidentally match a completely different
+  // vehicle's ID on another site.
+  const appUrl = `${window.location.origin}${window.location.pathname}?qrveh=${encodeURIComponent(vehicleId)}&site=${encodeURIComponent(_activeSite)}`;
   
   document.getElementById('qr-fleet-label').textContent = 'Fleet ' + (v.fleet||'?');
   document.getElementById('qr-rego-label').textContent = v.rego || '';
@@ -9763,17 +9767,32 @@ async function init(){
     if(ok){updateAuthUI(true);await loadAll();return;}
   }
   const ok=await ensureToken();
-  if(ok){updateAuthUI(true);await loadAll();handleQRParams();}
+  if(ok){updateAuthUI(true);await loadAll();await handleQRParams();}
   else{updateAuthUI(false);}
 }
 
-function handleQRParams(){
+async function handleQRParams(){
   const params=new URLSearchParams(window.location.search);
   const page=params.get('page');
   const veh=params.get('veh');
   const qrVeh=params.get('qrveh');
+  const qrSite=params.get('site');
   if(qrVeh){
     window.history.replaceState({},'',window.location.pathname);
+    if(qrSite && qrSite!==_activeSite){
+      showSt('info','This vehicle is on a different site — switching…');
+      try{
+        await switchSite(qrSite);
+      }catch(e){
+        alert("Couldn't switch to this vehicle's site — you may not have access to it.");
+        return;
+      }
+      // If switchSite failed silently (e.g. no access) fleet won't contain this vehicle
+      if(!fleet.find(x=>x.id===qrVeh)){
+        alert("This QR code is for a vehicle on a different site you don't have access to.");
+        return;
+      }
+    }
     showQRActionMenu(qrVeh);
     return;
   }
