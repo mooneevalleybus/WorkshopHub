@@ -1049,6 +1049,7 @@ select option {
       <button class="mob-action-btn" onclick="openDefectModal()"><span style="font-size:32px;">⚠️</span><span style="font-size:13px;font-weight:700;">Report Defect</span></button>
       <button class="mob-action-btn" onclick="openJobCardModal()"><span style="font-size:32px;">🔧</span><span style="font-size:13px;font-weight:700;">Job Card</span></button>
       <button class="mob-action-btn" onclick="openAccidentModal()"><span style="font-size:32px;">🚨</span><span style="font-size:13px;font-weight:700;">Accident</span></button>
+      <button class="mob-action-btn" onclick="showPage('odoupdate',null)" style="grid-column:1 / -1;"><span style="font-size:32px;">🔢</span><span style="font-size:13px;font-weight:700;">Odometer Update</span></button>
     </div>
     <button onclick="openQRScanner()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--teal);border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:white;font-family:inherit;margin-bottom:10px;">📷 Scan Vehicle QR</button>
     <button onclick="openQuickCapture()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:white;border:2px solid var(--grey-b);border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:var(--navy);font-family:inherit;margin-bottom:16px;">⚡ More quick actions</button>
@@ -9728,6 +9729,13 @@ function qrAction(action) {
       }, 300);
       break;
 
+    case 'odoupdate':
+      showPage('odoupdate', null);
+      setTimeout(() => {
+        if (typeof odoPickVehicle === 'function') odoPickVehicle(vid);
+      }, 300);
+      break;
+
     case 'details':
       showPage('fleet', null);
       setTimeout(() => editVehicle(vid), 300);
@@ -11213,6 +11221,10 @@ init();
         <button class="qr-action-btn" onclick="qrAction('maint')">
           <span style="font-size:32px;">📋</span>
           <span>Log<br>Maintenance</span>
+        </button>
+        <button class="qr-action-btn" onclick="qrAction('odoupdate')">
+          <span style="font-size:32px;">🔢</span>
+          <span>Odometer<br>Update</span>
         </button>
       </div>
       <button class="qr-action-btn" style="width:100%;grid-column:1/-1;" onclick="qrAction('details')">
