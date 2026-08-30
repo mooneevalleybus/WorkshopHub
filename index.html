@@ -472,6 +472,12 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
 .mob-menu-close { background:rgba(255,255,255,.1);border:none;color:white;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer; }
 .mob-menu-section { padding:16px 20px 4px;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.08em;text-transform:uppercase; }
 .mob-menu-item { display:flex;align-items:center;gap:14px;padding:14px 20px;color:white;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06); }
+#mob-bottomnav { display:none; position:fixed; bottom:0; left:0; right:0; z-index:150; background:white; border-top:1px solid var(--grey-b); padding-bottom:env(safe-area-inset-bottom,0px); box-shadow:0 -2px 8px rgba(0,0,0,.06); }
+.mbn-tab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:8px 4px 6px; border:none; background:none; font-family:inherit; cursor:pointer; color:var(--grey-dark); }
+.mbn-tab .mbn-icon { font-size:20px; line-height:1; }
+.mbn-tab .mbn-label { font-size:10px; font-weight:600; }
+.mbn-tab.active { color:var(--navy); }
+.mbn-tab.active .mbn-icon { transform:scale(1.05); }
 .mob-menu-item:active { background:rgba(255,255,255,.08); }
 .mob-menu-item-icon { font-size:20px;width:28px;text-align:center; }
 .mob-menu-item-label { font-size:15px;font-weight:500; }
@@ -491,6 +497,7 @@ td.tda { text-align: right; vertical-align: middle; white-space: nowrap; }
   #role-badge,#role-preview-wrap,#todo-sync-btn,#company-filter-badge { display:none!important; }
   input,select,textarea { font-size:16px!important; }
   .btn { min-height:40px; }
+  #mob-bottomnav { display:flex; }
 @media (min-width: 901px) {
   
 .sev-btn {
@@ -888,7 +895,11 @@ select option {
 <body>
 <!-- LOGIN OVERLAY -->
 <div id="login-screen" style="position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
-  <div style="background:white;border-radius:16px;padding:40px 36px;max-width:400px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.35);">
+  <div id="login-loading" style="text-align:center;">
+    <div style="width:64px;height:64px;background:var(--teal);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:pulse 1.6s ease-in-out infinite;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="6" width="20" height="10" rx="2.5" fill="white"/><rect x="4.2" y="8" width="4" height="4" rx="0.8" fill="#1a7f7a"/><rect x="10" y="8" width="4" height="4" rx="0.8" fill="#1a7f7a"/><rect x="15.8" y="8" width="4" height="4" rx="0.8" fill="#1a7f7a"/><circle cx="7" cy="16.5" r="2.3" fill="white"/><circle cx="7" cy="16.5" r="1" fill="#1a7f7a"/><circle cx="17" cy="16.5" r="2.3" fill="white"/><circle cx="17" cy="16.5" r="1" fill="#1a7f7a"/></svg></div>
+    <div style="font-size:18px;font-weight:700;color:white;">Fleet Desk</div>
+  </div>
+  <div id="login-form" style="display:none;background:white;border-radius:16px;padding:40px 36px;max-width:400px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.35);">
     <div style="width:64px;height:64px;background:var(--teal);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="6" width="20" height="10" rx="2.5" fill="white"/><rect x="4.2" y="8" width="4" height="4" rx="0.8" fill="#1a7f7a"/><rect x="10" y="8" width="4" height="4" rx="0.8" fill="#1a7f7a"/><rect x="15.8" y="8" width="4" height="4" rx="0.8" fill="#1a7f7a"/><circle cx="7" cy="16.5" r="2.3" fill="white"/><circle cx="7" cy="16.5" r="1" fill="#1a7f7a"/><circle cx="17" cy="16.5" r="2.3" fill="white"/><circle cx="17" cy="16.5" r="1" fill="#1a7f7a"/></svg></div>
     <div style="font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px;">Fleet Desk</div>
     <div style="font-size:13px;color:var(--grey-dark);margin-bottom:32px;">Fleet Desk</div>
@@ -901,6 +912,7 @@ select option {
   </div>
   <p style="margin-top:24px;font-size:11px;color:rgba(255,255,255,.4);">&copy; Moonee Valley Bus Lines</p>
 </div>
+<style>@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.7;transform:scale(.96);}}</style>
 
 <div class="header">
   <div class="hbrand">
@@ -3154,7 +3166,7 @@ async function ensureToken(){
   if(ok)updateAuthUI(true);
   return ok;
 }
-function signOut(){token=null;localStorage.removeItem('mvbl_tok');localStorage.removeItem('mvbl_rt');connected=false;fleet=[];tasks=[];parts=[];jobCards=[];defects=[];accidents=[];companies=[{id:'mvbl',name:'MVBL',isDefault:true}];updateAuthUI(false);renderPage('dashboard');}
+function signOut(){token=null;localStorage.removeItem('mvbl_tok');localStorage.removeItem('mvbl_rt');connected=false;fleet=[];tasks=[];parts=[];jobCards=[];defects=[];accidents=[];companies=[{id:'mvbl',name:'MVBL',isDefault:true}];const ll=document.getElementById('login-loading');if(ll)ll.style.display='none';const lf=document.getElementById('login-form');if(lf)lf.style.display='block';updateAuthUI(false);renderPage('dashboard');}
 function toggleAuth(){if(token)signOut();else signIn();}
 function updateAuthUI(on){
   document.getElementById('auth-dot').style.background=on?'#1e8a50':'#6b7280';
@@ -3226,7 +3238,7 @@ async function loadAll(){
   const safe = async (fn) => { try { return await fn(); } catch(e) { console.warn('List load warning:', e.message); return []; } };
   const safeFleet = async (fn) => { try { return await fn(); } catch(e) { console.error('Fleet load FAILED:', e.message); showSt('err','Fleet failed to load: '+e.message); return []; } };
   try{
-    const[ci,fi,ti,pi,ji,di,ai,ni,rni,vsii,mhi,cati,aqi,cali,p3i,todi]=await Promise.all([
+    const[ci,fi,ti,pi,ji,di,ai,ni,rni,vsii,mhi,cati,aqi,cali,p3i,todi,pti]=await Promise.all([
       safe(()=>listItems(CFG.L_COS)),
       safeFleet(()=>listItems(CFG.L_FLEET)),
       safe(()=>listItems(CFG.L_TASKS)),
@@ -3243,6 +3255,7 @@ async function loadAll(){
       safe(()=>listItems(CFG.L_CAL)),
       safe(()=>CFG.L_PART3?listItems(CFG.L_PART3):[]),
       safe(()=>CFG.L_TODO?listItems(CFG.L_TODO):[]),
+      safe(()=>CFG.L_PRETRIP?listItems(CFG.L_PRETRIP):[]),
     ]);
     companies=ci.map(x=>({id:String(x.id),spId:String(x.id),name:x.fields?.Title||'',isDefault:x.fields?.IsDefault||false,sortOrder:x.fields?.SortOrder||99})).sort((a,b)=>a.sortOrder-b.sortOrder);
     if(!companies.length)companies=[{id:'mvbl',spId:null,name:'MVBL',isDefault:true}];
@@ -3255,6 +3268,8 @@ async function loadAll(){
     calEvents=(cali||[]).map(spToCal);
     part3History=(p3i||[]).map(spToPart3).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     todos=(todi||[]).map(spToTodo).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+    ptHistory=(pti||[]).map(spToPt).sort((a,b)=>(b.dt||'').localeCompare(a.dt||''));
+    localStorage.setItem('mvbl_pretrip', JSON.stringify(ptHistory.slice(0,200)));
     // Get user role and switch to correct site BEFORE loading data
     await loadUserRole();
     // Now reload all lists from the correct site if site changed
@@ -3262,7 +3277,7 @@ async function loadAll(){
     if(siteChanged){
       console.log('Site switched to', CFG.SITE_URL, '— reloading data');
       const safe2 = async (fn) => { try { return await fn(); } catch(e) { console.warn('List reload warning:', e.message); return []; } };
-      const[fi2,ti2,pi2,ji2,di2,ai2,ni2,rni2,vsii2,mhi2,cati2,aqi2,cali2,p3i2,todi2]=await Promise.all([
+      const[fi2,ti2,pi2,ji2,di2,ai2,ni2,rni2,vsii2,mhi2,cati2,aqi2,cali2,p3i2,todi2,pti2]=await Promise.all([
         safe2(()=>{console.log('Loading fleet from',CFG.SITE_URL,'list',CFG.L_FLEET);return listItems(CFG.L_FLEET);}),
         safe2(()=>listItems(CFG.L_TASKS)),
         safe2(()=>listItems(CFG.L_PARTS)),
@@ -3278,6 +3293,7 @@ async function loadAll(){
         safe2(()=>CFG.L_CAL?listItems(CFG.L_CAL):[]),
         safe2(()=>CFG.L_PART3?listItems(CFG.L_PART3):[]),
         safe2(()=>CFG.L_TODO?listItems(CFG.L_TODO):[]),
+        safe2(()=>CFG.L_PRETRIP?listItems(CFG.L_PRETRIP):[]),
       ]);
       fleet=fi2.map(spToV).sort((a,b)=>parseInt(a.fleet)-parseInt(b.fleet));
       tasks=ti2.map(spToT);
@@ -3293,6 +3309,8 @@ async function loadAll(){
       calEvents=cali2.map(spToCal);
       part3History=p3i2.map(spToPart3).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
       todos=(todi2||[]).map(spToTodo).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+      ptHistory=(pti2||[]).map(spToPt).sort((a,b)=>(b.dt||'').localeCompare(a.dt||''));
+      localStorage.setItem('mvbl_pretrip', JSON.stringify(ptHistory.slice(0,200)));
       catalogue=[];
     }
     connected=true; updateAuthUI(true); clearSt(); populateAllFilters();
@@ -3636,7 +3654,7 @@ async function saveVehicle(){
   try{
     if(connected){const fields=vToSp(v);if(spId){await updateItem(CFG.L_FLEET,spId,fields);}else{const c=await createItem(CFG.L_FLEET,fields);v.spId=String(c.id);v.id=String(c.id);}}
     const i=fleet.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)fleet[i]=v;else fleet.push(v);
-    updSaved();closeModal('m-vehicle');renderFleet();
+    updSaved();haptic('success');closeModal('m-vehicle');renderFleet();
   }catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save vehicle';
 }
@@ -3719,7 +3737,7 @@ async function savePart(){
     catch(e){console.error('Photo upload skipped:',e.message);alert('Photos failed to upload — please retry adding them. The rest of this part order will still save.');partPhotos=partPhotosRaw.filter(p=>p&&p.startsWith('http'));}
   }
   const p={id,spId,vehicleId:g('p-veh'),desc:g('p-desc'),supplier:g('p-sup'),invoice:g('p-inv'),orderDate:g('p-ord'),eta:g('p-eta'),cost:g('p-cost'),status:g('p-st'),task:g('p-task'),notes:g('p-notes'),photos:partPhotos,docsUploaded:getDocs('p-docs-uploaded')};
-  try{if(connected){const f=pToSp(p);if(spId){await updateItem(CFG.L_PARTS,spId,f);}else{const c=await createItem(CFG.L_PARTS,f);p.spId=String(c.id);p.id=String(c.id);}}const i=parts.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)parts[i]=p;else parts.push(p);updSaved();closeModal('m-part');renderParts();}catch(e){showSt('err','Save failed: '+e.message);}
+  try{if(connected){const f=pToSp(p);if(spId){await updateItem(CFG.L_PARTS,spId,f);}else{const c=await createItem(CFG.L_PARTS,f);p.spId=String(c.id);p.id=String(c.id);}}const i=parts.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)parts[i]=p;else parts.push(p);updSaved();haptic('success');closeModal('m-part');renderParts();}catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save';
 }
 
@@ -4159,7 +4177,7 @@ async function saveAccident(){
       }catch(e){console.error('Report upload error:',e);}
     }
   }
-  try{if(connected){const f=accToSp(a);if(spId){await updateItem(CFG.L_ACC,spId,f);}else{const c=await createItem(CFG.L_ACC,f);a.spId=String(c.id);a.id=String(c.id);}}const i=accidents.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)accidents[i]=a;else accidents.push(a);updSaved();closeModal('m-accident');renderAccidents();}catch(e){showSt('err','Save failed: '+e.message);}
+  try{if(connected){const f=accToSp(a);if(spId){await updateItem(CFG.L_ACC,spId,f);}else{const c=await createItem(CFG.L_ACC,f);a.spId=String(c.id);a.id=String(c.id);}}const i=accidents.findIndex(x=>x.id===id||x.spId===spId);if(i>=0)accidents[i]=a;else accidents.push(a);updSaved();haptic('success');closeModal('m-accident');renderAccidents();}catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save report';
 }
 function printAccident(){const id=g('acc-id');closeModal('m-accident');if(id)printAccidentId(id);}
@@ -5432,7 +5450,7 @@ async function saveNote(){
     }
     const i=notes.findIndex(x=>x.id===id||x.spId===spId);
     if(i>=0)notes[i]=n;else notes.push(n);
-    updSaved();closeModal('m-note');renderNotes();
+    updSaved();haptic('success');closeModal('m-note');renderNotes();
   }catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save note';
 }
@@ -5523,7 +5541,7 @@ async function saveRepairNote(){
     }
     const i=repairNotes.findIndex(x=>x.id===id||x.spId===spId);
     if(i>=0)repairNotes[i]=n;else repairNotes.push(n);
-    updSaved();closeModal('m-repairnote');renderRepairNotes();
+    updSaved();haptic('success');closeModal('m-repairnote');renderRepairNotes();
   }catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save repair note';
 }
@@ -6618,6 +6636,7 @@ async function saveOdoUpdate(){
   v.odoDate=readingDate;
   try{
     if(connected&&v.spId){await updateItem(CFG.L_FLEET,v.spId,vToSp(v));}
+    haptic('success');
     const msg=document.getElementById('odo-savedmsg');
     if(msg){msg.textContent=connected?'✓ Saved':'✓ Saved locally';msg.style.display='block';}
     setTimeout(()=>{odoClearVehicle();},900);
@@ -6740,7 +6759,7 @@ async function saveMaint(){
     const i=maintHistory.findIndex(x=>x.id===id||x.spId===spId);
     if(i>=0)maintHistory[i]=m;else maintHistory.push(m);
     maintHistory.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-    updSaved();closeModal('m-maint');renderMaintHistory();
+    updSaved();haptic('success');closeModal('m-maint');renderMaintHistory();
   }catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save entry';
 }
@@ -7462,6 +7481,26 @@ function applyRoleUI() {
     }
   });
 
+  // Show/hide mobile hamburger menu items — this uses a completely separate
+  // element (.mob-menu-item / mobNav(...)) from the desktop sidebar (.nt /
+  // showPage(...)), so it needs its own pass with the same allowed-pages list.
+  document.querySelectorAll('.mob-menu-item[onclick]').forEach(el => {
+    const match = el.getAttribute('onclick')?.match(/mobNav\('([^']+)'/);
+    if (!match) return;
+    const page = match[1];
+    el.style.display = allowed.includes(page) ? '' : 'none';
+  });
+  // Hide a mobile menu section header if every item under it got hidden
+  document.querySelectorAll('.mob-menu-section').forEach(label => {
+    let sib = label.nextElementSibling;
+    let anyVisible = false;
+    while (sib && !sib.classList.contains('mob-menu-section')) {
+      if (sib.classList.contains('mob-menu-item') && sib.style.display !== 'none') anyVisible = true;
+      sib = sib.nextElementSibling;
+    }
+    label.style.display = anyVisible ? '' : 'none';
+  });
+
   // Hide sb-group labels if all children hidden
   document.querySelectorAll('.sb-group').forEach(grp => {
     const items = grp.querySelectorAll('.nt');
@@ -7486,6 +7525,7 @@ function applyRoleUI() {
   // Same info, visible on mobile where the header badge is hidden for space
   const mobRoleDisp = document.getElementById('mob-role-display');
   if (mobRoleDisp) mobRoleDisp.textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
+  renderBottomNav();
 
   // Site switcher / role preview — shown here (not on token arrival) because
   // currentRole isn't known until this point. Doing it earlier races against
@@ -7597,9 +7637,46 @@ async function savePretripToSP(record) {
       Result: record.failed === 0 ? 'Pass' : 'Fail',
       FailCount: String(record.failed || 0),
       DefectsRaised: String(record.defectsRaised || 0),
-      Items: JSON.stringify(record.items || {}),
+      // Items also carries notes/signature/passCount/defectRefs, wrapped —
+      // no dedicated SharePoint columns exist for these, and adding them
+      // would mean a schema change across every site.
+      Items: JSON.stringify({
+        items: record.items || {},
+        notes: record.notes || '',
+        signature: record.signature || '',
+        passCount: record.passCount || 0,
+        defectRefs: record.defectRefs || [],
+      }),
     });
   } catch(e) { console.warn('Pre-trip SP save failed:', e.message); }
+}
+
+function spToPt(x) {
+  const f = x.fields || {};
+  let items = {}, notes = '', signature = '', passCount = 0, defectRefs = [];
+  try {
+    const parsed = JSON.parse(f.Items || '{}');
+    if (parsed && typeof parsed === 'object' && 'items' in parsed) {
+      // New wrapped format
+      items = parsed.items || {};
+      notes = parsed.notes || '';
+      signature = parsed.signature || '';
+      passCount = parsed.passCount || 0;
+      defectRefs = parsed.defectRefs || [];
+    } else {
+      // Older records saved before this fix — Items is just the raw item states
+      items = parsed || {};
+    }
+  } catch(e) {}
+  const failCount = parseInt(f.FailCount || '0') || 0;
+  if (!passCount) passCount = Object.values(items).filter(v => v === 'pass').length;
+  return {
+    id: String(x.id), spId: String(x.id),
+    dt: (f.InspDate || '').replace(' ', 'T'),
+    vId: f.VehicleId || '', vFleet: f.FleetNum || '', vRego: f.Rego || '',
+    driver: f.Driver || '', odo: f.Odo || '', notes,
+    items, signature, failCount, passCount, defectRefs,
+  };
 }
 
 // ─── SERVICE HISTORY TIMELINE ─────────────────────────────────────────────────
@@ -9176,8 +9253,29 @@ function isMobile(){return window.innerWidth<=768;}
 function openMobMenu(){const el=document.getElementById('mob-menu-overlay');if(el){el.classList.add('show');document.body.style.overflow='hidden';}}
 function closeMobMenu(){const el=document.getElementById('mob-menu-overlay');if(el){el.classList.remove('show');document.body.style.overflow='';}}
 function mobNav(page){closeMobMenu();showPage(page,null);}
+const ROLE_BOTTOM_TABS = {
+  driver:   [{page:'dashboard',icon:'📊',label:'Home'},{page:'pretrip',icon:'🚦',label:'Pre-Trip'},{page:'defects',icon:'⚠️',label:'Defects'},{page:'odoupdate',icon:'🔢',label:'Odometer'}],
+  office:   [{page:'dashboard',icon:'📊',label:'Home'},{page:'fleet',icon:'🚌',label:'Fleet'},{page:'defects',icon:'⚠️',label:'Defects'},{page:'calendar',icon:'📅',label:'Calendar'}],
+  tech:     [{page:'dashboard',icon:'📊',label:'Home'},{page:'pretrip',icon:'🚦',label:'Pre-Trip'},{page:'jobcards',icon:'📋',label:'Job Cards'},{page:'defects',icon:'⚠️',label:'Defects'}],
+  manager:  [{page:'dashboard',icon:'📊',label:'Home'},{page:'fleet',icon:'🚌',label:'Fleet'},{page:'tasks',icon:'🔧',label:'Tasks'},{page:'defects',icon:'⚠️',label:'Defects'}],
+  owner:    [{page:'dashboard',icon:'📊',label:'Home'},{page:'fleet',icon:'🚌',label:'Fleet'},{page:'tasks',icon:'🔧',label:'Tasks'},{page:'defects',icon:'⚠️',label:'Defects'}],
+  operator: [{page:'dashboard',icon:'📊',label:'Home'},{page:'fleet',icon:'🚌',label:'Fleet'},{page:'defects',icon:'⚠️',label:'Defects'},{page:'calendar',icon:'📅',label:'Calendar'}],
+  admin:    [{page:'dashboard',icon:'📊',label:'Home'},{page:'fleet',icon:'🚌',label:'Fleet'},{page:'tasks',icon:'🔧',label:'Tasks'},{page:'defects',icon:'⚠️',label:'Defects'}],
+};
+
+function renderBottomNav(){
+  const el = document.getElementById('mob-bottomnav');
+  if(!el) return;
+  const tabs = ROLE_BOTTOM_TABS[currentRole] || ROLE_BOTTOM_TABS.driver;
+  el.innerHTML = tabs.map(t=>`<button class="mbn-tab" data-page="${t.page}" onclick="showPage('${t.page}',null)"><span class="mbn-icon">${t.icon}</span><span class="mbn-label">${t.label}</span></button>`).join('')
+    + `<button class="mbn-tab" onclick="openMobMenu()"><span class="mbn-icon">☰</span><span class="mbn-label">More</span></button>`;
+  updateBottomNav(activePage());
+}
+
 function updateBottomNav(pageName){
-  // No bottom nav - no-op
+  document.querySelectorAll('#mob-bottomnav .mbn-tab').forEach(b=>{
+    b.classList.toggle('active', b.dataset.page===pageName);
+  });
 }
 function openQuickCapture(){
   const ov=document.getElementById('quick-capture-overlay');const sh=document.getElementById('quick-capture');
@@ -9776,7 +9874,13 @@ async function init(){
   }
   const ok=await ensureToken();
   if(ok){updateAuthUI(true);await loadAll();await handleQRParams();}
-  else{updateAuthUI(false);}
+  else{
+    // No valid cached session — now actually show the sign-in button instead
+    // of the loading spinner, rather than flashing it for every returning user.
+    const ll=document.getElementById('login-loading'); if(ll)ll.style.display='none';
+    const lf=document.getElementById('login-form'); if(lf)lf.style.display='block';
+    updateAuthUI(false);
+  }
 }
 
 async function handleQRParams(){
@@ -9968,8 +10072,8 @@ async function submitPreTrip(){
   ptHistory.unshift(record);
   localStorage.setItem('mvbl_pretrip',JSON.stringify(ptHistory.slice(0,200)));
   const resultEl=document.getElementById('pt-result');
-  if(failedItems.length===0){resultEl.textContent='All items passed — inspection complete.';resultEl.style.color='var(--green)';}
-  else{resultEl.textContent=failedItems.length+' item'+(failedItems.length>1?'s':'')+' failed — '+defectsRaised.length+' defect'+(defectsRaised.length>1?'s':'')+' raised automatically.';resultEl.style.color='var(--red)';}
+  if(failedItems.length===0){resultEl.textContent='All items passed — inspection complete.';resultEl.style.color='var(--green)';haptic('success');}
+  else{resultEl.textContent=failedItems.length+' item'+(failedItems.length>1?'s':'')+' failed — '+defectsRaised.length+' defect'+(defectsRaised.length>1?'s':'')+' raised automatically.';resultEl.style.color='var(--red)';haptic('error');}
   // Save to SharePoint
   const ptRec={
     refNum:'PT-'+Date.now(),
@@ -9978,6 +10082,10 @@ async function submitPreTrip(){
     failed:failedItems.length,
     defectsRaised:failedItems.length,
     items:ptState,
+    notes:g('pt-notes'),
+    signature:record.signature,
+    passCount:record.passCount,
+    defectRefs:defectsRaised.map(d=>d.refNum),
   };
   savePretripToSP(ptRec);
   updSaved();renderPtHistory();
@@ -9992,8 +10100,10 @@ function renderPtHistory(){
     return`<tr><td>${fd(r.dt?.slice(0,10))} ${r.dt?.slice(11,16)||''}</td><td class="tdf">${r.vFleet||'?'}${r.vRego?' — '+r.vRego:''}</td><td>${r.driver||'—'}</td><td>${r.odo?Number(r.odo).toLocaleString()+' km':'—'}</td><td>${badge} <span style="font-size:11px;color:var(--grey-dark)">${pass}/${pass+fail}</span></td><td style="font-size:12px;">${r.defectRefs?.length?r.defectRefs.join(', '):'—'}</td><td><button class="btn sm bt" onclick="viewPtRecord('${r.id}')">View</button> <button class="btn sm bs" onclick="deletePtRecord('${r.id}')">Delete</button></td></tr>`;
   }).join('');
 }
-function deletePtRecord(id){
+async function deletePtRecord(id){
   if(!confirm('Delete this inspection record?'))return;
+  const r=ptHistory.find(x=>x.id===id);
+  if(connected&&r?.spId){try{await deleteItem(CFG.L_PRETRIP,r.spId);}catch(e){showSt('err','Could not delete from SharePoint: '+e.message);return;}}
   ptHistory=ptHistory.filter(r=>r.id!==id);
   localStorage.setItem('mvbl_pretrip',JSON.stringify(ptHistory));
   renderPtHistory();
@@ -11090,6 +11200,8 @@ init();
 </div>
 
 <!-- MOBILE FULL SCREEN MENU -->
+<div id="mob-bottomnav"></div>
+
 <div id="mob-menu-overlay">
   <div class="mob-menu-header">
     <div class="mob-menu-title">Fleet Desk</div>
