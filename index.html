@@ -932,16 +932,6 @@ select option {
       <div id="global-search-results" style="display:none;position:absolute;top:34px;right:0;width:320px;max-height:420px;overflow-y:auto;background:white;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:600;"></div>
     </span>
     <span id="role-badge" style="display:none;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;"></span>
-    <span id="desk-site-switch-wrap" style="display:none;align-items:center;gap:6px;">
-      <span style="font-size:11px;color:rgba(255,255,255,.5);">Site:</span>
-      <select id="desk-site-select" onchange="switchSite(this.value)"
-        style="font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:white;color:#1a2744;cursor:pointer;font-family:inherit;">
-        <option value="default">MVBL</option>
-        <option value="viclink">VicLink</option>
-        <option value="takura">Takura</option>
-        <option value="oriley">O'Riley</option>
-      </select>
-    </span>
     <span id="role-preview-wrap" style="display:none;align-items:center;gap:6px;position:relative;">
       <span style="font-size:11px;color:rgba(255,255,255,.5);">Preview as:</span>
       <select id="role-preview-select" onchange="previewRole(this.value)"
@@ -1043,6 +1033,7 @@ select option {
     <div class="sb-items">
       <div class="nt" onclick="showPage('companies',this)"><span class="ni">⚙️</span> Companies</div>
       <div class="nt" onclick="showPage('backup',this)"><span class="ni">💾</span> Backup &amp; Restore</div>
+      <div class="nt" onclick="showPage('siteswitch',this)"><span class="ni">🔀</span> Switch Company / Site</div>
     </div>
   </div>
 </nav>
@@ -1315,6 +1306,17 @@ select option {
       <p style="font-size:13px;color:var(--grey-dark);margin-bottom:10px;">A dated snapshot is uploaded automatically to <strong>Shared Documents / Backups</strong> on SharePoint once per day for admins/owners who open the app. You can also trigger one manually below.</p>
       <button class="btn bs" onclick="backupToSharePoint(false)">☁ Backup to SharePoint now</button>
       <div id="backup-last-status" style="margin-top:8px;font-size:12px;color:var(--grey-dark);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SWITCH COMPANY / SITE (admin only) -->
+<div class="page" id="page-siteswitch">
+  <div class="card" style="max-width:500px;">
+    <div class="ch"><span class="ct">Switch Company / Site</span></div>
+    <div class="cb">
+      <p style="font-size:13px;color:var(--grey-dark);margin-bottom:16px;">Switch which SharePoint site the app is reading and writing to. Restricted to admin accounts — a customer's own Owner/Manager login can never see this option or reach another company's data.</p>
+      <div id="siteswitch-buttons" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
   </div>
 </div>
@@ -3526,6 +3528,7 @@ function renderPage(name){
   else if(name==='accquotes')renderAccQuotes();
   else if(name==='calendar'){renderCalendar();}
   else if(name==='backup'){renderBackupStatus();}
+  else if(name==='siteswitch'){renderSiteSwitchPage();}
 }
 
 function renderBackupStatus(){
@@ -3533,6 +3536,25 @@ function renderBackupStatus(){
   if (!el) return;
   const last = localStorage.getItem('mvbl_last_autobackup_'+_activeSite);
   el.textContent = last ? `Last SharePoint backup: ${new Date(last).toLocaleDateString('en-AU')}` : 'No SharePoint backup recorded yet on this device.';
+}
+
+function renderSiteSwitchPage(){
+  const el = document.getElementById('siteswitch-buttons');
+  if (!el) return;
+  const sites = [
+    {key:'default', label:'MVBL (main site)', icon:'🏢'},
+    {key:'viclink', label:'VicLink', icon:'🚌'},
+    {key:'oriley', label:"O'Riley", icon:'🚌'},
+    {key:'takura', label:'Takura', icon:'🚌'},
+  ];
+  el.innerHTML = sites.map(s=>{
+    const active = _activeSite===s.key;
+    return `<button class="btn ${active?'bp':'bs'}" style="display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 16px;" onclick="switchSite('${s.key}')">
+      <span style="font-size:18px;">${s.icon}</span>
+      <span style="flex:1;text-align:left;">${s.label}</span>
+      ${active?'<span style="font-size:12px;font-weight:700;">✓ Active</span>':''}
+    </button>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -7469,7 +7491,7 @@ const ROLE_PAGES = {
   manager: ['dashboard','fleet','service','pretrip','mainthistory','tasks','defects','accident','accquotes','companies','calendar','todo','odoupdate'],
   owner:   ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','defects','accident','accquotes','financial','calendar','todo','odoupdate'],
   operator: ['dashboard','fleet','service','pretrip','defects','vsi','mainthistory','part3','accident','accquotes','financial','calendar','todo','odoupdate'],
-  admin:   ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','accquotes','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','companies','financial','catalogue','calendar','todo','odoupdate','backup'],
+  admin:   ['dashboard','fleet','service','pretrip','vsi','mainthistory','part3','tasks','jobcards','parts','notes','defects','accident','accquotes','faultcodes','allisoncodes','repairnotes','jaltest','dashlights','fuselayout','companies','financial','catalogue','calendar','todo','odoupdate','backup','siteswitch'],
 };
 
 // Pages drivers/techs can access but only in report/new mode (no edit/delete of existing)
@@ -7585,25 +7607,13 @@ function applyRoleUI() {
   if (mobRoleDisp) mobRoleDisp.textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
   renderBottomNav();
 
-  // Site switcher / role preview — shown here (not on token arrival) because
-  // currentRole isn't known until this point. Doing it earlier races against
-  // loadUserRole() finishing, which was silently hiding these on slower
-  // connections (mobile) even for eligible roles.
+  // Role preview — shown here (not on token arrival) because currentRole
+  // isn't known until this point. Doing it earlier races against
+  // loadUserRole() finishing, which was silently hiding this on slower
+  // connections (mobile) even for admins.
   const isAdminRole = connected && (currentRole==='admin'||_realRole==='admin');
-  const SITE_SWITCH_ROLES = ['admin','owner','manager'];
-  // Site-switching must be restricted to MVBL's own internal staff — a
-  // customer's own Owner/Manager account (e.g. O'Riley's) shares the same
-  // role label but has a CompanyFilter set to their one company, and must
-  // never be able to browse other customers' or MVBL's own data.
-  const isInternalUnrestricted = !currentCompanyFilter && !_realCompanyFilter;
-  const canSwitchSite = connected && isInternalUnrestricted && (SITE_SWITCH_ROLES.includes(currentRole)||SITE_SWITCH_ROLES.includes(_realRole));
   const mrpw=document.getElementById('mob-role-preview-wrap');if(mrpw)mrpw.style.display=isAdminRole?'flex':'none';
   const drpw=document.getElementById('role-preview-wrap');if(drpw)drpw.style.display=isAdminRole?'flex':'none';
-  const dssw=document.getElementById('desk-site-switch-wrap');if(dssw)dssw.style.display=canSwitchSite?'flex':'none';
-  ['mob-site-switch-section','mob-site-mvbl','mob-site-viclink','mob-site-takura','mob-site-oriley'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.style.display=canSwitchSite?(id==='mob-site-switch-section'?'block':'flex'):'none';
-  });
 
   // Apply report-only restrictions
   if (reportOnly.includes('defects')) {
@@ -11313,11 +11323,10 @@ init();
   <div class="mob-menu-item" onclick="mobNav('faultcodes')"><span class="mob-menu-item-icon">🔌</span><span class="mob-menu-item-label">Fault Codes</span></div>
   <div class="mob-menu-section">App</div>
   <div class="mob-menu-item" id="mob-install-item" onclick="installPWA()" style="display:none;"><span class="mob-menu-item-icon">📲</span><span class="mob-menu-item-label">Download as App</span></div>
-  <div class="mob-menu-section" id="mob-site-switch-section" style="display:none;">Switch site</div>
-  <div class="mob-menu-item" id="mob-site-mvbl" style="display:none;" onclick="switchSite('default')"><span class="mob-menu-item-icon">🏢</span><span class="mob-menu-item-label">MVBL (main site)</span></div>
-  <div class="mob-menu-item" id="mob-site-viclink" style="display:none;" onclick="switchSite('viclink')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">VicLink</span></div>
-  <div class="mob-menu-item" id="mob-site-takura" style="display:none;" onclick="switchSite('takura')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">Takura</span></div>
-  <div class="mob-menu-item" id="mob-site-oriley" style="display:none;" onclick="switchSite('oriley')"><span class="mob-menu-item-icon">🚌</span><span class="mob-menu-item-label">O'Riley</span></div>
+  <div class="mob-menu-section">Admin</div>
+  <div class="mob-menu-item" onclick="mobNav('companies')"><span class="mob-menu-item-icon">⚙️</span><span class="mob-menu-item-label">Companies</span></div>
+  <div class="mob-menu-item" onclick="mobNav('backup')"><span class="mob-menu-item-icon">💾</span><span class="mob-menu-item-label">Backup &amp; Restore</span></div>
+  <div class="mob-menu-item" onclick="mobNav('siteswitch')"><span class="mob-menu-item-icon">🔀</span><span class="mob-menu-item-label">Switch Company / Site</span></div>
   <div class="mob-menu-section">Account</div>
   <div class="mob-menu-item" style="cursor:default;">
     <span class="mob-menu-item-icon">👤</span>
