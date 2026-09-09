@@ -1050,11 +1050,11 @@ select option {
   <!-- MOBILE DASHBOARD -->
   <div class="mob-dash" id="mob-dashboard" style="display:none;">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-      <button class="mob-action-btn accent" onclick="showPage('pretrip',null)"><span style="font-size:32px;">🚦</span><span style="font-size:13px;font-weight:700;color:white;">Pre-Trip</span></button>
-      <button class="mob-action-btn" onclick="openDefectModal()"><span style="font-size:32px;">⚠️</span><span style="font-size:13px;font-weight:700;">Report Defect</span></button>
-      <button class="mob-action-btn" onclick="openJobCardModal()"><span style="font-size:32px;">🔧</span><span style="font-size:13px;font-weight:700;">Job Card</span></button>
-      <button class="mob-action-btn" onclick="openAccidentModal()"><span style="font-size:32px;">🚨</span><span style="font-size:13px;font-weight:700;">Accident</span></button>
-      <button class="mob-action-btn" onclick="showPage('odoupdate',null)" style="grid-column:1 / -1;"><span style="font-size:32px;">🔢</span><span style="font-size:13px;font-weight:700;">Odometer Update</span></button>
+      <button class="mob-action-btn accent" onclick="showPage('pretrip',null)" data-qcpage="pretrip"><span style="font-size:32px;">🚦</span><span style="font-size:13px;font-weight:700;color:white;">Pre-Trip</span></button>
+      <button class="mob-action-btn" onclick="openDefectModal()" data-qcpage="defects"><span style="font-size:32px;">⚠️</span><span style="font-size:13px;font-weight:700;">Report Defect</span></button>
+      <button class="mob-action-btn" onclick="openJobCardModal()" data-qcpage="jobcards"><span style="font-size:32px;">🔧</span><span style="font-size:13px;font-weight:700;">Job Card</span></button>
+      <button class="mob-action-btn" onclick="openAccidentModal()" data-qcpage="accident"><span style="font-size:32px;">🚨</span><span style="font-size:13px;font-weight:700;">Accident</span></button>
+      <button class="mob-action-btn" onclick="showPage('odoupdate',null)" data-qcpage="odoupdate" style="grid-column:1 / -1;"><span style="font-size:32px;">🔢</span><span style="font-size:13px;font-weight:700;">Odometer Update</span></button>
     </div>
     <button onclick="openQRScanner()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--teal);border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:white;font-family:inherit;margin-bottom:10px;">📷 Scan Vehicle QR</button>
     <button onclick="openQuickCapture()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:white;border:2px solid var(--grey-b);border-radius:12px;padding:12px;font-size:13px;font-weight:700;color:var(--navy);font-family:inherit;margin-bottom:16px;">⚡ More quick actions</button>
@@ -2130,7 +2130,7 @@ select option {
       <input type="file" id="jc-photo-input" accept="image/*" style="display:none;" onchange="handlePhotoInput(this,'jc-photos')" capture="environment">
       <input type="file" id="jc-photo-input-camera" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoInput(this,'jc-photos')">
 
-      <div class="fr" style="margin-top:10px;"><div><label>Notes</label><textarea id="jc-notes"></textarea></div></div>
+      <div class="fr" style="margin-top:10px;"><div><label>Additional Notes</label><textarea id="jc-notes"></textarea></div></div>
     </div>
     <div class="mf">
       <label class="docs-chk"><input type="checkbox" id="jc-docs-uploaded"> <span>Docs uploaded ✓</span></label>
@@ -3199,7 +3199,7 @@ async function gFetch(url, options={}){
   }
   return r;
 }
-async function gGet(url){const r=await gFetch(url);if(!r.ok)throw new Error(`${r.status} ${url}`);return r.json();}
+async function gGet(url, options={}){const r=await gFetch(url, options);if(!r.ok)throw new Error(`${r.status} ${url}`);return r.json();}
 async function gPost(url,body){const r=await gFetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok){const t=await r.text();throw new Error(`${r.status}: ${t}`);}return r.json();}
 async function gPatch(url,body){const r=await gFetch(url,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok){const t=await r.text();throw new Error(`${r.status}: ${t}`);}return r.json();}
 async function gDel(url){const r=await gFetch(url,{method:'DELETE'});if(!r.ok)throw new Error(`${r.status} ${url}`);}
@@ -3822,6 +3822,7 @@ async function saveJobCard(){
     desc:g('jc-desc'),work:g('jc-work'),
     nsDate:g('jc-nsdate'),nsOdo:g('jc-nsodo'),nsNotes:g('jc-nsnotes'),
     followup:g('jc-followup'),notes:g('jc-notes'),
+    docsUploaded:getDocs('jc-docs-uploaded'),
     faults: Array.from(document.querySelectorAll('#jc-faults-tbody tr')).map(tr=>{
       const ins=tr.querySelectorAll('input');const sel=tr.querySelector('select');
       return [ins[0]?.value||'',ins[1]?.value||'',sel?.value||'active'];
@@ -3843,7 +3844,7 @@ async function saveJobCard(){
   const jcRefNum=id&&jobCards.find(x=>x.id===id)?.jobNum||nextRef('JC',jobCards,'jobNum');
   j.jobNum=jcRefNum;
   if(connected) j.photos=await uploadPhotos(await compressPhotos(j.photos),photoFolder('jobcards',jcRefNum));
-  try{if(connected){const f=jToSp(j);if(spId){await updateItem(CFG.L_JOBS,spId,f);}else{const c=await createItem(CFG.L_JOBS,f);j.spId=String(c.id);j.id=String(c.id);}}const i=jobCards.findIndex(x=>x.id===id||x.spId===spId);if(i>=0){jobCards[i]=j;}else{j.docsUploaded=false;jobCards.push(j);}
+  try{if(connected){const f=jToSp(j);if(spId){await updateItem(CFG.L_JOBS,spId,f);}else{const c=await createItem(CFG.L_JOBS,f);j.spId=String(c.id);j.id=String(c.id);}}const i=jobCards.findIndex(x=>x.id===id||x.spId===spId);if(i>=0){jobCards[i]=j;}else{jobCards.push(j);}
     if(j.status==='Complete')await autoLogMaintFromJobCard(j);
     updSaved();haptic('success');closeModal('m-jobcard');renderJobCards();}catch(e){showSt('err','Save failed: '+e.message);}
   btn.disabled=false;btn.textContent='Save job card';
@@ -7514,15 +7515,62 @@ async function loadUserRole() {
     console.log('Looking up user:', currentUserEmail);
 
     // ALWAYS look up in MVBL WorkshopUsers list - never the customer site
-    const usersUrl = `https://graph.microsoft.com/v1.0/sites/${MVBL_SITE_ID}/lists/${MVBL_USERS_LIST}/items?$expand=fields&$top=500`;
-    const users = await gGet(usersUrl);
+    // Filter server-side to just this user's own row — the old approach
+    // fetched all 500 rows (every company's staff emails/roles) into every
+    // logged-in user's browser, retrievable via basic dev tools regardless of
+    // what the app's UI displayed. Falls back to the old full-fetch only if
+    // the filtered query itself fails for some reason (e.g. Graph filter
+    // quirks on this list), so login never breaks — but that fallback path
+    // re-introduces the full-list exposure, so it's worth watching the
+    // console for the warning below if it ever fires.
+    const emailLower = currentUserEmail.replace(/'/g, "''");
+    let users;
+    try {
+      const filteredUrl = `https://graph.microsoft.com/v1.0/sites/${MVBL_SITE_ID}/lists/${MVBL_USERS_LIST}/items?$expand=fields&$filter=tolower(fields/Email) eq '${emailLower}'`;
+      users = await gGet(filteredUrl, { headers: { Prefer: 'HonorNonIndexedQueriesWarningMayFailRandomly' } });
+    } catch(filterErr) {
+      console.warn('Filtered WorkshopUsers lookup failed, falling back to full list fetch (this exposes every row to this browser):', filterErr.message);
+      const usersUrl = `https://graph.microsoft.com/v1.0/sites/${MVBL_SITE_ID}/lists/${MVBL_USERS_LIST}/items?$expand=fields&$top=500`;
+      users = await gGet(usersUrl);
+    }
     const match = (users.value||[]).find(x=>(x.fields?.Email||'').toLowerCase()===currentUserEmail);
 
     if (match) {
       const role = (match.fields?.Role||'').toLowerCase();
       if (['driver','office','tech','manager','owner','operator','admin'].includes(role)) currentRole = role;
       currentCompanyFilter = match.fields?.CompanyFilter || '';
-      console.log('User found — role:', currentRole, 'company:', currentCompanyFilter);
+      console.log('User found in MVBL router — role:', currentRole, 'company:', currentCompanyFilter);
+
+      // If this account belongs to a customer site, that site's OWN
+      // WorkshopUsers list is now the authoritative source for their actual
+      // role — MVBL's list only needs to know which company they're with.
+      // Falls back to whatever role the router itself had on file if the
+      // per-site lookup fails for any reason (e.g. not migrated yet), so
+      // nobody gets locked out mid-transition.
+      const siteKeyMap = {viclink:'viclink', oriley:'oriley', "o'riley":'oriley', takura:'takura'};
+      const siteKey = siteKeyMap[(currentCompanyFilter||'').toLowerCase()];
+      if (siteKey && SITE_CONFIGS[siteKey] && SITE_CONFIGS[siteKey].L_USERS) {
+        try {
+          const siteCfg = SITE_CONFIGS[siteKey];
+          const u = new URL(siteCfg.SITE_URL);
+          const siteResolved = await gGet(`https://graph.microsoft.com/v1.0/sites/${u.hostname}:${u.pathname}`);
+          const siteFilteredUrl = `https://graph.microsoft.com/v1.0/sites/${siteResolved.id}/lists/${siteCfg.L_USERS}/items?$expand=fields&$filter=tolower(fields/Email) eq '${emailLower}'`;
+          const siteUsers = await gGet(siteFilteredUrl, { headers: { Prefer: 'HonorNonIndexedQueriesWarningMayFailRandomly' } });
+          const siteMatch = (siteUsers.value||[]).find(x=>(x.fields?.Email||'').toLowerCase()===currentUserEmail);
+          if (siteMatch) {
+            const siteRole = (siteMatch.fields?.Role||'').toLowerCase();
+            if (['driver','office','tech','manager','owner','operator','admin'].includes(siteRole)) {
+              currentRole = siteRole;
+              console.log('Role confirmed from', siteKey, "'s own list:", currentRole);
+            }
+          } else {
+            console.warn(`No matching row in ${siteKey}'s own WorkshopUsers list yet — using role from MVBL router as a fallback.`);
+          }
+        } catch(siteLookupErr) {
+          console.warn(`Per-site role lookup failed for ${siteKey}, using role from MVBL router as a fallback:`, siteLookupErr.message);
+        }
+      }
+
       // Switch to correct SharePoint site for this user — unless admin has manually picked a different site this session
       if (!_manualSiteOverride) {
         applySiteConfig(currentUserEmail, currentCompanyFilter);
@@ -7589,8 +7637,10 @@ function applyRoleUI() {
     if (label) label.style.display = allHidden ? 'none' : '';
   });
 
-  // Show/hide quick-access buttons that target a specific page
-  document.querySelectorAll('.qc-btn[data-qcpage]').forEach(el => {
+  // Show/hide quick-access buttons that target a specific page — covers both
+  // the Quick Capture sheet (.qc-btn) and the mobile dashboard's own grid
+  // (.mob-action-btn), which was never role-filtered before.
+  document.querySelectorAll('.qc-btn[data-qcpage], .mob-action-btn[data-qcpage]').forEach(el => {
     const page = el.getAttribute('data-qcpage');
     el.style.display = allowed.includes(page) ? '' : 'none';
   });
